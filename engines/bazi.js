@@ -358,6 +358,63 @@ function calculateBazi(params) {
     huoHai: { dir: kuaData.huo_hai, meaning: '祸害方 — Arah Kerugian (hindari)' },
     luckyColors: kuaData.lucky_colors,
     avoidColors: kuaData.avoid_colors,
+    // Aplikasi spesifik per kegunaan (八宅 practical guide)
+    applications: {
+      rumah: {
+        label: '🏠 Arah Hadap Rumah / Pintu Utama',
+        best: kuaData.sheng_qi,
+        bestLabel: '生气 — kemakmuran & peluang mengalir masuk',
+        alt: kuaData.yan_nian,
+        altLabel: '延年 — harmoni keluarga & relasi jangka panjang',
+        avoid: kuaData.jue_ming,
+        avoidLabel: '绝命 — hindari sebisa mungkin untuk pintu masuk'
+      },
+      tempat_tidur: {
+        label: '🛏️ Arah Kepala Tempat Tidur',
+        best: kuaData.yan_nian,
+        bestLabel: '延年 — tidur nyenyak, hubungan & kesehatan jangka panjang',
+        alt: kuaData.tian_yi,
+        altLabel: '天医 — pemulihan & kesehatan optimal',
+        avoid: kuaData.jue_ming,
+        avoidLabel: '绝命 — paling buruk untuk posisi tidur'
+      },
+      meja_kerja: {
+        label: '💼 Arah Wajah di Meja Kerja / Belajar',
+        best: kuaData.sheng_qi,
+        bestLabel: '生气 — produktivitas, karir & kesempatan maksimal',
+        alt: kuaData.fu_wei,
+        altLabel: '伏位 — konsentrasi & stabilitas untuk belajar/riset',
+        avoid: kuaData.wu_gui,
+        avoidLabel: '五鬼 — mengganggu konsentrasi & mengundang hambatan'
+      },
+      dapur: {
+        label: '🍳 Arah Kompor / Dapur',
+        best: kuaData.tian_yi,
+        bestLabel: '天医 — makanan yang dimasak membawa energi penyembuhan',
+        alt: kuaData.yan_nian,
+        altLabel: '延年 — keharmonisan keluarga saat makan bersama',
+        avoid: kuaData.liu_sha,
+        avoidLabel: '六煞 — hindari untuk area memasak'
+      },
+      pintu_kamar: {
+        label: '🚪 Arah Pintu Kamar Tidur',
+        best: kuaData.yan_nian,
+        bestLabel: '延年 — relasi & keharmonisan pasangan',
+        alt: kuaData.tian_yi,
+        altLabel: '天医 — mendukung pemulihan & kesehatan',
+        avoid: kuaData.huo_hai,
+        avoidLabel: '祸害 — mengurangi ketenangan & istirahat'
+      },
+      meditasi: {
+        label: '🧘 Arah Meditasi / Doa / Altar',
+        best: kuaData.fu_wei,
+        bestLabel: '伏位 — ketenangan & stabilitas spiritual',
+        alt: kuaData.tian_yi,
+        altLabel: '天医 — koneksi dengan energi penyembuhan',
+        avoid: kuaData.wu_gui,
+        avoidLabel: '五鬼 — mengganggu ketenangan batin'
+      }
+    },
     source: '八宅風水 (Eight Mansions Feng Shui) — Kua Number method'
   };
 

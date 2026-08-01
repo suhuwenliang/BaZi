@@ -236,31 +236,73 @@ function buildComparison(bazi, zwds) {
   const baziChar = bazi.dayMaster?.character?.substring(0, 80) || '—';
   const mingStars = zwds?.palaces?.[0]?.majorStars?.map(s => s.name).join('、') || '(kosong)';
 
+  // Temukan tema-tema yang KONVERGEN antara BaZi dan ZWDS
+  const yongShen = bazi.wuXing?.yongShen || '';
+  const isDMWeak = !bazi.wuXing?.isDMStrong;
+  const dominantTG = bazi.tenGods?.dominant?.god || '';
+  const mingStarList = zwds?.palaces?.[0]?.majorStars?.map(s=>s.name) || [];
+  const careerStars = zwds?.palaces?.[8]?.majorStars?.map(s=>s.name) || [];
+  const wealthStars = zwds?.palaces?.[4]?.majorStars?.map(s=>s.name) || [];
+  const baziCurrentDY = bazi.daYun?.current;
+  const zwdsCurrentDX = zwds?.daXian?.current;
+
+  // Bangun narasi sintesis
+  const convergenceThemes = [];
+
+  // Tema 1: Jalur karir mandiri vs birokrasi
+  const isOutputWealth = dominantTG && (dominantTG.includes('食神') || dominantTG.includes('傷官') || dominantTG.includes('財'));
+  const hasQiSha = careerStars.some(s => s.includes('七杀'));
+  const hasTanLang = mingStarList.some(s => s.includes('贪狼'));
+  if (isOutputWealth || hasQiSha || hasTanLang) {
+    convergenceThemes.push('💼 <strong>Jalur Mandiri & Kreativitas:</strong> BaZi menunjukkan pola Output-Wealth yang dominan (kemakmuran melalui keahlian & ide pribadi, bukan birokrasi). Zi Wei memperkuat ini melalui energi di Istana Karir ' + (careerStars.join('、') || '—') + ' dan bintang Ming Gong ' + (mingStarList.join('、') || '—') + '. Keduanya sepakat: jalur terbaik adalah mandiri atau melalui inisiatif personal, bukan tangga jabatan formal.');
+  }
+
+  // Tema 2: Disiplin diri & fokus
+  if (isDMWeak) {
+    convergenceThemes.push('⚠️ <strong>Disiplin & Fokus:</strong> Day Master yang lemah di BaZi berarti energi mudah terkuras jika terlalu banyak mengambil proyek sekaligus. Bila bintang di Ming Gong bersifat "serba mau" (misalnya 贪狼), kedua sistem bersepakat: potensi besar tersedia, tapi butuh disiplin memilih fokus agar tidak menyebar ke terlalu banyak arah.');
+  }
+
+  // Tema 3: Periode saat ini
+  if (baziCurrentDY && zwdsCurrentDX) {
+    convergenceThemes.push(`📅 <strong>Periode Saat Ini:</strong> BaZi menempatkan Anda di Da Yun <strong>${baziCurrentDY.ganzhi || '—'}</strong> (usia ${baziCurrentDY.ageStart}–${baziCurrentDY.ageEnd}), sementara Zi Wei menempatkan Anda di Da Xian <strong>${zwdsCurrentDX.palaceName || '—'}</strong> (usia ${zwdsCurrentDX.ageStart}–${zwdsCurrentDX.ageEnd}). ${baziCurrentDY.quality?.rating === 'Sangat Baik' || baziCurrentDY.quality?.rating === 'Baik' ? 'Keduanya menunjuk periode ini sebagai waktu penting untuk membangun fondasi — manfaatkan semaksimal mungkin.' : 'Perhatikan tema yang sama dari kedua sistem untuk periode ini.'}`);
+  }
+
+  // Tema 4: Tahun berjalan
+  const liuNian = zwds?.liuNian;
+  if (liuNian) {
+    convergenceThemes.push(`🌙 <strong>Tahun ${liuNian.year}:</strong> Dari ZWDS, tahun ini Xiao Xian jatuh di Istana <strong>${liuNian.xiaoxianPalace?.name || '—'}</strong>, dan 四化 tahun ini menyentuh area ${(liuNian.mutagens||[]).map(m=>`${m.type} ${m.star}`).join(', ') || '—'}. Cocokkan ini dengan tahun beruntung/waspada dari BaZi untuk validasi silang.`);
+  }
+
   return {
+    synthesis: {
+      narrative: convergenceThemes,
+      intro: `Kedua sistem dihitung dari data lahir yang sama namun menggunakan kerangka berbeda — BaZi membaca "kimia energi waktu lahir", Zi Wei memetakan "bintang-bintang kehidupan" ke 12 area. Ketika keduanya menunjuk tema yang sama, temuan itu sangat kuat dan layak dijadikan pedoman.`,
+      note: 'Perbedaan interpretasi antar sistem adalah hal biasa — bacalah sebagai sudut pandang yang saling melengkapi, bukan bertentangan.'
+    },
     karakter: {
       bazi: `Day Master ${baziDM}: ${baziChar}...`,
       zwds: `Bintang Ming Gong: ${mingStars}`,
-      kesimpulan: 'Kedua sistem memberikan gambaran karakter dari sudut pandang berbeda — BaZi dari energi waktu lahir, ZWDS dari posisi bintang. Persamaan di keduanya menunjukkan sifat yang sangat kuat.'
+      kesimpulan: 'Persamaan karakter di kedua sistem menunjukkan sifat yang benar-benar melekat kuat dalam kepribadian Anda.'
     },
     karir: {
       bazi: (bazi.careers || []).slice(0, 3).join(', '),
-      zwds: `官禄宫: ${zwds?.palaces?.[8]?.majorStars?.map(s=>s.name).join('、') || '—'}`,
-      kesimpulan: 'Di mana kedua sistem menunjukkan bidang yang sama, itu adalah jalur karir yang paling cocok untuk Anda.'
+      zwds: `官禄宫: ${careerStars.join('、') || '—'}`,
+      kesimpulan: 'Bidang yang muncul di kedua sistem adalah jalur karir paling alami bagi Anda.'
     },
     keuangan: {
       bazi: `Yong Shen: ${bazi.wuXing?.yongShen}, Ten God finansial: ${bazi.tenGods?.byStem?.year_gan?.god || '—'}`,
-      zwds: `财帛宫: ${zwds?.palaces?.[4]?.majorStars?.map(s=>s.name).join('、') || '—'}`,
+      zwds: `财帛宫: ${wealthStars.join('、') || '—'}`,
       kesimpulan: 'Perhatikan periode Da Yun yang mendukung dari BaZi, dan tahun-tahun dengan 化禄 di 财帛宫 dari ZWDS.'
     },
     percintaan: {
-      bazi: `Ten God: ${bazi.tenGods?.byStem?.day_gan?.god || '—'}, Shio serasi: ${(bazi.shioCompatibility?.best || []).join(', ')}`,
+      bazi: `Shio serasi: ${(bazi.shioCompatibility?.best || []).join(', ')}`,
       zwds: `夫妻宫: ${zwds?.palaces?.[2]?.majorStars?.map(s=>s.name).join('、') || '—'}`,
-      kesimpulan: 'Gabungkan kriteria dari keduanya untuk gambaran pasangan ideal yang lebih komprehensif.'
+      kesimpulan: 'Gabungkan kriteria dari keduanya untuk gambaran pasangan ideal yang lebih lengkap.'
     },
     kesehatan: {
-      bazi: `Unsur lemah: ${bazi.wuXing?.weakest}, organ terkait: ${bazi.wuXing?.distribution?.[bazi.wuXing?.weakest]?.info?.body || '—'}`,
+      bazi: `Unsur lemah: ${bazi.wuXing?.weakest}`,
       zwds: `疾厄宫: ${zwds?.palaces?.[5]?.majorStars?.map(s=>s.name).join('、') || '—'}`,
-      kesimpulan: 'Perhatikan organ yang ditunjukkan keduanya untuk pemeriksaan kesehatan preventif.'
+      kesimpulan: 'Perhatikan organ/area yang ditunjukkan keduanya untuk pemeriksaan kesehatan preventif.'
     }
   };
 }

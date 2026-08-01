@@ -37,6 +37,51 @@ const BRIGHTNESS_ID = {
   '': 'Tidak Ditentukan'
 };
 
+// 长生十二神 — 12 Tahap Kehidupan ZWDS
+const LIFE_STAGES_ZH = ['长生','沐浴','冠带','临官','帝旺','衰','病','死','墓','绝','胎','养'];
+const LIFE_STAGE_ID = {
+  '长生': { id: 'Chang Sheng', label: 'Lahir Baru', icon: '🌱', desc: 'Energi segar dimulai — potensi penuh, fase pertumbuhan baru' },
+  '沐浴': { id: 'Mu Yu',       label: 'Mandi',      icon: '💧', desc: 'Belajar & beradaptasi — rentan namun penuh kemungkinan' },
+  '冠带': { id: 'Guan Dai',    label: 'Mahkota',    icon: '👑', desc: 'Tumbuh berkembang — sedang membangun identitas & kemampuan' },
+  '临官': { id: 'Lin Guan',    label: 'Jabatan',    icon: '⚡', desc: 'Puncak persiapan — siap mengemban tanggung jawab besar' },
+  '帝旺': { id: 'Di Wang',     label: 'Puncak',     icon: '🌟', desc: 'Kekuatan tertinggi — area kehidupan ini berada di puncaknya' },
+  '衰':   { id: 'Shuai',       label: 'Melemah',    icon: '🍂', desc: 'Fase transisi — energi mulai mengendur, butuh adaptasi' },
+  '病':   { id: 'Bing',        label: 'Sakit',      icon: '⚠️', desc: 'Tantangan & hambatan — area yang butuh perhatian ekstra' },
+  '死':   { id: 'Si',          label: 'Pelepasan',  icon: '🌙', desc: 'Pelepasan lama — transformasi menuju siklus baru' },
+  '墓':   { id: 'Mu',          label: 'Penyimpanan',icon: '📦', desc: 'Energi tersimpan dalam — potensi terkubur yang bisa digali' },
+  '绝':   { id: 'Jue',         label: 'Terputus',   icon: '🔄', desc: 'Regenerasi — titik terbawah sebelum siklus baru dimulai' },
+  '胎':   { id: 'Tai',         label: 'Janin',      icon: '🥚', desc: 'Awal baru dalam kandungan — benih yang belum terwujud' },
+  '养':   { id: 'Yang',        label: 'Diasuh',     icon: '🤲', desc: 'Persiapan akhir — dipelihara menjelang lahir kembali' }
+};
+
+// Posisi cabang bumi tempat 长生 dimulai, per Ju
+const JU_CHANGSHENG_BRANCH = {
+  2: '申', // 水二局 → 长生 di 申
+  3: '亥', // 木三局 → 长生 di 亥
+  4: '巳', // 金四局 → 长生 di 巳
+  5: '申', // 土五局 → 长生 di 申
+  6: '寅'  // 火六局 → 长生 di 寅
+};
+const BRANCH_ORDER = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+
+// Hitung tahap 长生十二神 untuk satu istana
+function calcLifeStage(earthlyBranch, juNumber, yearStemIsYin, isMale) {
+  const startBranch = JU_CHANGSHENG_BRANCH[juNumber];
+  if (!startBranch) return null;
+  const startIdx = BRANCH_ORDER.indexOf(startBranch);
+  const branchIdx = BRANCH_ORDER.indexOf(earthlyBranch);
+  if (branchIdx === -1 || startIdx === -1) return null;
+
+  // 阳男/阴女 → 顺行; 阴男/阳女 → 逆行
+  const isForward = (isMale && !yearStemIsYin) || (!isMale && yearStemIsYin);
+  const distance = isForward
+    ? (branchIdx - startIdx + 12) % 12
+    : (startIdx - branchIdx + 12) % 12;
+
+  const stage = LIFE_STAGES_ZH[distance];
+  return { stage, ...(LIFE_STAGE_ID[stage] || {}) };
+}
+
 // Lima Unsur Struktur (五行局)
 const WU_XING_JU = {
   '水二局': { number: 2, element: 'Air', desc: 'Bintang Zi Wei di posisi 2. Struktural Air — kebijaksanaan, adaptabilitas, dan kekuatan tersembunyi.' },
@@ -87,6 +132,15 @@ function calculateZwds(params) {
   // 五行局
   const fiveElementsStr = astrolabe.fiveElementsClass || '';
   const fiveElements = WU_XING_JU[fiveElementsStr] || { desc: fiveElementsStr };
+  const juNumber = fiveElements.number || 2;
+
+  // Tentukan apakah Batang Tahun bersifat Yin (untuk hitung arah 长生十二神)
+  const YIN_STEMS = ['乙','丁','己','辛','癸'];
+  const yearGanZhi = astrolabe.rawDates?.chineseDate || '';
+  // Ambil karakter pertama (Batang Tahun) dari tanggal lunar iztro
+  const yearStemChar = astrolabe.rawDates?.chineseDate?.split(' ')?.[0]?.[0] || '';
+  const yearStemIsYin = YIN_STEMS.includes(yearStemChar);
+  const isMale = genderStr === '男';
 
   // ---- 12 ISTANA ----
   const palaces = rawPalaces.map((palace, idx) => {
@@ -117,17 +171,22 @@ function calculateZwds(params) {
     // Interpretasi personal
     const personalMeaning = buildPalaceInterpretation(palaceName, majorStars, mutagens, palace);
 
+    // 长生十二神 — tahap kehidupan istana ini
+    const eb = palace.earthlyBranch || '';
+    const lifeStage = calcLifeStage(eb, juNumber, yearStemIsYin, isMale);
+
     return {
       index: idx,
       name: palaceName,
       name_id: palaceInfo.name_id || palaceName,
       heavenlyStem: palace.heavenlyStem || '',
-      earthlyBranch: palace.earthlyBranch || '',
+      earthlyBranch: eb,
       isBodyPalace: palace.isBodyPalace || false,
       isSelf: palaceName === '命宫',
       majorStars,
       minorStars,
       mutagens,
+      lifeStage,
       purpose: palaceInfo.purpose || '',
       whatToLook: palaceInfo.what_to_look || '',
       personalMeaning,

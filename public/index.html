@@ -193,15 +193,15 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
         <div class="sep">Identitas</div>
         <div class="form-group">
           <label>Nama Lengkap (Latin)</label>
-          <input type="text" name="name" placeholder="e.g. Jeffry Halim" required>
+          <input type="text" name="name" placeholder="e.g. Andy Lau" required>
         </div>
         <div class="form-group">
           <label>Nama Mandarin / 华文名</label>
-          <input type="text" name="chineseName" placeholder="e.g. 林俊杰">
+          <input type="text" name="chineseName" placeholder="e.g. 刘德华">
         </div>
         <div class="form-group">
           <label>Marga / Surname 姓</label>
-          <input type="text" name="chineseSurname" placeholder="e.g. 林">
+          <input type="text" name="chineseSurname" placeholder="e.g. 刘">
         </div>
         <div class="form-group">
           <label>Jenis Kelamin</label>
@@ -251,11 +251,11 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
         </div>
         <div class="form-group">
           <label>Bujur / Longitude (°E positif, °W negatif)</label>
-          <input type="number" name="longitude" step="0.0001" placeholder="106.8456" value="">
+          <input type="number" name="longitude" step="0.0001" placeholder="" value="">
         </div>
         <div class="form-group">
           <label>Lintang / Latitude (opsional)</label>
-          <input type="number" name="latitude" step="0.0001" placeholder="-6.2088" value="">
+          <input type="number" name="latitude" step="0.0001" placeholder="" value="">
         </div>
       </div>
 
@@ -481,16 +481,16 @@ function setCoord(lng, lat, tz) {
 }
 
 function fillDemo() {
-  document.querySelector('[name=name]').value = 'Jeffry Halim';
-  document.querySelector('[name=chineseName]').value = '林俊杰';
-  document.querySelector('[name=chineseSurname]').value = '林';
+  document.querySelector('[name=name]').value = 'Andy Lau';
+  document.querySelector('[name=chineseName]').value = '刘德华';
+  document.querySelector('[name=chineseSurname]').value = '刘';
   document.querySelector('[name=gender]').value = 'M';
-  document.querySelector('[name=birthYear]').value = '1990';
-  document.querySelector('[name=birthMonth]').value = '5';
-  document.querySelector('[name=birthDay]').value = '15';
+  document.querySelector('[name=birthYear]').value = '1961';
+  document.querySelector('[name=birthMonth]').value = '9';
+  document.querySelector('[name=birthDay]').value = '27';
   document.querySelector('[name=birthHour]').value = '8';
-  document.querySelector('[name=birthMinute]').value = '30';
-  setCoord(106.8456, -6.2088, 'WIB');
+  document.querySelector('[name=birthMinute]').value = '0';
+  setCoord(114.1095, 22.3964, 'HKT');
 }
 
 function esc(s) {
@@ -968,8 +968,12 @@ function render4A(z) {
       `<span class="tag tag-purple">${esc(m.type||'')} ${esc(m.star||'')}</span>`
     ).join(' ');
 
+    // Life stage badge
+    const ls = palace.lifeStage;
+    const lsBadge = ls ? `<span title="${esc(ls.desc||'')}" style="font-size:10px; background:rgba(232,184,109,0.15); border:1px solid rgba(232,184,109,0.3); border-radius:4px; padding:2px 6px; color:var(--gold2); white-space:nowrap">${esc(ls.icon||'')} ${esc(ls.stage||'')} · ${esc(ls.label||'')}</span>` : '';
+
     html += `<div class="palace-card">
-      <div class="palace-name">${idx+1}. ${esc(palace.name||palace.palaceName||'?')}</div>
+      <div class="palace-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${idx+1}. ${esc(palace.name||palace.palaceName||'?')}${lsBadge}</div>
       ${palace.purpose ? `<div class="palace-purpose">📌 ${esc(palace.purpose)}</div>` : ''}
       ${majorStarHtml || minorStarHtml ? `<div class="stars-row">${majorStarHtml}${minorStarHtml}</div>` : ''}
       ${mutagenHtml ? `<div class="mutagen-row" style="margin-bottom:4px">${mutagenHtml}</div>` : ''}
@@ -1202,26 +1206,58 @@ function render5(c, b) {
   html += `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">`;
 
   // Feng Shui
-  html += `<h3 style="color:var(--gold2); font-size:13px; margin-bottom:8px">🏮 Arah Feng Shui (Kua Number)</h3>`;
+  html += `<h3 style="color:var(--gold2); font-size:13px; margin-bottom:8px">🏮 Arah Feng Shui Personal (八宅 Kua Number)</h3>`;
   const fs = c.fengshui || {};
   if (fs.kuaNumber) {
-    html += `<div style="font-size:13px; margin-bottom:10px">Kua Number: <strong style="color:var(--gold); font-size:20px">${fs.kuaNumber}</strong></div>`;
-    if (fs.luckyDirections?.length) {
-      html += `<div style="font-size:12px; margin-bottom:4px; color:var(--green)">✅ Arah Beruntung: ${fs.luckyDirections.join(' · ')}</div>`;
-    }
-    if (fs.unluckyDirections?.length) {
-      html += `<div style="font-size:12px; margin-bottom:10px; color:var(--red)">❌ Hindari: ${fs.unluckyDirections.join(' · ')}</div>`;
-    }
-    if (fs.directions) {
-      html += `<div class="dir-grid">`;
-      Object.entries(fs.directions).forEach(([dir, info]) => {
-        html += `<div class="dir-item">
-          <div class="dir-val">${esc(dir)}</div>
-          <div class="dir-name">${esc(info?.label||info||'')}</div>
+    html += `<div style="font-size:13px; margin-bottom:6px">Kua Number: <strong style="color:var(--gold); font-size:20px">${fs.kuaNumber}</strong> <span style="font-size:12px; color:var(--muted)">(Kelompok ${esc(fs.group||'')})</span></div>`;
+
+    // Tabel 8 arah ringkas
+    const dirRows = [
+      { key: 'shengQi',  icon: '⭐', cat: '生气', color: 'var(--green)' },
+      { key: 'tianYi',   icon: '💚', cat: '天医', color: 'var(--green)' },
+      { key: 'yanNian',  icon: '💛', cat: '延年', color: 'var(--gold2)' },
+      { key: 'fuWei',    icon: '🔵', cat: '伏位', color: 'var(--blue)' },
+      { key: 'huoHai',   icon: '⚠️', cat: '祸害', color: 'var(--muted)' },
+      { key: 'liuSha',   icon: '🔶', cat: '六煞', color: '#e08040' },
+      { key: 'wuGui',    icon: '🔴', cat: '五鬼', color: '#c04040' },
+      { key: 'jueMing',  icon: '💀', cat: '绝命', color: 'var(--red)' },
+    ];
+    html += `<table style="width:100%; font-size:12px; margin-bottom:12px; border-collapse:collapse">
+      <tr style="background:var(--surface2)"><th style="padding:4px 8px; text-align:left">Kategori</th><th style="padding:4px 8px; text-align:left">Arah</th><th style="padding:4px 8px; text-align:left">Makna</th></tr>`;
+    dirRows.forEach(r => {
+      const d = fs[r.key];
+      if (!d) return;
+      html += `<tr style="border-top:1px solid var(--border)">
+        <td style="padding:4px 8px; color:${r.color}; white-space:nowrap">${r.icon} ${r.cat}</td>
+        <td style="padding:4px 8px; font-weight:600; color:var(--text)">${esc(d.dir||'—')}</td>
+        <td style="padding:4px 8px; color:var(--muted)">${esc((d.meaning||'').split('—')[1]?.trim()||'')}</td>
+      </tr>`;
+    });
+    html += '</table>';
+
+    // Aplikasi spesifik per kegunaan
+    const apps = fs.applications;
+    if (apps) {
+      html += `<div style="font-size:13px; color:var(--gold); margin-bottom:8px; font-weight:600">🧭 Panduan Arah per Kegunaan</div>`;
+      Object.values(apps).forEach(app => {
+        html += `<div style="background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:10px 12px; margin-bottom:8px">
+          <div style="font-size:12px; font-weight:600; color:var(--gold2); margin-bottom:6px">${esc(app.label)}</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:11px">
+            <div style="background:rgba(70,180,100,0.1); border:1px solid rgba(70,180,100,0.3); border-radius:4px; padding:6px">
+              <div style="color:var(--green); font-weight:600">✅ Terbaik: ${esc(app.best)}</div>
+              <div style="color:var(--muted); margin-top:2px">${esc(app.bestLabel)}</div>
+            </div>
+            <div style="background:rgba(232,184,109,0.07); border:1px solid rgba(232,184,109,0.25); border-radius:4px; padding:6px">
+              <div style="color:var(--gold2); font-weight:600">👍 Alternatif: ${esc(app.alt)}</div>
+              <div style="color:var(--muted); margin-top:2px">${esc(app.altLabel)}</div>
+            </div>
+          </div>
+          <div style="font-size:11px; color:var(--red); margin-top:6px">❌ Hindari: <strong>${esc(app.avoid)}</strong> — ${esc(app.avoidLabel)}</div>
         </div>`;
       });
-      html += '</div>';
     }
+
+    html += `<div style="font-size:10px; color:var(--muted); margin-top:4px">Sumber: ${esc(fs.source||'')}</div>`;
   }
 
   document.getElementById('sec-5').innerHTML = html;
@@ -1233,6 +1269,24 @@ function render5(c, b) {
 function render6(comp) {
   if (!comp) { document.getElementById('sec-6').innerHTML = '<div style="color:var(--muted)">Data tidak tersedia</div>'; return; }
   let html = '';
+
+  // Sintesis naratif (tema-tema konvergen)
+  const syn = comp.synthesis;
+  if (syn) {
+    html += `<div style="background:var(--surface2); border:1px solid rgba(232,184,109,0.3); border-radius:8px; padding:14px; margin-bottom:16px">
+      <h4 style="color:var(--gold); font-size:13px; margin-bottom:8px">🔗 Sintesis Kedua Sistem</h4>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:12px">${esc(syn.intro||'')}</p>`;
+    if (syn.narrative && syn.narrative.length > 0) {
+      syn.narrative.forEach(theme => {
+        html += `<div style="background:var(--surface); border-left:3px solid var(--gold); border-radius:0 6px 6px 0; padding:8px 12px; margin-bottom:8px; font-size:12px; color:var(--text); line-height:1.6">${theme}</div>`;
+      });
+    }
+    html += `<div style="font-size:11px; color:var(--muted); margin-top:8px; font-style:italic">📌 ${esc(syn.note||'')}</div>
+    </div>`;
+  }
+
+  // Tabel perbandingan per kategori
+  html += `<h4 style="color:var(--gold2); font-size:12px; margin-bottom:10px">📊 Perbandingan Detail per Area</h4>`;
   const categories = {
     karakter: '🧠 Karakter & Kepribadian',
     karir: '💼 Karir & Profesi',
@@ -1283,6 +1337,15 @@ function render7(ls) {
       </div>`;
     }
   });
+
+  // Tombol NEW
+  html += `<div style="text-align:center; margin-top:24px; padding-top:18px; border-top:1px solid var(--border)">
+    <button class="btn btn-secondary" onclick="resetForm()" style="font-size:13px; padding:10px 28px; background:var(--surface3); border:1px solid var(--border); border-radius:8px; color:var(--gold2); cursor:pointer; letter-spacing:1px">
+      ✨ MULAI BARU
+    </button>
+    <div style="font-size:11px; color:var(--muted); margin-top:6px">Kosongkan semua data untuk input baru</div>
+  </div>`;
+
   document.getElementById('sec-7').innerHTML = html;
 }
 
@@ -1310,6 +1373,31 @@ function copyClaudePromptZwds() {
   navigator.clipboard.writeText(_result.zwds.exportPrompt)
     .then(() => alert('✅ Prompt ZWDS tersalin! Paste ke chat Claude untuk mendapat interpretasi naratif.'))
     .catch(() => alert('Gagal menyalin. Gunakan browser modern.'));
+}
+
+// ============================================================
+// RESET FORM
+// ============================================================
+function resetForm() {
+  // Kosongkan semua input teks/number
+  document.querySelectorAll('#calcForm input[type="text"], #calcForm input[type="number"], #calcForm input[type="date"], #calcForm input[type="time"]').forEach(el => { el.value = ''; });
+  // Reset select ke nilai default
+  document.querySelectorAll('#calcForm select').forEach(el => { el.selectedIndex = 0; });
+  // Sembunyikan semua section hasil
+  [2,3,4,5,6,7].forEach(n => {
+    const el = document.getElementById(`sec-${n}`);
+    if (el) el.innerHTML = '';
+    const card = el?.closest?.('.card');
+    if (card) card.style.display = 'none';
+  });
+  ['sec-3a','sec-3b','sec-3c','sec-3d','sec-3e','sec-3f','sec-3g',
+   'sec-4a','sec-4b','sec-4c','sec-4d'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+  _result = null;
+  // Scroll ke atas form
+  document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ============================================================
