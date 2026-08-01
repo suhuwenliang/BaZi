@@ -308,10 +308,10 @@ function calculateBazi(params) {
       ganzhi: gz,
       gan: dgStem,
       zhi: dgBranch,
-      startYear,
-      endYear,
-      startAge: dy.getStartAge(),
-      endAge: dy.getEndAge(),
+      yearStart: startYear,
+      yearEnd: endYear,
+      ageStart: dy.getStartAge(),
+      ageEnd: dy.getEndAge(),
       isCurrent,
       element_gan: STEM_ELEMENT[dgStem],
       element_zhi: BRANCH_ELEMENT[dgBranch],
@@ -626,7 +626,7 @@ function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXing
       : 'Ten God dalam chart Anda tersebar merata, menunjukkan kepribadian yang multidimensi.',
 
     daYun: currentDaYun
-      ? `Anda saat ini berada di Da Yun ${currentDaYun.ganzhi} (${currentDaYun.startYear}–${currentDaYun.endYear}, usia ${currentDaYun.startAge}–${currentDaYun.endAge} tahun). Kualitas periode ini: ${currentDaYun.quality.rating} — ${currentDaYun.quality.desc}.`
+      ? `Anda saat ini berada di Da Yun ${currentDaYun.ganzhi} (${currentDaYun.yearStart}–${currentDaYun.yearEnd}, usia ${currentDaYun.ageStart}–${currentDaYun.ageEnd} tahun). Kualitas periode ini: ${currentDaYun.quality.rating} — ${currentDaYun.quality.desc}.`
       : 'Informasi Da Yun saat ini tidak tersedia.',
 
     shenSha: Object.entries(shenSha)
@@ -660,7 +660,7 @@ ${Object.entries(wuXingDistribution).map(([el,d]) => `- ${el}: ${d.pct}%`).join(
 Yong Shen (unsur dibutuhkan): ${yongShen}
 
 ## Da Yun Saat Ini
-${currentDaYun ? `${currentDaYun.ganzhi} (${currentDaYun.startYear}-${currentDaYun.endYear}) — ${currentDaYun.quality.rating}` : 'Tidak tersedia'}
+${currentDaYun ? `${currentDaYun.ganzhi} (${currentDaYun.yearStart}-${currentDaYun.yearEnd}) — ${currentDaYun.quality.rating}` : 'Tidak tersedia'}
 
 ## Shen Sha Aktif
 ${Object.entries(shenSha).filter(([,v])=>v.active).map(([,v])=>v.name).join(', ') || 'Tidak ada'}
