@@ -135,11 +135,10 @@ function calculateZwds(params) {
   const juNumber = fiveElements.number || 2;
 
   // Tentukan apakah Batang Tahun bersifat Yin (untuk hitung arah 长生十二神)
-  const YIN_STEMS = ['乙','丁','己','辛','癸'];
-  const yearGanZhi = astrolabe.rawDates?.chineseDate || '';
-  // Ambil karakter pertama (Batang Tahun) dari tanggal lunar iztro
-  const yearStemChar = astrolabe.rawDates?.chineseDate?.split(' ')?.[0]?.[0] || '';
-  const yearStemIsYin = YIN_STEMS.includes(yearStemChar);
+  // Stem 甲乙丙丁戊己庚辛壬癸 → tahun Masehi: 4=甲 5=乙 6=丙 7=丁 8=戊 9=己 0=庚 1=辛 2=壬 3=癸
+  // Stem Yin (乙丁己辛癸) = tahun berakhiran 5,7,9,1,3
+  // Lebih andal dari parsing astrolabe.rawDates.chineseDate yang bisa berupa objek di beberapa versi iztro
+  const yearStemIsYin = [1, 3, 5, 7, 9].includes(y % 10);
   const isMale = genderStr === '男';
 
   // ---- 12 ISTANA ----

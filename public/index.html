@@ -143,18 +143,83 @@ tr:hover td { background: rgba(232,184,109,0.04); }
 abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: none; }
 /* Print */
 @media print {
-  body { background: white; color: black; }
-  .card { border: 1px solid #ccc; break-before: page; }
-  .card:first-of-type { break-before: auto; }
-  .card-header { background: #f0e8d0; }
-  .btn-row, .app-header .subtitle { display: none; }
+  @page { size: A4; margin: 15mm; }
+  body { background: white !important; color: #1a1a1a !important; }
+  .app-header { background: #f5ede0 !important; border-bottom: 2px solid #8a6a30 !important; }
+  .app-header h1 { color: #5a3a00 !important; }
+  .app-header .subtitle { display: none !important; }
+  .btn-row { display: none !important; }
   #export-section { display: none !important; }
+  .card { border: 1px solid #bbb !important; break-before: page !important; page-break-before: always !important; background: white !important; }
+  .card:first-of-type { break-before: auto !important; page-break-before: auto !important; }
+  .card-header { background: #f5ede0 !important; break-inside: avoid; page-break-inside: avoid; }
+  .card-header h2 { color: #5a3a00 !important; }
+  .card-body { background: white !important; }
+  /* Prevent individual items from splitting mid-element */
+  .palace-card, .daxian-item, .dayun-item, .life-section,
+  .liunian-card, .yongshen-box, .shensha-item, .tengod-item,
+  .summary-box, .comp-item, .pillar-card { break-inside: avoid; page-break-inside: avoid; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
+  /* Print color overrides — light theme */
+  th { background: #f5ede0 !important; color: #3a2000 !important; border-color: #bbb !important; }
+  td { border-color: #bbb !important; color: #1a1a1a !important; }
+  .pillar-card { background: #faf6f0 !important; border-color: #bbb !important; }
+  .palace-card { background: #faf6f0 !important; border-color: #bbb !important; }
+  .palace-card .palace-name { color: #5a3a00 !important; }
+  .daxian-item { background: #faf6f0 !important; border-color: #bbb !important; }
+  .dayun-item { background: #faf6f0 !important; border-color: #bbb !important; }
+  .dayun-item .dy-gz { color: #5a3a00 !important; }
+  .daxian-item .dx-palace { color: #5a3a00 !important; }
+  .tengod-item { background: #faf6f0 !important; }
+  .shensha-item { background: #faf6f0 !important; border-color: #bbb !important; }
+  .comp-item { background: #faf6f0 !important; }
+  .life-section { background: #faf6f0 !important; border-left-color: #8a6a30 !important; }
+  .life-section h4 { color: #5a3a00 !important; }
+  .summary-box { background: #f0f4ff !important; border-color: #99aad4 !important; color: #1a2040 !important; }
+  .yongshen-box { background: #fff8e8 !important; border-color: #c8a040 !important; }
+  .yongshen-box h4 { color: #5a3a00 !important; }
+  .star-chip, .star-chip.major { background: #f5f0e0 !important; color: #5a3a00 !important; }
+  .tag-gold { background: #fff8e8 !important; color: #8a5a00 !important; }
+  .tag-green { background: #f0fff4 !important; color: #1a5a2a !important; }
+  .tag-red { background: #fff0f0 !important; color: #6a1a1a !important; }
+  .tag-blue { background: #f0f4ff !important; color: #1a3a7a !important; }
+  .tag-purple { background: #f8f0ff !important; color: #4a1a7a !important; }
+  .palace-meaning, .palace-purpose, .palace-advice { color: #2a2a2a !important; }
+  .dx-meaning, .dx-age { color: #555 !important; }
+  .pillar-card .ganzhi { color: #5a3a00 !important; }
+  .pillar-card .ganzhi-detail { color: #555 !important; }
+  .bar-track { background: #e8e0d0 !important; }
 }
-/* Responsive */
-@media (max-width: 600px) {
+/* Responsive — mobile */
+@media (max-width: 768px) {
+  .container { padding: 10px; }
+  /* Tables: horizontal scroll instead of overflow */
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  /* Grid overrides */
   .pillars-grid { grid-template-columns: repeat(2, 1fr); }
+  .pillars-grid .ganzhi { font-size: 22px; }
   .comp-grid { grid-template-columns: 1fr; }
   .dir-grid { grid-template-columns: repeat(2, 1fr); }
+  .palaces-grid { grid-template-columns: 1fr !important; }
+  .tengods-grid { grid-template-columns: repeat(2, 1fr); }
+  .shensha-grid { grid-template-columns: 1fr; }
+  .remedy-grid { grid-template-columns: 1fr; }
+  .three-layer { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  /* Compact items */
+  .dayun-item { min-width: 80px; padding: 6px 8px; }
+  .daxian-item { min-width: 90px; }
+  .dayun-list, .daxian-list { gap: 5px; }
+  /* Button row */
+  .btn-row { flex-direction: column; }
+  .btn-row .btn { width: 100%; }
+  /* Card header */
+  .card-header h2 { font-size: 13px; }
+  /* Pillar card text */
+  .pillar-card .ganzhi-detail { font-size: 10px; }
+  .bone-total { font-size: 24px; }
+  /* Feng shui app grid — stack to 1 column on very small screens */
+  .dir-app-grid { grid-template-columns: 1fr !important; }
 }
 .liunian-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
 .liunian-card h4 { color: var(--gold); font-size: 13px; margin-bottom: 8px; }
