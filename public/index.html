@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BaZi & Zi Wei Dou Shu Calculator</title>
+<title>BaZi & Zi Wei Dou Shu</title>
 <style>
 :root {
   --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #16213e; --surface3: #0f3460;
@@ -149,6 +149,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .app-header h1 { color: #5a3a00 !important; }
   .app-header .subtitle { display: none !important; }
   .btn-row { display: none !important; }
+  .no-print { display: none !important; }
   #export-section { display: none !important; }
   .card { border: 1px solid #bbb !important; break-before: page !important; page-break-before: always !important; background: white !important; }
   .card:first-of-type { break-before: auto !important; page-break-before: auto !important; }
@@ -239,7 +240,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 <body>
 
 <div class="app-header">
-  <h1>⭐ 四柱八字 &amp; 紫微斗數 Calculator</h1>
+  <h1>⭐ 四柱八字 &amp; 紫微斗數</h1>
   <div class="subtitle">BaZi &amp; Zi Wei Dou Shu · Kalkulasi Deterministik · Berbasis Library Terverifikasi</div>
 </div>
 
@@ -327,8 +328,14 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
       <!-- Quick location buttons -->
       <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(106.8456,-6.2088,'WIB')">📍 Jakarta</button>
+        <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(107.6191,-6.9175,'WIB')">📍 Bandung</button>
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(110.3695,-7.7956,'WIB')">📍 Yogyakarta</button>
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(112.7521,-7.2575,'WIB')">📍 Surabaya</button>
+        <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(104.7456,-2.9761,'WIB')">📍 Palembang</button>
+        <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(109.3425,-0.0263,'WIB')">📍 Pontianak</button>
+        <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(117.1536,-0.5016,'WITA')">📍 Samarinda</button>
+        <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(116.8529,-1.2654,'WITA')">📍 Balikpapan</button>
+        <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(119.4221,-5.1477,'WITA')">📍 Makassar</button>
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(115.2191,-8.6705,'WITA')">📍 Denpasar</button>
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(98.6722,3.5952,'WIB')">📍 Medan</button>
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(103.8198,1.3521,'GMT+8')">📍 Singapura</button>
@@ -1404,7 +1411,7 @@ function render7(ls) {
   });
 
   // Tombol NEW
-  html += `<div style="text-align:center; margin-top:24px; padding-top:18px; border-top:1px solid var(--border)">
+  html += `<div class="no-print" style="text-align:center; margin-top:24px; padding-top:18px; border-top:1px solid var(--border)">
     <button class="btn btn-secondary" onclick="resetForm()" style="font-size:13px; padding:10px 28px; background:var(--surface3); border:1px solid var(--border); border-radius:8px; color:var(--gold2); cursor:pointer; letter-spacing:1px">
       ✨ MULAI BARU
     </button>
