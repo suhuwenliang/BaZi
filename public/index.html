@@ -141,6 +141,36 @@ tr:hover td { background: rgba(232,184,109,0.04); }
 .acc-toggle.open:after { content: ' ▲'; }
 /* Tooltip */
 abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: none; }
+/* ── Qi Men Dun Jia ── */
+.qmdj-tab.active { background: var(--gold) !important; color: #000 !important; }
+.qmdj-palace { background: var(--surface2); border: 1px solid var(--border); border-radius:8px; padding:8px; font-size:11px; min-height:130px; position:relative; }
+.qmdj-palace.is-fupalace { border:2px solid var(--gold); }
+.qmdj-palace.is-shipalace { border:2px solid var(--blue); }
+.qmdj-palace.is-center { opacity:0.8; background: var(--surface); }
+.qmdj-palace .qp-name { font-size:10px; color:var(--muted); font-weight:600; letter-spacing:1px; margin-bottom:4px; }
+.qmdj-palace .qp-stems { display:flex; gap:6px; align-items:center; margin-bottom:4px; }
+.qmdj-palace .qp-sky { font-size:15px; font-weight:700; color:var(--accent); }
+.qmdj-palace .qp-earth { font-size:13px; color:var(--muted); }
+.qmdj-palace .qp-hidden { font-size:10px; color:var(--purple); }
+.qmdj-palace .qp-star { font-size:12px; font-weight:600; color:var(--gold); margin-bottom:2px; }
+.qmdj-palace .qp-door { font-size:12px; color:var(--blue); margin-bottom:2px; }
+.qmdj-palace .qp-god  { font-size:11px; color:var(--green); }
+.qmdj-palace .qp-god-di { font-size:10px; color:var(--muted); font-style:italic; }
+.qmdj-palace .qp-marks { display:flex; gap:3px; flex-wrap:wrap; margin-top:4px; }
+.qmdj-palace .qp-mark { font-size:9px; padding:1px 4px; border-radius:3px; font-weight:700; }
+.qmdj-palace .qp-mark.xing { background:#dc2626; color:#fff; }
+.qmdj-palace .qp-mark.mu   { background:#7c3aed; color:#fff; }
+.qmdj-palace .qp-mark.po   { background:#d97706; color:#fff; }
+.qmdj-palace .qp-mark.kong { background:#6b7280; color:#fff; }
+.qmdj-palace .qp-mark.ma   { background:#059669; color:#fff; }
+.qmdj-palace .qp-quality { position:absolute; top:5px; right:6px; font-size:10px; }
+.qmdj-palace .qp-jigan { font-size:10px; color:var(--gold2); font-weight:700; border-top:1px dashed var(--border); margin-top:4px; padding-top:4px; }
+.qmdj-pattern-ji   { background: rgba(5,150,105,0.15); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:8px 12px; margin-bottom:6px; }
+.qmdj-pattern-xiong{ background: rgba(220,38,38,0.1);  border-left:3px solid #dc2626; border-radius:0 6px 6px 0; padding:8px 12px; margin-bottom:6px; }
+.qmdj-interp-card  { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; }
+.qmdj-interp-card h4 { color:var(--gold); font-size:13px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.qmdj-layer { font-size:12px; line-height:1.6; color:var(--text); margin-bottom:4px; }
+.qmdj-layer strong { color:var(--accent); }
 /* Print */
 @media print {
   @page { size: A4; margin: 15mm; }
@@ -159,7 +189,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   /* Prevent individual items from splitting mid-element */
   .palace-card, .daxian-item, .dayun-item, .life-section,
   .liunian-card, .yongshen-box, .shensha-item, .tengod-item,
-  .summary-box, .comp-item, .pillar-card { break-inside: avoid; page-break-inside: avoid; }
+  .summary-box, .comp-item, .pillar-card, .qmdj-interp-card, .qmdj-palace { break-inside: avoid; page-break-inside: avoid; }
   tr { break-inside: avoid; page-break-inside: avoid; }
   /* Print color overrides — light theme */
   th { background: #f5ede0 !important; color: #3a2000 !important; border-color: #bbb !important; }
@@ -221,6 +251,13 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .bone-total { font-size: 24px; }
   /* Feng shui app grid — stack to 1 column on very small screens */
   .dir-app-grid { grid-template-columns: 1fr !important; }
+  /* QMDJ: keep 3 cols but compact */
+  #qmdj-grid { max-width: 100% !important; }
+  .qmdj-palace { min-height: 110px; font-size: 10px; padding: 6px; }
+  .qmdj-palace .qp-sky { font-size: 13px; }
+  .qmdj-tabs { gap: 5px; }
+  .qmdj-tabs .btn { font-size: 11px; padding: 5px 8px; }
+  #qmdj-kongwang-box, #qmdj-direction-box { padding: 8px; }
 }
 .liunian-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
 .liunian-card h4 { color: var(--gold); font-size: 13px; margin-bottom: 8px; }
@@ -495,10 +532,57 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   <div class="card-body" id="sec-7"></div>
 </div>
 
-<!-- ===== SECTION 8: EXPORT ===== -->
-<div class="card" id="export-section">
+<!-- ===== SECTION 8: QI MEN DUN JIA ===== -->
+<div class="card" id="qmdj-section" style="display:none">
   <div class="card-header">
     <div class="section-num">8</div>
+    <h2>奇門遁甲 — Qi Men Dun Jia</h2>
+  </div>
+  <div class="card-body">
+
+    <!-- Tab selector -->
+    <div class="qmdj-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-secondary qmdj-tab active" onclick="switchQmdjTab('nianjia',this)">📅 年家 (Natal Tahun)</button>
+      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('rijia',this)">🗓 日家 (Natal Hari)</button>
+      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('shijia',this)">⏰ 时家 (Sekarang)</button>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="qmdj-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Menghitung Qi Men Dun Jia...</div>
+
+    <!-- Chart display -->
+    <div id="qmdj-content" style="display:none">
+
+      <!-- Chart header info -->
+      <div id="qmdj-header" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px">
+        <div id="qmdj-label" style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:6px"></div>
+        <div id="qmdj-summary" style="color:var(--muted)"></div>
+        <div id="qmdj-quality" style="font-size:15px;font-weight:600;margin-top:6px"></div>
+      </div>
+
+      <!-- 3x3 Palace Grid -->
+      <div id="qmdj-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:20px;max-width:620px;margin-left:auto;margin-right:auto"></div>
+
+      <!-- Kong Wang & Best Direction -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+        <div id="qmdj-kongwang-box" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px"></div>
+        <div id="qmdj-direction-box" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px"></div>
+      </div>
+
+      <!-- Patterns / 格局 -->
+      <div id="qmdj-patterns" style="margin-bottom:20px"></div>
+
+      <!-- Palace Interpretations -->
+      <div id="qmdj-interps"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 9: EXPORT ===== -->
+<div class="card" id="export-section">
+  <div class="card-header">
+    <div class="section-num">9</div>
     <h2>Export &amp; Berbagi</h2>
   </div>
   <div class="card-body">
@@ -522,6 +606,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 // STATE
 // ============================================================
 let _result = null;
+let _lastInput = null;
 
 // ============================================================
 // INIT: Load timezones into select
@@ -618,7 +703,12 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
       throw new Error((json.errors || ['Unknown error']).join(', '));
     }
     _result = json;
+    _lastInput = data;
     renderAll(json, data);
+    // Load QMDJ section
+    document.getElementById('qmdj-section').style.display = '';
+    _qmdjData = {};
+    loadQmdj('nianjia');
     document.getElementById('results').classList.remove('hidden');
     document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
   } catch(err) {
@@ -1422,6 +1512,231 @@ function render7(ls) {
 }
 
 // ============================================================
+// QI MEN DUN JIA
+// ============================================================
+let _qmdjType = 'nianjia';
+let _qmdjData = {}; // cache per type
+
+function switchQmdjTab(type, btn) {
+  _qmdjType = type;
+  document.querySelectorAll('.qmdj-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // If we already have data for this type, show it; otherwise reload
+  if (_qmdjData[type]) {
+    renderQmdj(_qmdjData[type]);
+  } else if (_result) {
+    loadQmdj(type);
+  }
+}
+
+async function loadQmdj(type) {
+  if (!type) type = _qmdjType;
+  const sec = document.getElementById('qmdj-section');
+  const loading = document.getElementById('qmdj-loading');
+  const content = document.getElementById('qmdj-content');
+  loading.style.display = 'block';
+  content.style.display = 'none';
+
+  try {
+    const r = _result;
+    const payload = { type };
+    if (r) {
+      payload.birthYear  = r.bazi?.fourPillars?.year?.heavenlyStem ? undefined : _lastInput?.birthYear;
+      payload.birthMonth = _lastInput?.birthMonth;
+      payload.birthDay   = _lastInput?.birthDay;
+      // Use stored input values
+      if (_lastInput) {
+        payload.birthYear  = _lastInput.birthYear;
+        payload.birthMonth = _lastInput.birthMonth;
+        payload.birthDay   = _lastInput.birthDay;
+      }
+    }
+
+    const resp = await fetch('/api/qmdj', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || 'Unknown error');
+
+    _qmdjData[type] = data.qmdj;
+    renderQmdj(data.qmdj);
+  } catch(e) {
+    loading.style.display = 'none';
+    content.style.display = 'none';
+    content.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
+    content.style.display = 'block';
+  }
+}
+
+function renderQmdj(q) {
+  const loading = document.getElementById('qmdj-loading');
+  const content = document.getElementById('qmdj-content');
+
+  // Header
+  document.getElementById('qmdj-label').textContent = q.label;
+  document.getElementById('qmdj-summary').textContent = q.summary;
+  document.getElementById('qmdj-quality').innerHTML = `总体格局: <strong>${q.overallQuality}</strong>`;
+
+  // 3×3 Palace Grid (Lo Shu arrangement: 4 9 2 / 3 5 7 / 8 1 6)
+  const GRID_ORDER = [4,9,2,3,5,7,8,1,6]; // Lo Shu top-left to bottom-right
+  const grid = document.getElementById('qmdj-grid');
+  grid.innerHTML = '';
+  const byNum = {};
+  q.palaces.forEach(p => { byNum[p.palaceNumber] = p; });
+
+  GRID_ORDER.forEach(num => {
+    const p = byNum[num];
+    if (!p) return;
+    const isCenter  = num === 5;
+    const isFuPal   = num === q.zhiFuPalace;
+    const isShiPal  = num === q.zhiShiPalace;
+    const isFuANDShi = isFuPal && isShiPal;
+
+    let borderClass = '';
+    if (isFuANDShi) borderClass = 'is-fupalace is-shipalace';
+    else if (isFuPal) borderClass = 'is-fupalace';
+    else if (isShiPal) borderClass = 'is-shipalace';
+    if (isCenter) borderClass += ' is-center';
+
+    // Stars/Doors nature color
+    const GOOD_DOORS = ['开门','休门','生门'];
+    const BAD_DOORS  = ['死门','惊门'];
+    const GOOD_STARS = ['天辅','天心','天任'];
+    const BAD_STARS  = ['天蓬','天芮','天柱'];
+    let doorColor = GOOD_DOORS.includes(p.door) ? '#22c55e' : BAD_DOORS.includes(p.door) ? '#ef4444' : '#94a3b8';
+    let starColor = GOOD_STARS.includes(p.star) ? '#f59e0b' : BAD_STARS.includes(p.star) ? '#f87171' : '#e2e8f0';
+
+    // Marks HTML
+    const markHtml = (p.marks||[]).map(m => {
+      const cls = m==='刑'?'xing':m==='墓'?'mu':m==='迫'?'po':m==='空'||m==='时空'?'kong':m==='马'?'ma':'';
+      return `<span class="qp-mark ${cls}">${m}</span>`;
+    }).join('');
+
+    // Quality icon
+    const itp = p.interp || {};
+    const qIcon = itp.qIcon || '';
+
+    // Di God
+    const diGodHtml = p.diGod ? `<div class="qp-god-di">地: ${p.diGod}</div>` : '';
+
+    // Ji Gan (寄宫)
+    const jiGanHtml = p.jiGanStem ? `<div class="qp-jigan">寄: ${p.jiGanStem}</div>` : '';
+
+    // Hidden stems
+    const hiddenHtml = p.hiddenStems && p.hiddenStems.length > 0
+      ? `<div class="qp-hidden">${p.hiddenStems.join(' ')}</div>` : '';
+
+    // Fu/Shi badges
+    let badge = '';
+    if (isFuPal) badge += `<span style="font-size:9px;background:var(--gold);color:#000;padding:1px 4px;border-radius:3px;margin-right:2px">符</span>`;
+    if (isShiPal) badge += `<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 4px;border-radius:3px">使</span>`;
+
+    const stemDisplay = isCenter
+      ? `<div class="qp-sky" style="color:var(--muted)">${p.skyStem||'—'}</div>`
+      : `<div class="qp-sky">${p.earthStem||'—'}</div><div class="qp-earth">${p.skyStem||'—'}</div>`;
+
+    grid.innerHTML += `
+      <div class="qmdj-palace ${borderClass}" title="${p.palaceName}${p.palaceNumber}宫">
+        <div class="qp-quality">${qIcon}</div>
+        <div class="qp-name">${p.palaceName}${p.palaceNumber} ${badge}</div>
+        <div class="qp-stems">${stemDisplay}</div>
+        ${hiddenHtml}
+        <div class="qp-star" style="color:${starColor}">${p.star||'—'}</div>
+        ${isCenter ? '' : `<div class="qp-door" style="color:${doorColor}">${p.door||'—'}</div>`}
+        ${isCenter ? '' : `<div class="qp-god">${p.godShort||p.god||'—'}</div>`}
+        ${diGodHtml}
+        ${jiGanHtml}
+        ${markHtml ? `<div class="qp-marks">${markHtml}</div>` : ''}
+      </div>`;
+  });
+
+  // Kong Wang & Best Direction
+  const kw = q.kongWang || [];
+  document.getElementById('qmdj-kongwang-box').innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🌑 空亡 (Kong Wang)</div>
+    <div style="font-size:13px">${kw.length > 0 ? kw.join('、') : '无'}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">落入空亡宫位气力衰减，谋事防无效结果</div>
+    <div style="font-size:12px;font-weight:700;color:var(--gold);margin:10px 0 4px">🎯 值符 / 值使</div>
+    <div style="font-size:12px">符: <strong>${q.zhiFuStar}</strong> → ${q.zhiFuPalaceName}${q.zhiFuPalace}宫</div>
+    <div style="font-size:12px">使: <strong>${q.zhiShiDoor}</strong> → ${q.zhiShiPalaceName}${q.zhiShiPalace}宫</div>`;
+
+  const bd = q.bestDirection;
+  const cd = q.cautionDirection;
+  document.getElementById('qmdj-direction-box').innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Arah Terbaik</div>
+    ${bd ? `<div style="font-size:16px;font-weight:700">${bd.direction} (${bd.palaceName}${bd.palace}宫)</div>
+    <div style="font-size:11px;color:var(--muted)">${bd.quality} · ${bd.reason}</div>` : '<div>—</div>'}
+    <div style="font-size:12px;font-weight:700;color:#ef4444;margin:10px 0 4px">⚠️ Arah Perlu Hati-hati</div>
+    ${cd ? `<div style="font-size:15px;font-weight:600">${cd.direction} (${cd.palaceName}${cd.palace}宫)</div>
+    <div style="font-size:11px;color:var(--muted)">${cd.quality}</div>` : '<div>—</div>'}`;
+
+  // Patterns / 格局
+  const pats = q.patterns || { ji:[], xiong:[], all:[] };
+  let patHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">⚡ Format Khusus / 格局</h3>`;
+  if (pats.all.length === 0) {
+    patHtml += `<div style="color:var(--muted);font-size:12px">Tidak ada格局 khusus terdeteksi.</div>`;
+  } else {
+    if (pats.ji.length > 0) {
+      patHtml += `<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">✅格局吉 (${pats.ji.length})</div>`;
+      pats.ji.forEach(p => {
+        patHtml += `<div class="qmdj-pattern-ji"><strong>${p.name}</strong>: ${p.desc}</div>`;
+      });
+    }
+    if (pats.xiong.length > 0) {
+      patHtml += `<div style="font-size:12px;font-weight:700;color:#ef4444;margin:8px 0 4px">❌ 格局凶 (${pats.xiong.length})</div>`;
+      pats.xiong.forEach(p => {
+        patHtml += `<div class="qmdj-pattern-xiong"><strong>${p.name}</strong>: ${p.desc}</div>`;
+      });
+    }
+  }
+  document.getElementById('qmdj-patterns').innerHTML = patHtml;
+
+  // Palace interpretations
+  let interpHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">🔮 Interpretasi Per Ruas</h3>`;
+  const DIRS = {1:'北(N)',2:'西南(SW)',3:'东(E)',4:'东南(SE)',5:'中(Center)',6:'西北(NW)',7:'西(W)',8:'东北(NE)',9:'南(S)'};
+
+  // Sort by quality descending for interpretation display
+  const sorted = [...q.palaces].filter(p => p.palaceNumber !== 5).sort((a,b) => (b.interp?.score||0)-(a.interp?.score||0));
+  sorted.forEach(p => {
+    const itp = p.interp || {};
+    const doorD = itp.doorSummary || '';
+    const starD = itp.starSummary || '';
+    const godD  = itp.godSummary  || '';
+    const relD  = itp.starDoorRel ? `星门: ${itp.starDoorRel}` : '';
+    const marksStr = (p.marks||[]).length > 0 ? ` · 标记: ${p.marks.join('、')}` : '';
+    interpHtml += `
+      <div class="qmdj-interp-card">
+        <h4>${itp.qIcon||''} ${p.palaceName}${p.palaceNumber}宫 — ${DIRS[p.palaceNumber]||''} <span style="font-size:11px;color:var(--muted)">${itp.quality||''}${marksStr}</span></h4>
+        <div class="qmdj-layer"><strong>天干:</strong> 天 ${p.earthStem||'—'} / 地 ${p.skyStem||'—'}${p.hiddenStems&&p.hiddenStems.length>0?' · 暗: '+p.hiddenStems.join(' '):''}</div>
+        <div class="qmdj-layer"><strong>九星:</strong> ${p.star||'—'} (${p.starElement}) — ${starD}</div>
+        <div class="qmdj-layer"><strong>八门:</strong> ${p.door||'—'} (${p.doorElement||'—'}) — ${doorD}</div>
+        <div class="qmdj-layer"><strong>八神:</strong> ${p.god||'—'} — ${godD}</div>
+        ${p.diGod ? `<div class="qmdj-layer"><strong>地八神:</strong> ${p.diGod}</div>` : ''}
+        ${relD ? `<div class="qmdj-layer" style="color:var(--purple)">📊 ${relD}</div>` : ''}
+        <div class="qmdj-layer" style="color:var(--gold2);font-style:italic;margin-top:6px">${itp.doorAdvice||''}</div>
+      </div>`;
+  });
+
+  // Center palace
+  const ctr = q.palaces.find(p => p.palaceNumber === 5);
+  if (ctr) {
+    interpHtml += `
+      <div class="qmdj-interp-card" style="opacity:0.8">
+        <h4>🔷 中5宫 (Center) — Ruas Tengah</h4>
+        <div class="qmdj-layer"><strong>天干:</strong> ${ctr.skyStem||'—'} · 天禽寄坤二</div>
+        <div class="qmdj-layer">Ruas tengah bersifat netral, energinya "tergelincir" ke Ruas Barat Daya (坤2). Tidak dipakai langsung dalam penilaian.</div>
+      </div>`;
+  }
+
+  document.getElementById('qmdj-interps').innerHTML = interpHtml;
+
+  loading.style.display = 'none';
+  content.style.display = 'block';
+}
+
+// ============================================================
 // EXPORT
 // ============================================================
 function exportJSON() {
@@ -1468,6 +1783,10 @@ function resetForm() {
     if (el) el.innerHTML = '';
   });
   _result = null;
+  _lastInput = null;
+  _qmdjData = {};
+  document.getElementById('qmdj-section').style.display = 'none';
+  document.getElementById('qmdj-content').style.display = 'none';
   // Scroll ke atas form
   document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
 }

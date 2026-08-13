@@ -7,6 +7,7 @@ const { calculateBazi } = require('./engines/bazi');
 const { calculateZwds } = require('./engines/zwds');
 const { analyzeChineseName, analyzeLatinName } = require('./engines/name-analysis');
 const { getGmtOffsetList } = require('./utils/timezone');
+const { calculateQmdj } = require('./engines/qmdj');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -97,6 +98,28 @@ app.post('/api/calculate', (req, res) => {
   }
 
   res.json(result);
+});
+
+// ============================================================
+// API: QI MEN DUN JIA
+// ============================================================
+app.post('/api/qmdj', (req, res) => {
+  try {
+    const { type, birthYear, birthMonth, birthDay } = req.body;
+    if (!type || !['nianjia', 'rijia', 'shijia'].includes(type)) {
+      return res.status(400).json({ success: false, error: 'type harus: nianjia, rijia, atau shijia' });
+    }
+    if (type === 'nianjia' && !birthYear) {
+      return res.status(400).json({ success: false, error: 'nianjia membutuhkan birthYear' });
+    }
+    if (type === 'rijia' && (!birthYear || !birthMonth || !birthDay)) {
+      return res.status(400).json({ success: false, error: 'rijia membutuhkan birthYear, birthMonth, birthDay' });
+    }
+    const result = calculateQmdj({ type, birthYear, birthMonth, birthDay });
+    res.json({ success: true, qmdj: result });
+  } catch(e) {
+    res.status(500).json({ success: false, error: e.message, stack: e.stack });
+  }
 });
 
 // ============================================================
