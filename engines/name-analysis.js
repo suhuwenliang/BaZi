@@ -212,19 +212,26 @@ function analyzeChineseChar(char) {
   const data = CHINESE_CHARS[char];
   if (data) return { char, ...data, inDatabase: true };
 
-  // Fallback: hitung stroke dari unicode (aproksimasi kasar)
-  // Untuk karakter tidak dikenal, berikan info dasar
+  // Fallback: hitung stroke dari unicode (aproksimasi)
   const code = char.charCodeAt(0);
-  const approxStrokes = (code % 20) + 4; // aproksimasi
+  const approxStrokes = (code % 20) + 4;
+  const el = getElementByStrokes(approxStrokes);
+  const EL_MEANING = {
+    '木': 'Pertumbuhan, kreativitas, kelenturan, kepemimpinan alami',
+    '火': 'Semangat, ekspresi, kecerdasan, daya tarik sosial',
+    '土': 'Stabilitas, kepercayaan, ketahanan, fondasi kuat',
+    '金': 'Ketegasan, kejelasan, kejujuran, orientasi finansial',
+    '水': 'Kebijaksanaan, intuisi, adaptabilitas, kedalaman pemikiran',
+  };
   return {
     char,
     strokes: approxStrokes,
     pinyin: '(tidak tersedia)',
-    meaning: `Karakter ${char} — silakan konsultasi kamus Kangxi untuk makna lengkap`,
-    element: getElementByStrokes(approxStrokes),
+    meaning: `Karakter dengan unsur ${el} — ${EL_MEANING[el] || ''}. Karakter ini belum ada dalam database; stroke count merupakan aproksimasi.`,
+    element: el,
     radical: '(tidak tersedia)',
     inDatabase: false,
-    note: 'Karakter ini tidak ada dalam database lokal. Stroke count merupakan aproksimasi.'
+    note: 'Stroke count merupakan aproksimasi berdasarkan kode Unicode.'
   };
 }
 

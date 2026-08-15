@@ -622,7 +622,7 @@ function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXing
     wuXing: `Distribusi Wu Xing (五行) Anda: ${sorted.map(([el, d]) => `${WU_XING[el]?.name_id} ${d.pct}%`).join(', ')}. Unsur terkuat: ${WU_XING[dominantElement]?.name_id}. Unsur paling lemah: ${WU_XING[weakestElement]?.name_id}. Day Master Anda ${isDMStrong ? 'tergolong kuat (旺身)' : 'memerlukan dukungan (弱身)'}. Unsur yang paling Anda butuhkan (用神 Yong Shen) adalah ${WU_XING[yongShen]?.name_id} — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.`,
 
     tenGods: dominantTenGod
-      ? `Ten God yang paling dominan dalam chart Anda adalah ${dominantTenGod.god}. ${TEN_GODS[dominantTenGod.god]?.meaning || ''} Dalam kehidupan, ini tercermin dalam: ${TEN_GODS[dominantTenGod.god]?.life_area || ''}.`
+      ? `Ten God yang paling dominan dalam chart Anda adalah ${dominantTenGod[0]}. ${TEN_GODS[dominantTenGod[0]]?.meaning || ''} Dalam kehidupan, ini tercermin dalam: ${TEN_GODS[dominantTenGod[0]]?.life_area || ''}.`
       : 'Ten God dalam chart Anda tersebar merata, menunjukkan kepribadian yang multidimensi.',
 
     daYun: currentDaYun

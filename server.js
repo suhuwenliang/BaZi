@@ -173,18 +173,26 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
   const dominant = bazi.wuXing?.dominant;
   const avoidColors = WU_XING_COLORS[dominant]?.filter(c => !allLuckyColors.includes(c)) || [];
 
-  // Tahun keberuntungan: cari Da Yun favorable + Liu Nian
+  // Tahun keberuntungan: ambil dari Da Yun dalam 15 tahun ke depan
   const luckyYears = [];
   const warnYears = [];
   const nearDaYuns = (bazi.daYun?.periods || []).filter(dy =>
     dy.yearStart >= currentYear - 2 && dy.yearStart <= currentYear + 15
   );
+  // Urutkan Da Yun berdasar score untuk tahu mana terbaik dan terburuk
+  const sortedDaYuns = [...nearDaYuns].sort((a,b) => (b.quality?.score||0) - (a.quality?.score||0));
+  // Lucky = periode terbaik, Warn = periode terburuk (minimal 1 per kategori)
   nearDaYuns.forEach(dy => {
-    if (dy.quality?.score >= 2) {
+    const score = dy.quality?.score ?? 0;
+    const bestScore = sortedDaYuns[0]?.quality?.score ?? 0;
+    const worstScore = sortedDaYuns[sortedDaYuns.length-1]?.quality?.score ?? 0;
+    const isLucky = score >= 1 || (score === bestScore && score >= 0);
+    const isWarn  = score <= -1 || (score === worstScore && score <= 0 && nearDaYuns.length > 1);
+    if (isLucky && !isWarn) {
       for (let y = Math.max(dy.yearStart, currentYear); y <= Math.min(dy.yearEnd, currentYear + 10); y++) {
         luckyYears.push(y);
       }
-    } else if (dy.quality?.score <= -1) {
+    } else if (isWarn) {
       for (let y = Math.max(dy.yearStart, currentYear); y <= Math.min(dy.yearEnd, currentYear + 10); y++) {
         warnYears.push(y);
       }
@@ -222,7 +230,18 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
         caiboStars: zwdsCai,
         note: `Dari 官禄宫: ${zwdsGuanLu}. Dari 财帛宫: ${zwdsCai}.`
       },
-      combined: baziCareers.slice(0, 5)
+      combined: baziCareers.slice(0, 5),
+      avoid: (() => {
+        // Profesi yang kurang cocok = yang membutuhkan unsur dominan berlebih (bukan yongShen)
+        const AVOID_MAP = {
+          '木': ['Birokrasi kaku', 'Pekerjaan rutin repetitif', 'Industri logam berat'],
+          '火': ['Pekerjaan administratif tertutup', 'Industri berat tanpa ekspresi', 'Pengarsipan pasif'],
+          '土': ['Spekulasi tinggi', 'Pekerjaan cepat berubah', 'Startup tanpa arah jelas'],
+          '金': ['Pekerjaan seni bebas tanpa struktur', 'Bidang abu-abu hukum', 'Spekulasi liar'],
+          '水': ['Pekerjaan monoton berulang', 'Peran eksekusi tanpa analisis', 'Industri yang menuntut konformitas ketat'],
+        };
+        return AVOID_MAP[dominant] || [];
+      })()
     },
     partner: {
       fromZwds: {

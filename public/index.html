@@ -800,8 +800,14 @@ function renderName(na, input) {
     const grids = cn.grids || cn.wuge;
     if (grids) {
       html += `<h5 style="color:var(--muted); font-size:11px; text-transform:uppercase; margin-bottom:6px">五格剖象法 (Five Grid Numerology)</h5>`;
-      html += `<table style="margin-bottom:12px"><tr><th>格</th><th>Nama</th><th>Nilai</th><th>Unsur</th><th>Makna</th></tr>`;
-      // grids: {tian:{value,element,name}, ren:{...}, di:{...}, wai:{...}, zong:{...}}
+      const GRID_MEANING = {
+        tian: 'Nasib bawaan dari leluhur dan garis keturunan',
+        ren:  'Inti kepribadian, jalur karir, dan daya juang',
+        di:   'Fondasi keluarga, kehidupan rumah tangga, masa muda',
+        wai:  'Relasi sosial, pergaulan, dan pengaruh lingkungan',
+        zong: 'Nasib keseluruhan dan tujuan hidup jangka panjang',
+      };
+      html += `<table style="margin-bottom:12px"><tr><th>格 / Grid</th><th>Nilai Stroke</th><th>Unsur</th><th>Makna</th></tr>`;
       const gridOrder = ['tian','ren','di','wai','zong'];
       gridOrder.forEach(key => {
         const g = grids[key];
@@ -810,10 +816,10 @@ function renderName(na, input) {
         const el = g.element || elementFromStrokeNum(typeof val==='number'?val:0);
         const name = g.name || key+'格';
         html += `<tr>
-          <td style="color:var(--gold); font-family:serif; font-size:14px">${esc(name)}</td>
-          <td>${esc(String(val))}</td>
-          <td style="color:${colorForElement(el)}">${esc(el)}</td>
-          <td style="font-size:11px">${esc(wu_xing_meaning(el))}</td>
+          <td style="color:var(--gold); font-size:13px"><strong>${esc(name)}</strong></td>
+          <td style="text-align:center; font-size:16px; font-weight:700; color:var(--gold2)">${esc(String(val))}</td>
+          <td style="color:${colorForElement(el)}; font-weight:600">${esc(el)} <span style="font-size:11px; color:var(--muted)">(${esc(wu_xing_meaning(el))})</span></td>
+          <td style="font-size:12px; color:var(--text)">${esc(GRID_MEANING[key]||'—')}</td>
         </tr>`;
       });
       html += '</table>';
@@ -899,7 +905,6 @@ function render3A(b) {
   if (b.meta) {
     html += `<div style="font-size:11px; color:var(--muted); margin-top:8px">
       📍 Waktu Matahari Sejati: <span style="color:var(--text)">${esc(b.meta.trueSolarTime||'—')}</span>
-      · 📚 Library: ${esc(b.meta.library||'lunar-javascript')}
       · ⚙️ Aliran Zi Shi: ${esc(b.meta.midnightSect||'2')}
     </div>`;
   }
@@ -918,16 +923,20 @@ function render3A(b) {
 function render3B(b) {
   const hs = b.hiddenStems;
   if (!hs) { document.getElementById('sec-3b').innerHTML = '<div class="error-box">Data tidak tersedia</div>'; return; }
-  let html = '<table class="hidden-stems-table"><tr><th>Pilar</th><th>Cabang</th><th>Bintang Tersembunyi</th><th>Jenis Qi</th><th>Bobot</th><th>Ten God</th></tr>';
+  let html = '<table class="hidden-stems-table"><tr><th>Pilar</th><th>Cabang 地支</th><th>Batang Tersembunyi 藏干</th><th>Jenis Qi</th><th>Bobot</th><th>Sepuluh Dewa</th></tr>';
   const pillarNames = {'year':'年 Tahun','month':'月 Bulan','day':'日 Hari','hour':'时 Jam'};
-  Object.entries(hs).forEach(([pillar, stems]) => {
-    if (!Array.isArray(stems)) return;
+  const TYPE_ID = {'本气':'Qi Utama','中气':'Qi Tengah','余气':'Qi Sisa'};
+  Object.entries(hs).forEach(([pillar, pillarData]) => {
+    // pillarData can be {branch, stems:[]} OR array directly
+    const stems = Array.isArray(pillarData) ? pillarData : (pillarData.stems || []);
+    const branch = Array.isArray(pillarData) ? (b.pillars[pillar]?.zhi||'') : (pillarData.branch||'');
+    if (stems.length === 0) return;
     stems.forEach((s, i) => {
       html += `<tr>
         ${i===0 ? `<td rowspan="${stems.length}" style="color:var(--gold2)">${pillarNames[pillar]||pillar}</td>
-                   <td rowspan="${stems.length}" style="font-size:18px; font-family:serif; color:var(--gold)">${esc(b.pillars[pillar]?.zhi||'')}</td>` : ''}
+                   <td rowspan="${stems.length}" style="font-size:20px; font-family:serif; color:var(--gold)">${esc(branch)}</td>` : ''}
         <td style="font-size:18px; font-family:serif; color:var(--gold2)">${esc(s.stem||'')}</td>
-        <td><span class="tag ${s.type==='本气'?'tag-gold':s.type==='中气'?'tag-blue':'tag-green'}">${esc(s.type||'')}</span></td>
+        <td><span class="tag ${s.type==='本气'?'tag-gold':s.type==='中气'?'tag-blue':'tag-green'}">${esc(TYPE_ID[s.type]||s.type||'')}</span></td>
         <td>${s.weight||0}%</td>
         <td style="color:var(--purple)">${esc(s.tenGod||'—')}</td>
       </tr>`;
@@ -959,16 +968,29 @@ function render3C(b) {
     </div>`;
   });
   html += '</div>';
-  html += `<div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; font-size:13px">
-    <div>🔝 Dominan: <strong style="color:${colorForElement(wx.dominant)}">${esc(wx.dominant||'—')}</strong></div>
-    <div>🔻 Terlemah: <strong style="color:${colorForElement(wx.weakest)}">${esc(wx.weakest||'—')}</strong></div>
-    <div>⭐ Yong Shen (用神): <strong style="color:var(--gold)">${esc(wx.yongShen||'—')}</strong></div>
-    <div>💪 Kekuatan DM: <span class="tag ${wx.isDMStrong?'tag-gold':'tag-blue'}">${wx.isDMStrong?'Kuat (身旺)':'Lemah (身弱)'}</span></div>
-  </div>`;
+  const WX_ID = {'木':'Kayu (Mù)','火':'Api (Huǒ)','土':'Tanah (Tǔ)','金':'Logam (Jīn)','水':'Air (Shuǐ)'};
+  const dmStrong = wx.isDMStrong;
+  const dmLabel = dmStrong ? 'kuat (旺身 Wang Shen) — Day Master memiliki banyak dukungan' : 'perlu dukungan (弱身 Ruo Shen) — Day Master membutuhkan penguatan';
 
-  if (b.interpretation?.wuXing) {
-    html += `<div class="summary-box"><strong>Ringkasan Lima Unsur:</strong> ${esc(b.interpretation.wuXing)}</div>`;
-  }
+  html += `<div style="margin-top:16px; font-size:13px; line-height:2.0">
+    <div style="margin-bottom:8px">
+      <span style="color:var(--muted)">Unsur terkuat:</span><br>
+      <strong style="color:${colorForElement(wx.dominant)}">${WX_ID[wx.dominant]||wx.dominant||'—'}</strong>
+    </div>
+    <div style="margin-bottom:8px">
+      <span style="color:var(--muted)">Unsur paling lemah:</span><br>
+      <strong style="color:${colorForElement(wx.weakest)}">${WX_ID[wx.weakest]||wx.weakest||'—'}</strong>
+    </div>
+    <div style="margin-bottom:8px">
+      <span style="color:var(--muted)">Day Master Anda tergolong:</span><br>
+      <span class="tag ${dmStrong?'tag-gold':'tag-blue'}">${dmLabel}</span>
+    </div>
+    <div style="margin-bottom:8px">
+      <span style="color:var(--muted)">Unsur yang paling Anda butuhkan (用神 Yong Shen) adalah:</span><br>
+      <strong style="color:var(--gold)">${WX_ID[wx.yongShen]||wx.yongShen||'—'}</strong>
+      <span style="color:var(--muted); font-size:12px"> — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.</span>
+    </div>
+  </div>`;
   document.getElementById('sec-3c').innerHTML = html;
 }
 
@@ -1222,28 +1244,103 @@ function render4C(z) {
 }
 
 // ============================================================
+// SECTION 4D: LIU NIAN — helper functions
+// ============================================================
+function _4d_yearGanzhi(year) {
+  const STEMS = '甲乙丙丁戊己庚辛壬癸';
+  const BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
+  const si = ((year - 4) % 10 + 10) % 10;
+  const bi = ((year - 4) % 12 + 12) % 12;
+  return { stem: STEMS[si], branch: BRANCHES[bi], ganzhi: STEMS[si]+BRANCHES[bi] };
+}
+function _4d_monthGanzhi(year, month) {
+  const STEMS = '甲乙丙丁戊己庚辛壬癸';
+  const BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
+  const MBRANCH = {1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,11:11,12:0};
+  const bi = MBRANCH[month];
+  const yearSi = ((year - 4) % 10 + 10) % 10;
+  const BASE = [2,4,6,8,0];
+  const baseStem = BASE[yearSi % 5];
+  const offsetFromYin = (bi - 2 + 12) % 12;
+  const si = (baseStem + offsetFromYin) % 10;
+  return { stem: STEMS[si], branch: BRANCHES[bi], ganzhi: STEMS[si]+BRANCHES[bi] };
+}
+function _4d_evalMonth(stem, branch, yongShen) {
+  const SE = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+  const BE = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
+  const PROD = {'木':'火','火':'土','土':'金','金':'水','水':'木'};
+  const CTRL = {'木':'土','火':'金','土':'水','金':'木','水':'火'};
+  let score = 0;
+  [SE[stem], BE[branch]].forEach(el => {
+    if (!el || !yongShen) return;
+    if (el === yongShen) score += 2;
+    else if (PROD[el] === yongShen) score += 1;
+    else if (CTRL[el] === yongShen) score -= 1;
+    else if (CTRL[yongShen] === el) score -= 1;
+  });
+  return score;
+}
+function _4d_label(score) {
+  if (score >= 3) return { label:'Sangat Baik', color:'#22c55e', icon:'🟢🟢' };
+  if (score >= 1) return { label:'Baik', color:'#e8b86d', icon:'🟢' };
+  if (score === 0) return { label:'Netral', color:'#94a3b8', icon:'⚪' };
+  if (score >= -2) return { label:'Tantangan', color:'#f97316', icon:'🟡' };
+  return { label:'Berat', color:'#ef4444', icon:'🔴' };
+}
+function _4d_advice(score) {
+  if (score >= 3) return {
+    lakukan: ['Mulai proyek atau investasi besar','Negosiasi & tanda tangani kontrak penting','Lamar pekerjaan atau promosi jabatan','Pernikahan, perjalanan bisnis, acara penting','Belajar skill baru atau ambil kursus strategis'],
+    hindari: ['Keputusan tanpa perencanaan matang','Boros dan tidak terencana secara keuangan']
+  };
+  if (score >= 1) return {
+    lakukan: ['Kerja keras dan konsisten','Perluas jaringan dan relasi bisnis','Selesaikan proyek yang tertunda','Belajar dan tingkatkan kompetensi'],
+    hindari: ['Konflik dan debat yang tidak perlu','Investasi spekulatif besar tanpa riset']
+  };
+  if (score === 0) return {
+    lakukan: ['Lanjutkan rutinitas dan rencana yang ada','Evaluasi kemajuan dan koreksi arah','Perkuat hubungan yang sudah ada'],
+    hindari: ['Ambil risiko besar atau tidak terukur','Perubahan drastis dan impulsif']
+  };
+  if (score >= -2) return {
+    lakukan: ['Jaga kesehatan fisik dan mental','Hemat dan kelola keuangan konservatif','Minta bantuan mentor atau konsultan','Fokus pada hal yang bisa dikontrol'],
+    hindari: ['Investasi atau pengeluaran besar','Konfrontasi langsung atau litigasi','Keputusan karir atau bisnis besar']
+  };
+  return {
+    lakukan: ['Istirahat cukup dan pulihkan energi','Introspeksi dan refleksi mendalam','Perkuat fondasi: kesehatan, keluarga, tabungan','Selesaikan kewajiban dan utang yang ada'],
+    hindari: ['Semua tindakan berisiko tinggi','Pinjaman atau utang baru','Perubahan besar: pindah, kawin, bisnis baru','Konfrontasi atau perseteruan hukum']
+  };
+}
+
+// ============================================================
 // SECTION 4D: LIU NIAN
 // ============================================================
 function render4D(z) {
   const ln = z.liuNian;
   if (!ln) { document.getElementById('sec-4d').innerHTML = '<div class="error-box">Data tidak tersedia</div>'; return; }
+
+  const bazi      = _result?.bazi;
+  const yongShen  = bazi?.wuXing?.yongShen;
+  const dmStem    = bazi?.dayMaster?.stem;
+  const dyPeriods = bazi?.daYun?.periods || [];
+  const now       = new Date();
+  const curYear   = now.getFullYear();
+  const curMonth  = now.getMonth() + 1;
+  const MONTH_ID  = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const SHIO      = ['Tikus','Sapi','Macan','Kelinci','Naga','Ular','Kuda','Kambing','Monyet','Ayam','Anjing','Babi'];
+  const EL_ID     = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+
   let html = '';
 
-  // actual structure: ln = {year, age, ganzhi, xiaoxianPalace:{name,stars[]}, mutagens:[{type,star,meaning}], meaning}
-  html += `<div class="liunian-card">
-    <h4>🌙 Tahun Berjalan: ${esc(ln.year||'')} (${esc(ln.ganzhi||'')}) · Usia ${esc(String(ln.age||''))}</h4>`;
-
-  // Xiao Xian palace
+  // ── BAGIAN 1: Tahun Berjalan (ZWDS Liu Nian) ──────────────
+  html += `<div class="liunian-card" style="margin-bottom:20px">
+    <h4>🌙 Tahun Berjalan: ${esc(String(ln.year||''))} (${esc(ln.ganzhi||'')}) · Usia ${esc(String(ln.age||''))}</h4>`;
   if (ln.xiaoxianPalace) {
     const xp = ln.xiaoxianPalace;
     const xStars = (xp.stars||[]).map(s=>s.name).join('、');
     html += `<div style="font-size:12px; margin-bottom:8px; color:var(--blue)">
-      小限宫: <strong style="color:var(--gold)">${esc(xp.name||'')}</strong>
+      小限宫 (Xiao Xian): <strong style="color:var(--gold)">${esc(xp.name||'')}</strong>
       ${xStars ? `· Bintang: <span style="color:var(--gold2)">${esc(xStars)}</span>` : ''}
     </div>`;
   }
-
-  // 四化 this year
   if (ln.mutagens && ln.mutagens.length > 0) {
     html += `<div style="margin-bottom:8px">
       <div style="font-size:11px; color:var(--muted); margin-bottom:4px">四化 Tahun ${esc(String(ln.year||''))}:</div>
@@ -1258,12 +1355,126 @@ function render4D(z) {
     });
     html += '</div></div>';
   }
-
-  // Full meaning / 3-layer analysis
   if (ln.meaning) {
     html += `<div class="summary-box" style="margin-top:8px">${esc(ln.meaning)}</div>`;
   }
   html += '</div>';
+
+  if (!yongShen || !dmStem) {
+    html += `<div style="font-size:12px; color:var(--muted); padding:12px; background:var(--surface2); border-radius:8px">
+      ℹ️ Proyeksi bulanan membutuhkan data BaZi lengkap (Yong Shen).
+    </div>`;
+    document.getElementById('sec-4d').innerHTML = html;
+    return;
+  }
+
+  // ── BAGIAN 2: Tabel Ringkasan 10 Tahun ────────────────────
+  html += `<h4 style="color:var(--gold2); font-size:13px; margin:20px 0 6px">📅 Proyeksi 10 Tahun ke Depan (${curYear}–${curYear+10})</h4>`;
+  html += `<div style="font-size:11px; color:var(--muted); margin-bottom:10px">
+    Unsur Pelindung (Yong Shen): <strong style="color:var(--gold)">${yongShen} — ${EL_ID[yongShen]||''}</strong> &nbsp;·&nbsp; Day Master: <strong>${dmStem}</strong>
+  </div>`;
+
+  html += `<div style="overflow-x:auto; margin-bottom:20px">
+    <table style="width:100%; border-collapse:collapse; font-size:11px">
+      <thead><tr style="background:var(--surface2); color:var(--muted)">
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Tahun</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Ganzhi / Shio</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Da Yun</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Kualitas Periode</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Tren Bulanan</th>
+      </tr></thead>
+      <tbody>`;
+
+  for (let y = curYear; y <= curYear + 10; y++) {
+    const yGz  = _4d_yearGanzhi(y);
+    const shio = SHIO[((y-4)%12+12)%12];
+    const dy   = dyPeriods.find(d => y >= d.yearStart && y <= d.yearEnd);
+    const dyS  = dy?.quality?.score ?? 0;
+    const dyC  = dyS >= 2 ? '#22c55e' : dyS >= 1 ? '#e8b86d' : dyS === 0 ? '#94a3b8' : '#ef4444';
+    let total = 0;
+    for (let m = 1; m <= 12; m++) {
+      const mg = _4d_monthGanzhi(y, m);
+      total += _4d_evalMonth(mg.stem, mg.branch, yongShen);
+    }
+    const avg = total / 12;
+    const trend = avg >= 1.5 ? '🟢 Sangat Positif' : avg >= 0.3 ? '🟡 Positif' : avg >= -0.3 ? '⚪ Netral' : '🔴 Waspadai';
+    const isCur = y === curYear;
+    html += `<tr style="background:${isCur?'rgba(232,184,109,0.07)':'transparent'}; border-bottom:1px solid var(--border)">
+      <td style="padding:6px 8px; font-weight:${isCur?700:400}; color:${isCur?'#e8b86d':'var(--text)'}">${y}${isCur?' ◀':''}</td>
+      <td style="padding:6px 8px; font-family:serif">${yGz.ganzhi} <span style="color:var(--muted); font-size:10px">${shio}</span></td>
+      <td style="padding:6px 8px; font-size:10px">${dy ? dy.ganzhi+' ('+dy.yearStart+'–'+dy.yearEnd+')' : '—'}</td>
+      <td style="padding:6px 8px; color:${dyC}">${dy?.quality?.rating||'—'}</td>
+      <td style="padding:6px 8px">${trend}</td>
+    </tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  // ── BAGIAN 3: Accordion Breakdown Bulanan per Tahun ───────
+  html += `<h4 style="color:var(--gold2); font-size:13px; margin:0 0 10px">🗓️ Breakdown Bulanan — Klik Tahun untuk Melihat Detail</h4>`;
+
+  for (let y = curYear; y <= curYear + 10; y++) {
+    const yGz   = _4d_yearGanzhi(y);
+    const shio  = SHIO[((y-4)%12+12)%12];
+    const dy    = dyPeriods.find(d => y >= d.yearStart && y <= d.yearEnd);
+    const dyS   = dy?.quality?.score ?? 0;
+    const yLbl  = _4d_label(Math.max(dyS, 0));
+    const isOpen = (y === curYear);
+    const uid   = 'acc4d_' + y;
+
+    html += `<div style="margin-bottom:6px; border:1px solid var(--border); border-radius:8px; overflow:hidden">
+      <div onclick="var c=document.getElementById('${uid}');c.style.display=c.style.display==='none'?'block':'none'"
+           style="padding:10px 14px; background:var(--surface2); cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select:none">
+        <span style="font-weight:700; font-size:13px; color:${y===curYear?'#e8b86d':'var(--text)'}">
+          ${y} — ${yGz.ganzhi} <span style="color:var(--muted); font-weight:400; font-size:11px">(${shio})</span>
+        </span>
+        <span style="font-size:11px; color:var(--muted)">
+          ${dy ? 'Da Yun: '+dy.ganzhi+' · '+dy.quality?.rating : ''} &nbsp;▼
+        </span>
+      </div>
+      <div id="${uid}" style="display:${isOpen?'block':'none'}; padding:12px">`;
+
+    // Year recommendation box
+    const yAdv = _4d_advice(dyS);
+    html += `<div style="background:var(--surface); border-left:3px solid ${yLbl.color}; border-radius:0 6px 6px 0; padding:10px 14px; margin-bottom:12px">
+      <div style="font-weight:700; font-size:12px; margin-bottom:4px">
+        ${yLbl.icon} Kualitas ${y}: <span style="color:${yLbl.color}">${dy?.quality?.rating||'Netral'}</span>
+        <span style="color:var(--muted); font-weight:400; font-size:11px"> — ${dy?.quality?.desc||''}</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:11px; margin-top:8px">
+        <div>
+          <strong style="color:#22c55e">✅ Lakukan tahun ini:</strong><br>
+          ${yAdv.lakukan.map(x=>'· '+x).join('<br>')}
+        </div>
+        <div>
+          <strong style="color:#ef4444">⚠️ Hindari:</strong><br>
+          ${yAdv.hindari.map(x=>'· '+x).join('<br>')}
+        </div>
+      </div>
+    </div>`;
+
+    // Monthly grid
+    html += `<div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px">`;
+    for (let m = 1; m <= 12; m++) {
+      const mGz   = _4d_monthGanzhi(y, m);
+      const score = _4d_evalMonth(mGz.stem, mGz.branch, yongShen);
+      const lbl   = _4d_label(score);
+      const adv   = _4d_advice(score);
+      const isCurM = (y === curYear && m === curMonth);
+      html += `<div style="background:var(--surface); border:1px solid ${isCurM?'#e8b86d':lbl.color+'55'}; border-radius:6px; padding:9px; font-size:11px">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px">
+          <strong style="color:${lbl.color}">${MONTH_ID[m]} · ${mGz.ganzhi}${isCurM?' 🔹':''}</strong>
+          <span style="font-size:10px; background:${lbl.color}22; color:${lbl.color}; border-radius:4px; padding:1px 5px">${lbl.icon} ${lbl.label}</span>
+        </div>
+        <div style="color:#22c55e; font-size:10px; line-height:1.7">
+          ✅ ${adv.lakukan.slice(0,3).join(' · ')}
+        </div>
+        <div style="color:#ef4444; font-size:10px; line-height:1.7; margin-top:2px">
+          ⚠️ ${adv.hindari.join(' · ')}
+        </div>
+      </div>`;
+    }
+    html += `</div></div></div>`;  // close monthly grid, accordion body, accordion wrapper
+  }
 
   document.getElementById('sec-4d').innerHTML = html;
 }
@@ -1282,7 +1493,13 @@ function render5(c, b) {
     profs.forEach(p => html += `<span class="tag tag-gold">${esc(p)}</span>`);
     html += `</div>`;
     if (c.professions.fromZwds?.note) {
-      html += `<div style="font-size:12px; color:var(--muted)">${esc(c.professions.fromZwds.note)}</div>`;
+      html += `<div style="font-size:12px; color:var(--muted); margin-bottom:8px">${esc(c.professions.fromZwds.note)}</div>`;
+    }
+    if (c.professions.avoid && c.professions.avoid.length > 0) {
+      html += `<div style="font-size:12px; color:var(--muted); margin-bottom:4px">❌ Profesi yang kurang cocok:</div>`;
+      html += `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px">`;
+      c.professions.avoid.forEach(p => html += `<span class="tag tag-red">${esc(p)}</span>`);
+      html += `</div>`;
     }
   }
 
@@ -1436,7 +1653,7 @@ function render6(comp) {
   const syn = comp.synthesis;
   if (syn) {
     html += `<div style="background:var(--surface2); border:1px solid rgba(232,184,109,0.3); border-radius:8px; padding:14px; margin-bottom:16px">
-      <h4 style="color:var(--gold); font-size:13px; margin-bottom:8px">🔗 Sintesis Kedua Sistem</h4>
+      <h4 style="color:var(--gold); font-size:13px; margin-bottom:8px">🔗 Sintesis Tiga Sistem</h4>
       <p style="font-size:12px; color:var(--muted); margin-bottom:12px">${esc(syn.intro||'')}</p>`;
     if (syn.narrative && syn.narrative.length > 0) {
       syn.narrative.forEach(theme => {
@@ -1447,8 +1664,8 @@ function render6(comp) {
     </div>`;
   }
 
-  // Tabel perbandingan per kategori
-  html += `<h4 style="color:var(--gold2); font-size:12px; margin-bottom:10px">📊 Perbandingan Detail per Area</h4>`;
+  // Tabel perbandingan per kategori (BaZi + ZWDS)
+  html += `<h4 style="color:var(--gold2); font-size:12px; margin-bottom:10px">📊 Perbandingan Detail per Area — BaZi & Zi Wei Dou Shu</h4>`;
   const categories = {
     karakter: '🧠 Karakter & Kepribadian',
     karir: '💼 Karir & Profesi',
@@ -1475,6 +1692,99 @@ function render6(comp) {
       </div>
     </div>`;
   });
+
+  // ── QMDJ Perspektif ──────────────────────────────────────────
+  // Pull from cached nianjia (年家) data which is most relevant for life overview
+  const qmdjKey = Object.keys(_qmdjData)[0]; // use whichever chart type was loaded first
+  const qData = qmdjKey ? _qmdjData[qmdjKey] : null;
+  if (qData) {
+    const STAR_ID = {'天蓬':'Tianpeng','天任':'Tianren','天冲':'Tianchong','天辅':'Tianfu',
+      '天英':'Tianying','天芮':'Tianrui','天柱':'Tianzhu','天心':'Tianxin','天禽':'Tianqin'};
+    const DOOR_ID = {'开门':'Pintu Terbuka','休门':'Pintu Istirahat','生门':'Pintu Kehidupan',
+      '伤门':'Pintu Luka','杜门':'Pintu Tertutup','景门':'Pintu Pemandangan',
+      '死门':'Pintu Kematian','惊门':'Pintu Kejutan'};
+    const PAL_DIR = {1:'Utara',2:'Barat Daya',3:'Timur',4:'Tenggara',5:'Pusat',6:'Barat Laut',7:'Barat',8:'Timur Laut',9:'Selatan'};
+
+    const bd = qData.bestDirection;
+    const cd = qData.cautionDirection;
+    const pats = qData.patterns || {ji:[], xiong:[]};
+    const palaces = qData.palaces || [];
+
+    // Find palace with 生门 (wealth) and 开门 (career)
+    const shenPal = palaces.find(p => p.door === '生门');
+    const kaiPal  = palaces.find(p => p.door === '开门');
+    const xiuPal  = palaces.find(p => p.door === '休门');
+
+    // Sort for top/bottom palaces
+    const ranked = [...palaces].filter(p=>p.palaceNumber!==5).sort((a,b)=>(b.interp?.score||0)-(a.interp?.score||0));
+    const top = ranked[0];
+    const bot = ranked[ranked.length-1];
+
+    const typeLabel = {'nianjia':'年家 (Tahunan)','rijia':'日家 (Harian)','shijia':'时家 (Per Jam)'}[qmdjKey] || qmdjKey;
+
+    html += `<div style="margin-top:24px; padding-top:18px; border-top:1px solid var(--border)">
+      <h4 style="color:var(--purple); font-size:13px; margin-bottom:12px">🔮 Perspektif Qi Men Dun Jia — ${typeLabel}</h4>
+      <div style="background:var(--surface2); border:1px solid rgba(168,85,247,0.3); border-radius:8px; padding:14px; margin-bottom:12px">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px">
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:4px">✅ Arah Terbaik</div>
+            <div style="font-size:14px; font-weight:700">${bd ? (bd.direction||'') + ' — ' + (PAL_DIR[bd.palace]||'') : '—'}</div>
+            <div style="font-size:11px; color:var(--muted)">${bd?.quality||''}</div>
+          </div>
+          <div>
+            <div style="font-size:11px; color:var(--muted); margin-bottom:4px">⚠️ Arah Hati-hati</div>
+            <div style="font-size:14px; font-weight:600; color:#ef4444">${cd ? (cd.direction||'') + ' — ' + (PAL_DIR[cd.palace]||'') : '—'}</div>
+            <div style="font-size:11px; color:var(--muted)">${cd?.quality||''}</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px">
+          <div style="background:var(--surface); border-radius:6px; padding:8px; text-align:center">
+            <div style="font-size:10px; color:var(--muted)">💰 Keuangan</div>
+            <div style="font-size:12px; font-weight:700; margin:2px 0">${shenPal ? PAL_DIR[shenPal.palaceNumber]||'' : '—'}</div>
+            <div style="font-size:10px; color:var(--green)">生门 ${DOOR_ID['生门']}</div>
+          </div>
+          <div style="background:var(--surface); border-radius:6px; padding:8px; text-align:center">
+            <div style="font-size:10px; color:var(--muted)">💼 Karir</div>
+            <div style="font-size:12px; font-weight:700; margin:2px 0">${kaiPal ? PAL_DIR[kaiPal.palaceNumber]||'' : '—'}</div>
+            <div style="font-size:10px; color:var(--gold)">开门 ${DOOR_ID['开门']}</div>
+          </div>
+          <div style="background:var(--surface); border-radius:6px; padding:8px; text-align:center">
+            <div style="font-size:10px; color:var(--muted)">💕 Relasi</div>
+            <div style="font-size:12px; font-weight:700; margin:2px 0">${xiuPal ? PAL_DIR[xiuPal.palaceNumber]||'' : '—'}</div>
+            <div style="font-size:10px; color:var(--purple)">休门 ${DOOR_ID['休门']}</div>
+          </div>
+        </div>
+
+        ${top ? `<div style="font-size:12px; margin-bottom:6px">
+          <span style="color:var(--green)">▲ Ruas Terkuat:</span> ${PAL_DIR[top.palaceNumber]||''} (${top.palaceNumber}宫) —
+          <strong>${top.star||'—'}</strong> <span style="font-size:11px;color:var(--muted)">${STAR_ID[top.star]||''}</span> +
+          <strong>${top.door||'—'}</strong> <span style="font-size:11px;color:var(--muted)">${DOOR_ID[top.door]||''}</span>
+          <span style="color:var(--muted);font-size:11px"> · ${top.interp?.quality||''}</span>
+        </div>` : ''}
+
+        ${bot ? `<div style="font-size:12px; margin-bottom:6px">
+          <span style="color:#ef4444">▼ Ruas Terlemah:</span> ${PAL_DIR[bot.palaceNumber]||''} (${bot.palaceNumber}宫) —
+          <strong>${bot.star||'—'}</strong> + <strong>${bot.door||'—'}</strong>
+          <span style="color:var(--muted);font-size:11px"> · ${bot.interp?.quality||''}</span>
+        </div>` : ''}
+
+        ${pats.ji.length>0 || pats.xiong.length>0 ? `<div style="margin-top:10px; font-size:12px">
+          ${pats.ji.length>0 ? `<span style="color:var(--green)">✅ Pola Baik: ${pats.ji.map(p=>p.name).join('、')}</span>` : ''}
+          ${pats.xiong.length>0 ? `<span style="color:#ef4444; margin-left:10px">❌ Pola Awas: ${pats.xiong.map(p=>p.name).join('、')}</span>` : ''}
+        </div>` : ''}
+
+        <div style="font-size:11px; color:var(--muted); margin-top:10px; font-style:italic">
+          ℹ️ Qi Men Dun Jia memberi dimensi ketiga — strategi arah dan waktu tindakan. Lihat Section 8 untuk analisis penuh.
+        </div>
+      </div>
+    </div>`;
+  } else {
+    html += `<div style="margin-top:24px; padding:14px; background:var(--surface2); border-radius:8px; font-size:12px; color:var(--muted); text-align:center">
+      🔮 Data Qi Men Dun Jia belum dimuat. Buka <strong>Section 8 — Qi Men Dun Jia</strong> terlebih dahulu lalu kembali ke halaman ini.
+    </div>`;
+  }
 
   document.getElementById('sec-6').innerHTML = html;
 }
@@ -1652,40 +1962,52 @@ function renderQmdj(q) {
       </div>`;
   });
 
+  // Translation tables for QMDJ
+  const STAR_ID = {'天蓬':'Tianpeng (Hujan)','天任':'Tianren (Tanggung Jawab)','天冲':'Tianchong (Energi)',
+    '天辅':'Tianfu (Dukungan)','天英':'Tianying (Kehormatan)','天芮':'Tianrui (Pemulihan)',
+    '天柱':'Tianzhu (Pilar)','天心':'Tianxin (Hati Langit)','天禽':'Tianqin (Langit Tengah)'};
+  const DOOR_ID = {'开门':'Pintu Terbuka (Karir/Sukses)','休门':'Pintu Istirahat (Relasi)','生门':'Pintu Kehidupan (Keuangan)',
+    '伤门':'Pintu Luka (Kompetisi)','杜门':'Pintu Tertutup (Tersembunyi)','景门':'Pintu Pemandangan (Dokumen)',
+    '死门':'Pintu Kematian (Hindari)','惊门':'Pintu Kejutan (Gosip/Konflik)'};
+  const GOD_ID = {'值符':'Pemimpin Tertinggi','腾蛇':'Ular Terbang (Penipuan)','螣蛇':'Ular Terbang (Penipuan)',
+    '太阴':'Yin Besar (Tersembunyi)','六合':'Enam Harmoni (Kerjasama)','白虎':'Harimau Putih (Bahaya)',
+    '玄武':'Kura Hitam (Pencurian)','九地':'Sembilan Bumi (Stabil)','九天':'Sembilan Langit (Peluang)'};
+  const PAL_DIR = {1:'Utara',2:'Barat Daya',3:'Timur',4:'Tenggara',5:'Pusat',6:'Barat Laut',7:'Barat',8:'Timur Laut',9:'Selatan'};
+
   // Kong Wang & Best Direction
   const kw = q.kongWang || [];
   document.getElementById('qmdj-kongwang-box').innerHTML = `
-    <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🌑 空亡 (Kong Wang)</div>
-    <div style="font-size:13px">${kw.length > 0 ? kw.join('、') : '无'}</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:4px">落入空亡宫位气力衰减，谋事防无效结果</div>
-    <div style="font-size:12px;font-weight:700;color:var(--gold);margin:10px 0 4px">🎯 值符 / 值使</div>
-    <div style="font-size:12px">符: <strong>${q.zhiFuStar}</strong> → ${q.zhiFuPalaceName}${q.zhiFuPalace}宫</div>
-    <div style="font-size:12px">使: <strong>${q.zhiShiDoor}</strong> → ${q.zhiShiPalaceName}${q.zhiShiPalace}宫</div>`;
+    <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🌑 空亡 (Arah Kosong)</div>
+    <div style="font-size:13px">${kw.length > 0 ? kw.join('、') : '—'}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">Arah yang jatuh ke空亡 energinya kosong — tindakan di sini cenderung sia-sia.</div>
+    <div style="font-size:12px;font-weight:700;color:var(--gold);margin:10px 0 4px">🎯 值符 / 值使 (Pemimpin Chart)</div>
+    <div style="font-size:12px">符 Bintang Pemimpin: <strong>${q.zhiFuStar}</strong> <span style="color:var(--muted)">(${STAR_ID[q.zhiFuStar]||''})</span> → ${q.zhiFuPalaceName}${q.zhiFuPalace}宫 ${PAL_DIR[q.zhiFuPalace]||''}</div>
+    <div style="font-size:12px;margin-top:4px">使 Gerbang Pemimpin: <strong>${q.zhiShiDoor}</strong> <span style="color:var(--muted)">(${DOOR_ID[q.zhiShiDoor]||''})</span> → ${q.zhiShiPalaceName}${q.zhiShiPalace}宫 ${PAL_DIR[q.zhiShiPalace]||''}</div>`;
 
   const bd = q.bestDirection;
   const cd = q.cautionDirection;
   document.getElementById('qmdj-direction-box').innerHTML = `
-    <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Arah Terbaik</div>
-    ${bd ? `<div style="font-size:16px;font-weight:700">${bd.direction} (${bd.palaceName}${bd.palace}宫)</div>
-    <div style="font-size:11px;color:var(--muted)">${bd.quality} · ${bd.reason}</div>` : '<div>—</div>'}
+    <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Arah Terbaik (推荐方位)</div>
+    ${bd ? `<div style="font-size:16px;font-weight:700">${bd.direction||''} — ${PAL_DIR[bd.palace]||''} (${bd.palaceName}${bd.palace}宫)</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">Kualitas: ${bd.quality} · ${bd.reason||''}</div>` : '<div>—</div>'}
     <div style="font-size:12px;font-weight:700;color:#ef4444;margin:10px 0 4px">⚠️ Arah Perlu Hati-hati</div>
-    ${cd ? `<div style="font-size:15px;font-weight:600">${cd.direction} (${cd.palaceName}${cd.palace}宫)</div>
-    <div style="font-size:11px;color:var(--muted)">${cd.quality}</div>` : '<div>—</div>'}`;
+    ${cd ? `<div style="font-size:15px;font-weight:600">${cd.direction||''} — ${PAL_DIR[cd.palace]||''} (${cd.palaceName}${cd.palace}宫)</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">Kualitas: ${cd.quality}</div>` : '<div>—</div>'}`;
 
   // Patterns / 格局
   const pats = q.patterns || { ji:[], xiong:[], all:[] };
-  let patHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">⚡ Format Khusus / 格局</h3>`;
+  let patHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">⚡ Pola Khusus / 格局</h3>`;
   if (pats.all.length === 0) {
-    patHtml += `<div style="color:var(--muted);font-size:12px">Tidak ada格局 khusus terdeteksi.</div>`;
+    patHtml += `<div style="color:var(--muted);font-size:12px">Tidak ada pola格局 khusus terdeteksi dalam chart ini.</div>`;
   } else {
     if (pats.ji.length > 0) {
-      patHtml += `<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">✅格局吉 (${pats.ji.length})</div>`;
+      patHtml += `<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">✅ Pola Menguntungkan — 吉格 (${pats.ji.length})</div>`;
       pats.ji.forEach(p => {
         patHtml += `<div class="qmdj-pattern-ji"><strong>${p.name}</strong>: ${p.desc}</div>`;
       });
     }
     if (pats.xiong.length > 0) {
-      patHtml += `<div style="font-size:12px;font-weight:700;color:#ef4444;margin:8px 0 4px">❌ 格局凶 (${pats.xiong.length})</div>`;
+      patHtml += `<div style="font-size:12px;font-weight:700;color:#ef4444;margin:8px 0 4px">❌ Pola Berbahaya — 凶格 (${pats.xiong.length})</div>`;
       pats.xiong.forEach(p => {
         patHtml += `<div class="qmdj-pattern-xiong"><strong>${p.name}</strong>: ${p.desc}</div>`;
       });
@@ -1694,28 +2016,25 @@ function renderQmdj(q) {
   document.getElementById('qmdj-patterns').innerHTML = patHtml;
 
   // Palace interpretations
-  let interpHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">🔮 Interpretasi Per Ruas</h3>`;
-  const DIRS = {1:'北(N)',2:'西南(SW)',3:'东(E)',4:'东南(SE)',5:'中(Center)',6:'西北(NW)',7:'西(W)',8:'东北(NE)',9:'南(S)'};
+  let interpHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">🔮 Interpretasi Per Ruas (diurutkan terbaik → terburuk)</h3>`;
+  const DIRS = {1:'Utara',2:'Barat Daya',3:'Timur',4:'Tenggara',5:'Pusat',6:'Barat Laut',7:'Barat',8:'Timur Laut',9:'Selatan'};
 
-  // Sort by quality descending for interpretation display
   const sorted = [...q.palaces].filter(p => p.palaceNumber !== 5).sort((a,b) => (b.interp?.score||0)-(a.interp?.score||0));
   sorted.forEach(p => {
     const itp = p.interp || {};
     const doorD = itp.doorSummary || '';
     const starD = itp.starSummary || '';
     const godD  = itp.godSummary  || '';
-    const relD  = itp.starDoorRel ? `星门: ${itp.starDoorRel}` : '';
-    const marksStr = (p.marks||[]).length > 0 ? ` · 标记: ${p.marks.join('、')}` : '';
+    const marksStr = (p.marks||[]).length > 0 ? ` · Tanda: ${p.marks.join('、')}` : '';
     interpHtml += `
       <div class="qmdj-interp-card">
         <h4>${itp.qIcon||''} ${p.palaceName}${p.palaceNumber}宫 — ${DIRS[p.palaceNumber]||''} <span style="font-size:11px;color:var(--muted)">${itp.quality||''}${marksStr}</span></h4>
-        <div class="qmdj-layer"><strong>天干:</strong> 天 ${p.earthStem||'—'} / 地 ${p.skyStem||'—'}${p.hiddenStems&&p.hiddenStems.length>0?' · 暗: '+p.hiddenStems.join(' '):''}</div>
-        <div class="qmdj-layer"><strong>九星:</strong> ${p.star||'—'} (${p.starElement}) — ${starD}</div>
-        <div class="qmdj-layer"><strong>八门:</strong> ${p.door||'—'} (${p.doorElement||'—'}) — ${doorD}</div>
-        <div class="qmdj-layer"><strong>八神:</strong> ${p.god||'—'} — ${godD}</div>
-        ${p.diGod ? `<div class="qmdj-layer"><strong>地八神:</strong> ${p.diGod}</div>` : ''}
-        ${relD ? `<div class="qmdj-layer" style="color:var(--purple)">📊 ${relD}</div>` : ''}
-        <div class="qmdj-layer" style="color:var(--gold2);font-style:italic;margin-top:6px">${itp.doorAdvice||''}</div>
+        <div class="qmdj-layer"><strong>天干 (Batang Langit):</strong> 天 ${p.earthStem||'—'} / 地 ${p.skyStem||'—'}${p.hiddenStems&&p.hiddenStems.length>0?' · Tersembunyi: '+p.hiddenStems.join(' '):''}</div>
+        <div class="qmdj-layer"><strong>九星 (Bintang):</strong> ${p.star||'—'} <span style="color:var(--muted); font-size:11px">${STAR_ID[p.star]||''}</span> — ${starD}</div>
+        <div class="qmdj-layer"><strong>八门 (Gerbang):</strong> ${p.door||'—'} <span style="color:var(--muted); font-size:11px">${DOOR_ID[p.door]||''}</span> — ${doorD}</div>
+        <div class="qmdj-layer"><strong>八神 (Dewa):</strong> ${p.god||'—'} <span style="color:var(--muted); font-size:11px">${GOD_ID[p.god]||''}</span> — ${godD}</div>
+        ${p.diGod ? `<div class="qmdj-layer"><strong>地神:</strong> ${p.diGod} <span style="color:var(--muted);font-size:11px">${GOD_ID[p.diGod]||''}</span></div>` : ''}
+        <div class="qmdj-layer" style="color:var(--gold2);font-style:italic;margin-top:6px">💡 ${itp.doorAdvice||''}</div>
       </div>`;
   });
 
@@ -1724,9 +2043,9 @@ function renderQmdj(q) {
   if (ctr) {
     interpHtml += `
       <div class="qmdj-interp-card" style="opacity:0.8">
-        <h4>🔷 中5宫 (Center) — Ruas Tengah</h4>
+        <h4>🔷 中5宫 — Pusat (天禽 Tianqin)</h4>
         <div class="qmdj-layer"><strong>天干:</strong> ${ctr.skyStem||'—'} · 天禽寄坤二</div>
-        <div class="qmdj-layer">Ruas tengah bersifat netral, energinya "tergelincir" ke Ruas Barat Daya (坤2). Tidak dipakai langsung dalam penilaian.</div>
+        <div class="qmdj-layer">Ruas Pusat bersifat netral — energinya dialihkan ke Ruas Barat Daya (坤2). Tidak digunakan langsung dalam penilaian arah.</div>
       </div>`;
   }
 
