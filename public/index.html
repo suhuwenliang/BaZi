@@ -587,15 +587,20 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   </div>
   <div class="card-body">
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="exportJSON()">⬇️ Export JSON Lengkap</button>
-      <button class="btn btn-secondary" onclick="copyClaudePrompt()">📋 Salin Prompt Claude (BaZi)</button>
-      <button class="btn btn-secondary" onclick="copyClaudePromptZwds()">📋 Salin Prompt Claude (ZWDS)</button>
-      <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Simpan PDF</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Simpan PDF</button>
     </div>
     <div style="margin-top:10px; font-size:11px; color:var(--muted)">
-      JSON berisi semua data kalkulasi mentah. Prompt Claude adalah teks siap-pakai untuk mendapatkan interpretasi naratif mendalam dari Claude AI.
+      Klik tombol di atas untuk mencetak atau menyimpan hasil sebagai file PDF.
     </div>
   </div>
+</div>
+
+<!-- MULAI BARU — always at the very bottom -->
+<div class="no-print" style="text-align:center; padding:28px 16px 20px; border-top:1px solid var(--border); margin-top:8px">
+  <button class="btn btn-secondary" onclick="resetForm()" style="font-size:14px; padding:12px 36px; background:var(--surface3); border:1px solid var(--gold); border-radius:8px; color:var(--gold2); cursor:pointer; letter-spacing:1px; transition:all 0.2s">
+    ✨ MULAI BARU
+  </button>
+  <div style="font-size:11px; color:var(--muted); margin-top:8px">Kosongkan semua data untuk perhitungan baru</div>
 </div>
 
 </div><!-- #results -->
@@ -923,7 +928,7 @@ function render3A(b) {
       <div class="ganzhi" style="font-size:24px; margin-top:2px">${esc(pl.zhi||'?')}</div>
       <div class="ganzhi-detail">${esc(pl.element||'')} · ${esc(pl.polarity||'')}
         ${pl.nayin?`<br/><span style="font-size:10px">${esc(pl.nayin)}</span>`:''}
-        ${pl.shio?`<br/><span style="font-size:10px">生肖: ${esc(pl.shio)}</span>`:''}
+        ${pl.shio?`<br/><span style="font-size:10px">Shio: ${esc(pl.shio)}</span>`:''}
       </div>
       <span class="element-badge" style="background:${colorForElement(pl.element||'')}22; color:${colorForElement(pl.element||'')}; border:1px solid ${colorForElement(pl.element||'')}44">${esc(pl.element_cn||pl.element||'')}</span>
     </div>`;
@@ -1577,7 +1582,7 @@ function render5(c, b) {
   html += `<h3 style="color:var(--gold2); font-size:13px; margin-bottom:8px">💕 Kriteria Pasangan Ideal</h3>`;
   if (c.partner) {
     if (c.partner.fromZwds?.stars) {
-      html += `<div style="font-size:13px; margin-bottom:6px">Bintang di 夫妻宫: <strong style="color:var(--gold)">${esc(c.partner.fromZwds.stars)}</strong></div>`;
+      html += `<div style="font-size:13px; margin-bottom:6px">Bintang di Istana Pasangan <span style="color:var(--muted); font-size:11px">(夫妻宫)</span>: <strong style="color:var(--gold)">${esc(c.partner.fromZwds.stars)}</strong></div>`;
     }
     if (c.partner.fromZwds?.meaning) {
       html += `<div style="font-size:12px; color:var(--text); margin-bottom:8px">${esc(c.partner.fromZwds.meaning)}</div>`;
@@ -1660,14 +1665,14 @@ function render5(c, b) {
 
     // Tabel 8 arah ringkas
     const dirRows = [
-      { key: 'shengQi',  icon: '⭐', cat: '生气', color: 'var(--green)' },
-      { key: 'tianYi',   icon: '💚', cat: '天医', color: 'var(--green)' },
-      { key: 'yanNian',  icon: '💛', cat: '延年', color: 'var(--gold2)' },
-      { key: 'fuWei',    icon: '🔵', cat: '伏位', color: 'var(--blue)' },
-      { key: 'huoHai',   icon: '⚠️', cat: '祸害', color: 'var(--muted)' },
-      { key: 'liuSha',   icon: '🔶', cat: '六煞', color: '#e08040' },
-      { key: 'wuGui',    icon: '🔴', cat: '五鬼', color: '#c04040' },
-      { key: 'jueMing',  icon: '💀', cat: '绝命', color: 'var(--red)' },
+      { key: 'shengQi',  icon: '⭐', cat: '生气 — Vitalitas',  color: 'var(--green)' },
+      { key: 'tianYi',   icon: '💚', cat: '天医 — Kesehatan',  color: 'var(--green)' },
+      { key: 'yanNian',  icon: '💛', cat: '延年 — Umur Panjang', color: 'var(--gold2)' },
+      { key: 'fuWei',    icon: '🔵', cat: '伏位 — Stabilitas',  color: 'var(--blue)' },
+      { key: 'huoHai',   icon: '⚠️', cat: '祸害 — Gangguan',   color: 'var(--muted)' },
+      { key: 'liuSha',   icon: '🔶', cat: '六煞 — Enam Konflik', color: '#e08040' },
+      { key: 'wuGui',    icon: '🔴', cat: '五鬼 — Lima Hantu',  color: '#c04040' },
+      { key: 'jueMing',  icon: '💀', cat: '绝命 — Bahaya Besar', color: 'var(--red)' },
     ];
     html += `<table style="width:100%; font-size:12px; margin-bottom:12px; border-collapse:collapse">
       <tr style="background:var(--surface2)"><th style="padding:4px 8px; text-align:left">Kategori</th><th style="padding:4px 8px; text-align:left">Arah</th><th style="padding:4px 8px; text-align:left">Makna</th></tr>`;
@@ -1878,13 +1883,6 @@ function render7(ls) {
     }
   });
 
-  // Tombol NEW
-  html += `<div class="no-print" style="text-align:center; margin-top:24px; padding-top:18px; border-top:1px solid var(--border)">
-    <button class="btn btn-secondary" onclick="resetForm()" style="font-size:13px; padding:10px 28px; background:var(--surface3); border:1px solid var(--border); border-radius:8px; color:var(--gold2); cursor:pointer; letter-spacing:1px">
-      ✨ MULAI BARU
-    </button>
-    <div style="font-size:11px; color:var(--muted); margin-top:6px">Kosongkan semua data untuk input baru</div>
-  </div>`;
 
   document.getElementById('sec-7').innerHTML = html;
 }
@@ -1955,7 +1953,7 @@ function renderQmdj(q) {
   // Header
   document.getElementById('qmdj-label').textContent = q.label;
   document.getElementById('qmdj-summary').textContent = q.summary;
-  document.getElementById('qmdj-quality').innerHTML = `总体格局: <strong>${q.overallQuality}</strong>`;
+  document.getElementById('qmdj-quality').innerHTML = `Kualitas Chart (总体格局): <strong>${q.overallQuality}</strong>`;
 
   // 3×3 Palace Grid (Lo Shu arrangement: 4 9 2 / 3 5 7 / 8 1 6)
   const GRID_ORDER = [4,9,2,3,5,7,8,1,6]; // Lo Shu top-left to bottom-right
@@ -2076,15 +2074,15 @@ function renderQmdj(q) {
   document.getElementById('qmdj-kongwang-box').innerHTML = `
     <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🌑 空亡 (Arah Kosong)</div>
     <div style="font-size:13px">${kw.length > 0 ? kw.join('、') : '—'}</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:4px">Arah yang jatuh ke空亡 energinya kosong — tindakan di sini cenderung sia-sia.</div>
-    <div style="font-size:12px;font-weight:700;color:var(--gold);margin:10px 0 4px">🎯 值符 / 值使 (Pemimpin Chart)</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:4px">Arah yang jatuh ke kekosongan (空亡) energinya kosong — tindakan di sini cenderung sia-sia.</div>
+    <div style="font-size:12px;font-weight:700;color:var(--gold);margin:10px 0 4px">🎯 Pemimpin Chart (值符 / 值使)</div>
     <div style="font-size:12px">符 Bintang Pemimpin: <strong>${q.zhiFuStar}</strong> <span style="color:var(--muted)">(${STAR_ID[q.zhiFuStar]||''})</span> → ${q.zhiFuPalaceName}${q.zhiFuPalace}宫 ${PAL_DIR[q.zhiFuPalace]||''}</div>
     <div style="font-size:12px;margin-top:4px">使 Gerbang Pemimpin: <strong>${q.zhiShiDoor}</strong> <span style="color:var(--muted)">(${DOOR_ID[q.zhiShiDoor]||''})</span> → ${q.zhiShiPalaceName}${q.zhiShiPalace}宫 ${PAL_DIR[q.zhiShiPalace]||''}</div>`;
 
   const bd = q.bestDirection;
   const cd = q.cautionDirection;
   document.getElementById('qmdj-direction-box').innerHTML = `
-    <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Arah Terbaik (推荐方位)</div>
+    <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Arah Terbaik untuk Aktivitas Penting</div>
     ${bd ? `<div style="font-size:16px;font-weight:700">${bd.direction||''} — ${PAL_DIR[bd.palace]||''} (${bd.palaceName}${bd.palace}宫)</div>
     <div style="font-size:11px;color:var(--muted);margin-top:2px">Kualitas: ${bd.quality} · ${bd.reason||''}</div>` : '<div>—</div>'}
     <div style="font-size:12px;font-weight:700;color:#ef4444;margin:10px 0 4px">⚠️ Arah Perlu Hati-hati</div>
@@ -2095,7 +2093,7 @@ function renderQmdj(q) {
   const pats = q.patterns || { ji:[], xiong:[], all:[] };
   let patHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">⚡ Pola Khusus / 格局</h3>`;
   if (pats.all.length === 0) {
-    patHtml += `<div style="color:var(--muted);font-size:12px">Tidak ada pola格局 khusus terdeteksi dalam chart ini.</div>`;
+    patHtml += `<div style="color:var(--muted);font-size:12px">Tidak ada pola khusus (格局) yang terdeteksi dalam chart ini.</div>`;
   } else {
     if (pats.ji.length > 0) {
       patHtml += `<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px">✅ Pola Menguntungkan — 吉格 (${pats.ji.length})</div>`;
