@@ -197,23 +197,22 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .page-break-subsec > h3 { break-after: avoid !important; page-break-after: avoid !important; }
   /* Hide decorative hr separators only in sections 3 & 4 */
   .page-break-subsec > hr { display: none !important; }
-  /* ── Printing a compat section: hide main content ── */
+  /* ── Printing compat section 9/10/11: hide EVERYTHING, then re-show only the active card ──
+     Root fix: compat cards live inside #results. Hiding #results hides children too (CSS rule).
+     Solution: hide all .card elements directly, then use ID selector (higher specificity) to
+     re-show only the active compat card. ID beats class even with !important. */
   body[data-print-compat] .app-header { display: none !important; }
-  body[data-print-compat] #form-section { display: none !important; }
-  body[data-print-compat] #results { display: none !important; }
-  body[data-print-compat] #qmdj-section { display: none !important; }
-  body[data-print-compat] #compat-triggers { display: none !important; }
+  body[data-print-compat] .card { display: none !important; }
   body[data-print-compat] #export-section { display: none !important; }
-  /* Hide only the TWO inactive compat cards, show the active one */
-  body[data-print-compat="spouse"] #section-compat-family,
-  body[data-print-compat="spouse"] #section-compat-friend { display: none !important; }
-  body[data-print-compat="family"] #section-compat-spouse,
-  body[data-print-compat="family"] #section-compat-friend { display: none !important; }
-  body[data-print-compat="friend"] #section-compat-spouse,
-  body[data-print-compat="friend"] #section-compat-family { display: none !important; }
+  body[data-print-compat] #compat-triggers { display: none !important; }
+  /* ID selector specificity wins over .card class — shows only the active compat card */
   body[data-print-compat="spouse"] #section-compat-spouse,
   body[data-print-compat="family"] #section-compat-family,
-  body[data-print-compat="friend"] #section-compat-friend { display: block !important; break-before: auto !important; page-break-before: auto !important; }
+  body[data-print-compat="friend"] #section-compat-friend {
+    display: block !important;
+    break-before: auto !important;
+    page-break-before: auto !important;
+  }
   .card { border: 1px solid #bbb !important; break-before: page !important; page-break-before: always !important; background: white !important; }
   .card:first-of-type { break-before: auto !important; page-break-before: auto !important; }
   .card-header { background: #f5ede0 !important; break-inside: avoid; page-break-inside: avoid; }
