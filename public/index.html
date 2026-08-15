@@ -584,6 +584,9 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
       <!-- Deep Narrative: Apa artinya untuk Anda -->
       <div id="qmdj-deep-narasi" style="margin-top:20px"></div>
 
+      <!-- Perbandingan Lintas Sistem -->
+      <div id="qmdj-comparisons" style="margin-top:20px"></div>
+
     </div>
   </div>
 </div>
@@ -740,6 +743,7 @@ function transMutagen(type) { return MUTAGEN_ID[type] || type; }
 // ============================================================
 let _result = null;
 let _lastInput = null;
+let _tzList = [];
 
 // ============================================================
 // INIT: Load timezones into select
@@ -748,6 +752,7 @@ async function loadTimezones() {
   try {
     const r = await fetch('/api/timezones');
     const tzs = await r.json();
+    _tzList = tzs; // simpan untuk digunakan buildCompatForm
     const sel = document.getElementById('tz-select');
     tzs.forEach(tz => {
       const opt = document.createElement('option');
@@ -2283,6 +2288,9 @@ function renderQmdj(q) {
   // ── Deep Narasi: Apa artinya untuk Anda ──────────────────────
   renderQmdjDeepNarasi(q, _qmdjType || 'nianjia');
 
+  // ── Perbandingan lintas sistem (八宅, BaZi, ZWDS vs QMDJ) ───
+  renderQmdjComparisons(q);
+
   loading.style.display = 'none';
   content.style.display = 'block';
 
@@ -2412,6 +2420,334 @@ function renderQmdjDeepNarasi(q, type) {
 }
 
 // ============================================================
+// QMDJ CROSS-SYSTEM COMPARISONS
+// ============================================================
+function renderQmdjComparisons(q) {
+  const container = document.getElementById('qmdj-comparisons');
+  if (!container || !_result) return;
+
+  const bazi = _result.bazi || {};
+  const zwds = _result.zwds || {};
+  const fs   = _result.comprehensive?.fengshui || bazi?.fengshui || {};
+  const palaces = (q.palaces || []).filter(p => p.palaceNumber !== 5);
+
+  // Peta: Arah (Indonesian) → QMDJ palace
+  const DIR_MAP = {
+    '坎':'Utara','坤':'Barat Daya','震':'Timur','巽':'Tenggara',
+    '乾':'Barat Laut','兑':'Barat','艮':'Timur Laut','离':'Selatan'
+  };
+  const DIRS_NUM = {1:'Utara',2:'Barat Daya',3:'Timur',4:'Tenggara',6:'Barat Laut',7:'Barat',8:'Timur Laut',9:'Selatan'};
+  // Buat peta: arah Indonesia → palace QMDJ
+  const qmdjByDir = {};
+  palaces.forEach(p => {
+    const dir = DIR_MAP[p.palaceName] || DIRS_NUM[p.palaceNumber] || null;
+    if (dir) qmdjByDir[dir] = p;
+  });
+
+  // ── TABEL 1: 八宅 vs QMDJ ────────────────────────────────────
+  let html = '';
+  if (fs && fs.kuaNumber) {
+    const FS_ROWS = [
+      { key:'shengQi', label:'生气 — Vitalitas', type:'auspicious', icon:'⭐' },
+      { key:'tianYi',  label:'天医 — Kesehatan',  type:'auspicious', icon:'💚' },
+      { key:'yanNian', label:'延年 — Umur Panjang',type:'auspicious', icon:'💛' },
+      { key:'fuWei',   label:'伏位 — Stabilitas', type:'auspicious', icon:'🔵' },
+      { key:'huoHai',  label:'祸害 — Gangguan',   type:'inauspicious',icon:'⚠️' },
+      { key:'liuSha',  label:'六煞 — Enam Konflik',type:'inauspicious',icon:'🔶' },
+      { key:'wuGui',   label:'五鬼 — Lima Hantu', type:'inauspicious',icon:'🔴' },
+      { key:'jueMing', label:'绝命 — Bahaya Besar',type:'inauspicious',icon:'💀' },
+    ];
+
+    html += `
+    <div style="background:var(--surface2);border:1px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:4px">🧭 Perbandingan 八宅 vs Qi Men Dun Jia per Arah</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        Tabel ini menyilangkan arah personal 八宅 (Kua ${fs.kuaNumber}) dengan kualitas palace QMDJ aktif —
+        sehingga Anda tahu arah mana yang mendapat <em>dukungan ganda</em> dari dua sistem sekaligus.
+      </div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:rgba(184,134,11,0.15)">
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Arah</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">八宅 (Personal)</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">QMDJ Palace</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Rekomendasi</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    FS_ROWS.forEach(row => {
+      const fsDir = fs[row.key];
+      if (!fsDir || !fsDir.dir) return;
+      const dir = fsDir.dir;
+      const qPal = qmdjByDir[dir];
+      const qQual = qPal?.interp?.quality || '—';
+      const qIcon = qPal?.interp?.qIcon || '';
+      const qStar = qPal?.star || '—';
+      const qDoor = qPal?.door || '—';
+
+      // Tentukan rekomendasi gabungan
+      const isFs8Good = row.type === 'auspicious';
+      const isQmGood  = qQual.includes('Sangat Baik') || qQual.includes('Baik');
+      const isQmBad   = qQual.includes('Berbahaya') || qQual.includes('Kurang');
+
+      let rec = '', recColor = 'var(--muted)', recBg = '';
+      if (isFs8Good && isQmGood) {
+        rec = '⭐ Prioritas Utama — Dukungan Ganda';
+        recColor = 'var(--green)';
+        recBg = 'background:rgba(70,180,100,0.08)';
+      } else if (isFs8Good && !isQmBad) {
+        rec = '✅ Baik — 八宅 Mendukung';
+        recColor = '#86efac';
+      } else if (isFs8Good && isQmBad) {
+        rec = '⚖️ Campuran — 八宅 Baik, QMDJ Lemah';
+        recColor = '#fbbf24';
+      } else if (!isFs8Good && isQmGood) {
+        rec = '⚖️ Campuran — QMDJ Kuat, 八宅 Hindari';
+        recColor = '#fbbf24';
+      } else {
+        rec = '❌ Hindari — Keduanya Negatif';
+        recColor = 'var(--red)';
+      }
+
+      const fsDirColor = isFs8Good ? 'var(--green)' : 'var(--red)';
+      html += `<tr style="border-top:1px solid var(--border);${recBg}">
+        <td style="padding:5px 10px;font-weight:700;color:var(--text)">${dir}</td>
+        <td style="padding:5px 10px;color:${fsDirColor}">${row.icon} ${row.label}</td>
+        <td style="padding:5px 10px;color:var(--muted)">${qIcon} ${qQual}<br><span style="font-size:10px;color:var(--muted)">${qStar} · ${qDoor}</span></td>
+        <td style="padding:5px 10px;color:${recColor};font-weight:600">${rec}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        💡 <em>Prioritas Utama</em> = arah yang mendapat dukungan dari 八宅 <strong>dan</strong> QMDJ secara bersamaan —
+        paling direkomendasikan untuk keputusan besar, posisi ruangan, atau arah duduk kerja.
+      </div>
+    </div>`;
+  }
+
+  // ── TABEL 2: BaZi vs QMDJ ────────────────────────────────────
+  if (bazi && bazi.dayMaster) {
+    const dm = bazi.dayMaster;
+    const dmEl = dm.element || '—';
+    const dmStem = dm.stem || '—';
+
+    // Elemen yang mendukung Day Master (Sheng kita = elemen yang generate kita)
+    const GENERATES = {'木':'水','火':'木','土':'火','金':'土','水':'金'};
+    const CONTROLS  = {'木':'土','火':'金','土':'水','金':'木','水':'火'};
+    const EL_NAME   = {'木':'Kayu (木)','火':'Api (火)','土':'Tanah (土)','金':'Logam (金)','水':'Air (水)'};
+    const STAR_EL   = {
+      '天蓬':'水','天任':'土','天冲':'木','天辅':'木','天英':'火',
+      '天芮':'土','天柱':'金','天心':'金','天禽':'土'
+    };
+    const DOOR_EL   = {
+      '开门':'金','休门':'水','生门':'土','伤门':'木','杜门':'木',
+      '景门':'火','死门':'土','惊门':'金'
+    };
+    const EL_ID = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+
+    const supportEl  = GENERATES[dmEl]; // elemen yang menghasilkan DM (印)
+    const controlsEl = CONTROLS[dmEl];  // elemen yang DM kendalikan (财)
+    const weakensEl  = GENERATES[supportEl] || '—'; // elemen yang melemahkan DM (食/伤)
+    const attacksEl  = CONTROLS[Object.keys(CONTROLS).find(k => CONTROLS[k]===dmEl)||''] || '—'; // elemen yang menyerang DM
+
+    html += `
+    <div style="background:var(--surface2);border:1px solid #6366f1;border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:#818cf8;margin-bottom:4px">☯️ Perbandingan BaZi vs Qi Men Dun Jia</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        Day Master Anda adalah <strong style="color:var(--gold)">${dmStem}</strong> elemen <strong>${EL_NAME[dmEl]||dmEl}</strong>.
+        Tabel ini menunjukkan palace QMDJ mana yang elemen bintang atau pintunya paling selaras dengan kebutuhan Day Master Anda.
+      </div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:rgba(99,102,241,0.15)">
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Arah</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">QMDJ Bintang · Pintu</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Elemen Dominan</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Relasi ke DM ${dmStem}</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    palaces.forEach(p => {
+      const dir = DIR_MAP[p.palaceName] || DIRS_NUM[p.palaceNumber] || '—';
+      const starEl = STAR_EL[p.star] || '—';
+      const doorEl = DOOR_EL[p.door] || '—';
+      // Dominan: ambil elemen bintang sebagai patokan
+      const domEl  = starEl !== '—' ? starEl : doorEl;
+      const domElName = EL_ID[domEl] || domEl;
+
+      let rel = '—', relColor = 'var(--muted)', relIcon = '';
+      if (domEl === dmEl) {
+        rel = 'Sama elemen — memperkuat identitas';
+        relColor = 'var(--blue)'; relIcon = '🔵';
+      } else if (domEl === supportEl) {
+        rel = 'Mendukung DM (印/Yin) — memberi energi';
+        relColor = 'var(--green)'; relIcon = '✅';
+      } else if (domEl === controlsEl) {
+        rel = 'DM mengendalikan (财/Cai) — peluang kekayaan';
+        relColor = '#86efac'; relIcon = '💰';
+      } else if (domEl === weakensEl) {
+        rel = 'DM mengalirkan (食/Shi) — ekspresi kreatif';
+        relColor = '#fbbf24'; relIcon = '🎨';
+      } else {
+        rel = 'Menekan DM (官/杀) — tantangan & pertumbuhan';
+        relColor = 'var(--red)'; relIcon = '⚔️';
+      }
+
+      const qQual = p.interp?.quality || '—';
+      const qIcon2 = p.interp?.qIcon || '';
+      html += `<tr style="border-top:1px solid var(--border)">
+        <td style="padding:5px 10px;font-weight:700;color:var(--text)">${dir}</td>
+        <td style="padding:5px 10px;color:var(--muted)">${qIcon2} ${qQual}<br><span style="font-size:10px">${p.star||'—'} · ${p.door||'—'}</span></td>
+        <td style="padding:5px 10px;color:var(--text)">${domElName}</td>
+        <td style="padding:5px 10px;color:${relColor};font-weight:600">${relIcon} ${rel}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        💡 Gunakan palace dengan relasi <em>Mendukung DM</em> (印) atau <em>DM Mengendalikan</em> (财) untuk kegiatan yang membutuhkan dorongan dan kemakmuran.
+        Palace yang <em>Menekan DM</em> (官杀) adalah area tantangan — bisa menjadi sumber pertumbuhan jika dikelola dengan bijak.
+      </div>
+    </div>`;
+  }
+
+  // ── TABEL 3: ZWDS vs QMDJ ────────────────────────────────────
+  if (zwds && zwds.palaces && zwds.palaces.length > 0) {
+    // Peta palace ZWDS ke arah geografi (berdasarkan urutan Lo Shu / kondisi)
+    // Dalam ZWDS, palace posisi diasosiasikan dengan arah berdasarkan nomor palace
+    // Kita gunakan life area ZWDS dan cocokkan dengan kualitas QMDJ untuk arah terkuat
+    const ZWDS_AREA = {
+      '命宫':  { area:'Kepribadian & Takdir Hidup',  icon:'👤' },
+      '兄弟宫':{ area:'Saudara & Rekan',             icon:'🤝' },
+      '夫妻宫':{ area:'Pasangan & Pernikahan',        icon:'💑' },
+      '子女宫':{ area:'Anak & Kreativitas',           icon:'👶' },
+      '财帛宫':{ area:'Kekayaan & Finansial',         icon:'💰' },
+      '疾厄宫':{ area:'Kesehatan & Tantangan',        icon:'🏥' },
+      '迁移宫':{ area:'Perjalanan & Perubahan',       icon:'✈️' },
+      '交友宫':{ area:'Persahabatan & Jaringan',      icon:'🌐' },
+      '官禄宫':{ area:'Karir & Prestasi',             icon:'🏆' },
+      '田宅宫':{ area:'Properti & Keluarga',          icon:'🏠' },
+      '福德宫':{ area:'Keberuntungan & Spiritualitas',icon:'🙏' },
+      '父母宫':{ area:'Orang Tua & Leluhur',          icon:'👨‍👩‍👧' },
+    };
+
+    // Ambil star terkuat di tiap palace ZWDS
+    const MAJOR_STARS_BRIGHT = ['紫微','天机','太阳','武曲','天同','廉贞','天府','太阴','贪狼','巨门','天相','天梁','七杀','破军'];
+    const ZWDS_STAR_EL = {
+      '紫微':'土','天机':'木','太阳':'火','武曲':'金','天同':'水','廉贞':'火',
+      '天府':'土','太阴':'水','贪狼':'木','巨门':'水','天相':'水','天梁':'土',
+      '七杀':'金','破军':'水'
+    };
+    const EL_ID2 = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+
+    // Ambil palace QMDJ terkuat & terlemah untuk referensi
+    const sortedQ = [...palaces].sort((a,b) => (b.interp?.score||0)-(a.interp?.score||0));
+    const bestQDir = DIR_MAP[sortedQ[0]?.palaceName] || DIRS_NUM[sortedQ[0]?.palaceNumber] || '—';
+    const bestQQual = sortedQ[0]?.interp?.quality || '—';
+    const worstQDir = DIR_MAP[sortedQ[sortedQ.length-1]?.palaceName] || DIRS_NUM[sortedQ[sortedQ.length-1]?.palaceNumber] || '—';
+
+    html += `
+    <div style="background:var(--surface2);border:1px solid #7c3aed;border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:#a78bfa;margin-bottom:4px">⭐ Perbandingan Zi Wei Dou Shu vs Qi Men Dun Jia</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+        ZWDS membaca <em>kualitas dan potensi tiap area kehidupan</em> dari posisi bintang natal.
+        QMDJ membaca <em>energi aktif arah geografi saat ini</em>.
+        Perpaduan keduanya menunjukkan area kehidupan mana yang mendapat angin kosmis terkuat — atau perlu perlindungan ekstra.
+      </div>
+      <div style="font-size:12px;line-height:1.8;color:var(--text);margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.25);border-radius:6px;padding:10px">
+            <div style="font-size:11px;color:#a78bfa;font-weight:700;margin-bottom:4px">🌟 Palace QMDJ Terkuat Saat Ini</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text)">${bestQDir}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${bestQQual}</div>
+            <div style="font-size:11px;color:var(--text);margin-top:4px">
+              Aktivitas dan keputusan di area kehidupan yang secara simbolis berhubungan dengan arah ini
+              sedang mendapat dukungan energi QMDJ tertinggi.
+            </div>
+          </div>
+          <div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:6px;padding:10px">
+            <div style="font-size:11px;color:#f87171;font-weight:700;margin-bottom:4px">⚠️ Palace QMDJ Paling Lemah</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text)">${worstQDir}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${sortedQ[sortedQ.length-1]?.interp?.quality||'—'}</div>
+            <div style="font-size:11px;color:var(--text);margin-top:4px">
+              Untuk area kehidupan yang secara simbolis terkait arah ini, perlu kehati-hatian ekstra
+              dan persiapan lebih matang dalam pengambilan keputusan.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#a78bfa;margin-bottom:6px">Bintang Utama ZWDS & Elemen vs QMDJ</div>
+      <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:rgba(124,58,237,0.12)">
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Palace ZWDS</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Area Kehidupan</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Bintang Utama & Elemen</th>
+            <th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Saran Strategis</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    const KEY_PALACES = ['命宫','财帛宫','官禄宫','夫妻宫','福德宫','健康宫','迁移宫'];
+    zwds.palaces.slice(0, 12).forEach(pal => {
+      const palName = pal.name || pal.palaceName || '';
+      const areaInfo = ZWDS_AREA[palName];
+      if (!areaInfo) return;
+
+      // Cari major star di palace ini
+      const majorStar = (pal.majorStars || pal.stars || []).find(s => MAJOR_STARS_BRIGHT.includes(s.name||s));
+      const starName = majorStar?.name || majorStar || '—';
+      const starEl   = ZWDS_STAR_EL[starName];
+      const starElName = EL_ID2[starEl] || (starEl ? starEl : '(tidak ada bintang utama)');
+
+      // Cari palace QMDJ yang elemennya cocok dengan elemen bintang ZWDS
+      let matchingQPal = null;
+      if (starEl) {
+        matchingQPal = palaces.find(p => {
+          const STAR_EL2 = {'天蓬':'水','天任':'土','天冲':'木','天辅':'木','天英':'火','天芮':'土','天柱':'金','天心':'金'};
+          return STAR_EL2[p.star] === starEl;
+        });
+      }
+      const matchDir = matchingQPal ? (DIR_MAP[matchingQPal.palaceName]||DIRS_NUM[matchingQPal.palaceNumber]||'—') : '—';
+      const matchQual = matchingQPal?.interp?.quality || '—';
+
+      let saran = '';
+      if (!matchingQPal) {
+        saran = `Tidak ada palace QMDJ dengan elemen ${starElName||''}. Andalkan potensi ZWDS mandiri.`;
+      } else if (matchQual.includes('Sangat Baik') || matchQual.includes('Baik')) {
+        saran = `✅ Arah ${matchDir} (QMDJ ${matchQual}) mendukung — manfaatkan untuk ${areaInfo.area.split(' ')[0]}.`;
+      } else if (matchQual.includes('Berbahaya') || matchQual.includes('Kurang')) {
+        saran = `⚠️ Arah ${matchDir} sedang kurang menguntungkan — jaga kehati-hatian di area ${areaInfo.area.split(' ')[0]}.`;
+      } else {
+        saran = `⚖️ Arah ${matchDir} netral — potensi bergantung pada upaya personal.`;
+      }
+
+      html += `<tr style="border-top:1px solid var(--border)">
+        <td style="padding:5px 10px;font-weight:700;color:#a78bfa">${palName}</td>
+        <td style="padding:5px 10px;color:var(--text)">${areaInfo.icon} ${areaInfo.area}</td>
+        <td style="padding:5px 10px;color:var(--muted)">${starName}<br><span style="font-size:10px">${starEl ? EL_ID2[starEl]+' ('+starEl+')' : '—'}</span></td>
+        <td style="padding:5px 10px;color:var(--muted);font-size:11px">${saran}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        💡 ZWDS menunjukkan <em>potensi dan karakter area kehidupan</em>, sedangkan QMDJ menunjukkan
+        <em>energi aktif saat ini</em>. Keduanya digabungkan memberi gambaran: kapan dan ke mana mengoptimalkan energi terbaik Anda.
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = html || '';
+}
+
+// ============================================================
 // EXPORT
 // ============================================================
 function exportJSON() {
@@ -2479,7 +2815,11 @@ function resetForm() {
 
 // Buat form input untuk orang kedua (sama seperti form utama tapi lebih ringkas)
 function buildCompatForm(containerId) {
-  const tzOptions = (_tzList || []).map(tz =>
+  // Fallback: kalau _tzList belum terisi, clone dari #tz-select yang sudah ada
+  const tzSrc = (_tzList && _tzList.length > 0)
+    ? _tzList
+    : Array.from(document.getElementById('tz-select').options).map(o => ({value:o.value, label:o.textContent}));
+  const tzOptions = tzSrc.map(tz =>
     `<option value="${tz.value}" ${tz.value==='+7'?'selected':''}>${tz.label}</option>`).join('');
 
   document.getElementById(containerId).innerHTML = `
