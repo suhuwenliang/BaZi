@@ -8,6 +8,7 @@ const { calculateZwds } = require('./engines/zwds');
 const { analyzeChineseName, analyzeLatinName } = require('./engines/name-analysis');
 const { getGmtOffsetList } = require('./utils/timezone');
 const { calculateQmdj } = require('./engines/qmdj');
+const { analyzeCompatibility } = require('./engines/compatibility');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -117,6 +118,60 @@ app.post('/api/qmdj', (req, res) => {
     }
     const result = calculateQmdj({ type, birthYear, birthMonth, birthDay });
     res.json({ success: true, qmdj: result });
+  } catch(e) {
+    res.status(500).json({ success: false, error: e.message, stack: e.stack });
+  }
+});
+
+// ============================================================
+// API: KOMPATIBILITAS (Section 9 / 10 / 11)
+// ============================================================
+app.post('/api/compatibility', (req, res) => {
+  try {
+    const { person1, person2, relationshipType } = req.body;
+    if (!person1 || !person2) {
+      return res.status(400).json({ success: false, error: 'person1 dan person2 diperlukan' });
+    }
+
+    // Hitung BaZi untuk kedua orang
+    const baziA = calculateBazi({
+      birthYear: person1.birthYear, birthMonth: person1.birthMonth,
+      birthDay: person1.birthDay,   birthHour: person1.birthHour,
+      birthMinute: person1.birthMinute || 0, gender: person1.gender,
+      zone: person1.timezone || '+7', midnightSect: 2, dayunSect: 2
+    });
+    const baziB = calculateBazi({
+      birthYear: person2.birthYear, birthMonth: person2.birthMonth,
+      birthDay: person2.birthDay,   birthHour: person2.birthHour,
+      birthMinute: person2.birthMinute || 0, gender: person2.gender,
+      zone: person2.timezone || '+7', midnightSect: 2, dayunSect: 2
+    });
+
+    // Hitung ZWDS untuk kedua orang
+    let zwdsA = null, zwdsB = null;
+    try {
+      zwdsA = calculateZwds({ birthYear: person1.birthYear, birthMonth: person1.birthMonth,
+        birthDay: person1.birthDay, birthHour: person1.birthHour,
+        gender: person1.gender, zone: person1.timezone || '+7' });
+    } catch(e) { zwdsA = null; }
+    try {
+      zwdsB = calculateZwds({ birthYear: person2.birthYear, birthMonth: person2.birthMonth,
+        birthDay: person2.birthDay, birthHour: person2.birthHour,
+        gender: person2.gender, zone: person2.timezone || '+7' });
+    } catch(e) { zwdsB = null; }
+
+    // Hitung QMDJ Nianjia untuk kedua orang
+    let qmdjA = null, qmdjB = null;
+    try { qmdjA = calculateQmdj({ type: 'nianjia', birthYear: person1.birthYear }); } catch(e) {}
+    try { qmdjB = calculateQmdj({ type: 'nianjia', birthYear: person2.birthYear }); } catch(e) {}
+
+    const result = analyzeCompatibility(
+      baziA, baziB, zwdsA, zwdsB, qmdjA, qmdjB,
+      relationshipType || 'friend',
+      person1.name, person2.name
+    );
+
+    res.json({ success: true, compatibility: result });
   } catch(e) {
     res.status(500).json({ success: false, error: e.message, stack: e.stack });
   }

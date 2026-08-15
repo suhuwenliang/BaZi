@@ -168,6 +168,13 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 .qmdj-pattern-ji   { background: rgba(5,150,105,0.15); border-left:3px solid var(--green); border-radius:0 6px 6px 0; padding:8px 12px; margin-bottom:6px; }
 .qmdj-pattern-xiong{ background: rgba(220,38,38,0.1);  border-left:3px solid #dc2626; border-radius:0 6px 6px 0; padding:8px 12px; margin-bottom:6px; }
 .qmdj-interp-card  { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; }
+.compat-section-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:12px; }
+.compat-section-card h3 { font-size:13px; font-weight:700; color:var(--gold); margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+.compat-section-card p, .compat-section-card div { font-size:13px; line-height:1.7; color:var(--text); }
+.compat-score-bar { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-weight:700; font-size:14px; }
+.compat-narasi strong { color:var(--gold2); }
+.compat-narasi em { color:var(--muted); font-style:italic; }
+.compat-print-btn { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
 .qmdj-interp-card h4 { color:var(--gold); font-size:13px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
 .qmdj-layer { font-size:12px; line-height:1.6; color:var(--text); margin-bottom:4px; }
 .qmdj-layer strong { color:var(--accent); }
@@ -574,11 +581,100 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
       <!-- Palace Interpretations -->
       <div id="qmdj-interps"></div>
 
+      <!-- Deep Narrative: Apa artinya untuk Anda -->
+      <div id="qmdj-deep-narasi" style="margin-top:20px"></div>
+
     </div>
   </div>
 </div>
 
-<!-- ===== SECTION 9: EXPORT ===== -->
+<!-- ===== SECTION 9: ANALISA PASANGAN ===== -->
+<div class="card no-print" id="section-compat-spouse" style="display:none">
+  <div class="card-header">
+    <div class="section-num">9</div>
+    <h2>💑 Analisa Hubungan — Pasangan</h2>
+  </div>
+  <div class="card-body">
+    <div id="compat-spouse-form">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Masukkan data kelahiran pasangan Anda untuk melihat analisa kompatibilitas berdasarkan BaZi, Zi Wei Dou Shu, dan Qi Men Dun Jia.</p>
+      <div id="compat-spouse-inputs"></div>
+      <div style="margin-top:16px">
+        <button class="btn btn-primary" onclick="submitCompat('spouse')">🔮 Analisa Hubungan Pasangan</button>
+        <button class="btn btn-secondary" onclick="hideCompatSection('spouse')" style="margin-left:10px">✕ Batal</button>
+      </div>
+    </div>
+    <div id="compat-spouse-result" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===== SECTION 10: ANALISA KELUARGA ===== -->
+<div class="card no-print" id="section-compat-family" style="display:none">
+  <div class="card-header">
+    <div class="section-num">10</div>
+    <h2>👨‍👩‍👧 Analisa Hubungan — Keluarga</h2>
+  </div>
+  <div class="card-body">
+    <div id="compat-family-form">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Pilih tipe anggota keluarga, lalu masukkan data kelahirannya.</p>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Tipe Hubungan Keluarga</label>
+        <select id="family-relation-type" class="form-control" style="max-width:260px">
+          <option value="child">Anak</option>
+          <option value="parent">Orang Tua (Ayah / Ibu)</option>
+          <option value="sibling_older">Kakak</option>
+          <option value="sibling_younger">Adik</option>
+        </select>
+      </div>
+      <div id="compat-family-inputs"></div>
+      <div style="margin-top:16px">
+        <button class="btn btn-primary" onclick="submitCompat('family')">🔮 Analisa Hubungan Keluarga</button>
+        <button class="btn btn-secondary" onclick="hideCompatSection('family')" style="margin-left:10px">✕ Batal</button>
+      </div>
+    </div>
+    <div id="compat-family-result" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===== SECTION 11: ANALISA TEMAN / REKAN KERJA ===== -->
+<div class="card no-print" id="section-compat-friend" style="display:none">
+  <div class="card-header">
+    <div class="section-num">11</div>
+    <h2>🤝 Analisa Hubungan — Teman / Rekan Kerja</h2>
+  </div>
+  <div class="card-body">
+    <div id="compat-friend-form">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Pilih tipe hubungan, lalu masukkan data kelahiran orang yang ingin dianalisa.</p>
+      <div style="margin-bottom:14px">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Tipe Hubungan</label>
+        <select id="friend-relation-type" class="form-control" style="max-width:260px">
+          <option value="friend">Teman Dekat</option>
+          <option value="colleague">Rekan Kerja</option>
+        </select>
+      </div>
+      <div id="compat-friend-inputs"></div>
+      <div style="margin-top:16px">
+        <button class="btn btn-primary" onclick="submitCompat('friend')">🔮 Analisa Hubungan</button>
+        <button class="btn btn-secondary" onclick="hideCompatSection('friend')" style="margin-left:10px">✕ Batal</button>
+      </div>
+    </div>
+    <div id="compat-friend-result" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ===== TOMBOL TRIGGER ANALISA TAMBAHAN ===== -->
+<div class="no-print" id="compat-triggers" style="margin:20px 0 8px; display:none; gap:10px; flex-wrap:wrap; justify-content:center">
+  <button class="btn btn-secondary" onclick="showCompatSection('spouse')" style="border:1px solid var(--gold);color:var(--gold2)">
+    💑 + Analisa Pasangan
+  </button>
+  <button class="btn btn-secondary" onclick="showCompatSection('family')" style="border:1px solid var(--blue);color:var(--blue)">
+    👨‍👩‍👧 + Analisa Keluarga
+  </button>
+  <button class="btn btn-secondary" onclick="showCompatSection('friend')" style="border:1px solid var(--green);color:var(--green)">
+    🤝 + Analisa Teman / Rekan
+  </button>
+</div>
+
+<!-- ===== EXPORT: Print & Mulai Baru ===== -->
 <!-- Action buttons — Print & Mulai Baru -->
 <div id="export-section" style="border-top:1px solid var(--border); margin-top:16px; padding:24px 16px; text-align:center">
   <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap">
@@ -748,6 +844,7 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
     loadQmdj('nianjia');
     document.getElementById('results').classList.remove('hidden');
     document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+    showCompatTriggers();
   } catch(err) {
     document.getElementById('error-box').textContent = '❌ ' + err.message;
     document.getElementById('error-box').classList.remove('hidden');
@@ -2183,12 +2280,134 @@ function renderQmdj(q) {
 
   document.getElementById('qmdj-interps').innerHTML = interpHtml;
 
+  // ── Deep Narasi: Apa artinya untuk Anda ──────────────────────
+  renderQmdjDeepNarasi(q, _qmdjType || 'nianjia');
+
   loading.style.display = 'none';
   content.style.display = 'block';
 
   // Re-render Section 6 now that QMDJ data is available
   if (_result?.comprehensive?.comparison) {
     render6(_result.comprehensive.comparison);
+  }
+}
+
+function renderQmdjDeepNarasi(q, type) {
+  const container = document.getElementById('qmdj-deep-narasi');
+  if (!container) return;
+
+  const isNianjia = type === 'nianjia';
+  const isRijia   = type === 'rijia';
+
+  // Kumpulkan palace terkuat & terlemah
+  const nonCenter = (q.palaces || []).filter(p => p.palaceNumber !== 5);
+  const sorted = [...nonCenter].sort((a,b) => (b.interp?.score||0) - (a.interp?.score||0));
+  const topPal = sorted[0];
+  const botPal = sorted[sorted.length - 1];
+
+  const DIRS = {1:'Utara',2:'Barat Daya',3:'Timur',4:'Tenggara',5:'Pusat',6:'Barat Laut',7:'Barat',8:'Timur Laut',9:'Selatan'};
+  const STAR_ID2 = {'天蓬':'Tianpeng (Hujan Lebat)','天任':'Tianren (Tanggung Jawab)','天冲':'Tianchong (Penuh Energi)',
+    '天辅':'Tianfu (Dukungan)','天英':'Tianying (Kehormatan)','天芮':'Tianrui (Pemulihan)',
+    '天柱':'Tianzhu (Pilar)','天心':'Tianxin (Hati Langit)','天禽':'Tianqin (Pusat)'};
+  const DOOR_ID2 = {'开门':'Pintu Terbuka','休门':'Pintu Istirahat','生门':'Pintu Kehidupan',
+    '伤门':'Pintu Luka','杜门':'Pintu Tersumbat','景门':'Pintu Cerah','死门':'Pintu Kematian','惊门':'Pintu Kejutan'};
+
+  const topDir  = DIRS[topPal?.palaceNumber] || '—';
+  const topStar = STAR_ID2[topPal?.star] || topPal?.star || '—';
+  const topDoor = DOOR_ID2[topPal?.door] || topPal?.door || '—';
+  const topQual = topPal?.interp?.quality || '—';
+  const botDir  = DIRS[botPal?.palaceNumber] || '—';
+  const botQual = botPal?.interp?.quality || '—';
+
+  // Bintang & Pintu Pemimpin
+  const fuStar = STAR_ID2[q.zhiFuStar] || q.zhiFuStar || '—';
+  const shiDoor = DOOR_ID2[q.zhiShiDoor] || q.zhiShiDoor || '—';
+  const fuDir  = DIRS[q.zhiFuPalace] || '—';
+  const shiDir = DIRS[q.zhiShiPalace] || '—';
+
+  if (isNianjia) {
+    container.innerHTML = `
+      <div style="background:var(--surface2);border:1px solid var(--gold);border-radius:10px;padding:16px;margin-top:4px">
+        <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:12px">
+          📖 Apa Artinya untuk Anda — Natal Tahun (年家)
+        </div>
+        <p style="font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:10px">
+          <em>Pertanyaan mendasar: "Energi kosmis apa yang membentuk karakter dan takdir Anda sejak lahir?"</em>
+        </p>
+        <div style="font-size:13px;line-height:1.8;color:var(--text)">
+
+          <p><strong style="color:var(--gold2)">🟢 Kekuatan Bawaan Anda:</strong><br>
+          Ruas terkuat dalam chart Natal Tahun Anda adalah <strong>${topDir}</strong> — dengan kualitas <strong>${topQual}</strong>,
+          Bintang <strong>${topStar}</strong>, dan ${topDoor}.
+          Ini adalah arah dan energi yang paling "ramah" bagi karakter alami Anda.
+          Aktivitas yang membutuhkan kemampuan terbaik Anda — keputusan besar, negosiasi penting, atau momen yang menentukan —
+          akan mengalir lebih mudah ketika Anda membawa kualitas arah ini ke dalam tindakan.</p>
+
+          <p><strong style="color:var(--gold2)">⭐ Bintang & Pintu Pemimpin (值符 / 值使):</strong><br>
+          Chart tahun Anda dipimpin oleh <strong>${fuStar}</strong> di arah <strong>${fuDir}</strong>
+          dan <strong>${shiDoor}</strong> di arah <strong>${shiDir}</strong>.
+          Kombinasi ini adalah "tanda tangan" energi natal Anda — mencerminkan cara alami Anda memimpin, bergerak,
+          dan mengambil ruang dalam kehidupan.</p>
+
+          <p><strong style="color:var(--gold2)">⚠️ Area yang Perlu Perhatian:</strong><br>
+          Ruas yang paling menantang adalah <strong>${botDir}</strong> dengan kualitas <strong>${botQual}</strong>.
+          Ini bukan berarti area ini harus dihindari sepenuhnya — tetapi untuk keputusan dan langkah yang sangat penting,
+          pilih momen dan arah yang lebih mendukung.
+          Dalam kehidupan sehari-hari, beri perhatian ekstra pada aspek kehidupan yang secara tradisional dikaitkan dengan ruas ini.</p>
+
+          <p><strong style="color:var(--gold2)">🌱 Cara Mengoptimalkan Energi Natal Anda:</strong><br>
+          • Posisikan meja kerja atau kursi menghadap ke arah <strong>${fuDir}</strong> atau <strong>${topDir}</strong> untuk mendukung fokus dan pengambilan keputusan.<br>
+          • Ketika menghadapi pilihan sulit, tanyakan pada diri sendiri: "Apakah langkah ini selaras dengan energi terkuat saya?"<br>
+          • Pelajari sifat bintang <strong>${topStar}</strong> — kualitas ini adalah modal utama yang perlu Anda kembangkan sepanjang hidup.<br>
+          • Hindari membuat komitmen besar di arah ${botDir} tanpa persiapan yang matang.</p>
+
+        </div>
+      </div>`;
+  } else if (isRijia) {
+    container.innerHTML = `
+      <div style="background:var(--surface2);border:1px solid var(--blue);border-radius:10px;padding:16px;margin-top:4px">
+        <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:12px">
+          📖 Apa Artinya untuk Anda — Natal Hari (日家)
+        </div>
+        <p style="font-size:13px;line-height:1.7;color:var(--muted);margin-bottom:10px">
+          <em>Pertanyaan inti: "Bagaimana ritme dan pola harian Anda berinteraksi dengan dunia?"</em>
+        </p>
+        <div style="font-size:13px;line-height:1.8;color:var(--text)">
+
+          <p><strong style="color:var(--blue)">⚡ Energi Dominan Hari Lahir Anda:</strong><br>
+          Dalam peta Natal Hari, ruas terkuat Anda adalah <strong>${topDir}</strong> (${topQual}) —
+          dengan Bintang <strong>${topStar}</strong> dan ${topDoor}.
+          Ini mencerminkan ritme alami Anda: bagaimana Anda paling efektif dalam berinteraksi,
+          bekerja, dan merespons tantangan sehari-hari.</p>
+
+          <p><strong style="color:var(--blue)">🔄 Tipe Interaksi Harian Anda:</strong><br>
+          Bintang dan Pintu Pemimpin harian Anda — <strong>${fuStar}</strong> dan <strong>${shiDoor}</strong> —
+          menunjukkan cara alami Anda "bergerak" dalam satu hari.
+          ${fuStar.includes('Energi') || fuStar.includes('Kehormatan')
+            ? 'Anda adalah tipe yang bergerak cepat dan berenergi tinggi — hari terbaik Anda adalah hari yang penuh aksi dan interaksi langsung.'
+            : fuStar.includes('Istirahat') || fuStar.includes('Stabil') || fuStar.includes('Dukungan')
+            ? 'Anda adalah tipe reflektif dan terstruktur — hari terbaik Anda dimulai dengan perencanaan yang matang dan ruang untuk berpikir.'
+            : 'Anda memiliki ritme yang unik — kadang bergerak cepat, kadang butuh keheningan untuk memproses.'
+          }</p>
+
+          <p><strong style="color:var(--blue)">💡 Hal Baik yang Perlu Dipertahankan:</strong><br>
+          • Ritme alami Anda paling kuat di <strong>${topDir}</strong> — pertahankan kebiasaan yang selaras dengan energi ini.<br>
+          • Kualitas hari lahir Anda membuat Anda secara alami ${topStar.includes('Tanggung Jawab') ? 'dapat diandalkan dan konsisten' : topStar.includes('Energi') ? 'penuh semangat dan inisiatif' : topStar.includes('Dukungan') ? 'suportif dan kolaboratif' : topStar.includes('Hati') ? 'bijaksana dan intuitif' : 'unik dan berharga'} dalam interaksi sehari-hari.</p>
+
+          <p><strong style="color:var(--blue)">🔧 Hal yang Perlu Diperbaiki:</strong><br>
+          • Ruas terlemah (<strong>${botDir}</strong>, ${botQual}) menunjukkan aspek yang secara alami lebih menantang bagi ritme harian Anda.<br>
+          • Jika Anda sering merasa lelah atau terkuras di akhir hari, kemungkinan Anda banyak menghabiskan energi di area yang berlawanan dengan ritme alami Anda.<br>
+          • Coba strukturkan hari Anda: letakkan tugas paling berat di waktu pagi, dan sisakan sore hari untuk tugas yang lebih ringan dan kreatif.</p>
+
+          <p><strong style="color:var(--blue)">🗓 Cara Meningkatkan Efektivitas Harian:</strong><br>
+          • Mulai hari dengan orientasi ke arah <strong>${fuDir}</strong> — bahkan hanya 5 menit meditasi atau refleksi bisa mengaktifkan energi terbaik Anda.<br>
+          • Jadwalkan pertemuan dan keputusan penting di jam-jam di mana Anda secara alami paling waspada (biasanya pagi hari untuk tipe dinamis, siang-sore untuk tipe reflektif).<br>
+          • Gunakan Natal Hari ini sebagai "panduan ritme" pribadi — bukan untuk membatasi, tapi untuk mengoptimalkan.</p>
+
+        </div>
+      </div>`;
+  } else {
+    container.innerHTML = '';
   }
 }
 
@@ -2243,8 +2462,223 @@ function resetForm() {
   _qmdjData = {};
   document.getElementById('qmdj-section').style.display = 'none';
   document.getElementById('qmdj-content').style.display = 'none';
+  // Hide compat sections & triggers
+  ['spouse','family','friend'].forEach(t => {
+    const s = document.getElementById(`section-compat-${t}`);
+    if (s) s.style.display = 'none';
+  });
+  const triggers = document.getElementById('compat-triggers');
+  if (triggers) triggers.style.display = 'none';
   // Scroll ke atas form
   document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// SECTION 9/10/11 — COMPATIBILITY FUNCTIONS
+// ============================================================
+
+// Buat form input untuk orang kedua (sama seperti form utama tapi lebih ringkas)
+function buildCompatForm(containerId) {
+  const tzOptions = (_tzList || []).map(tz =>
+    `<option value="${tz.value}" ${tz.value==='+7'?'selected':''}>${tz.label}</option>`).join('');
+
+  document.getElementById(containerId).innerHTML = `
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px">
+      <div>
+        <label class="form-label">Nama Lengkap</label>
+        <input type="text" class="form-control compat-name" placeholder="Nama lengkap">
+      </div>
+      <div>
+        <label class="form-label">Jenis Kelamin</label>
+        <select class="form-control compat-gender">
+          <option value="male">Pria</option>
+          <option value="female">Wanita</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Tahun Lahir</label>
+        <input type="number" class="form-control compat-year" placeholder="cth: 1985" min="1900" max="2050">
+      </div>
+      <div>
+        <label class="form-label">Bulan Lahir</label>
+        <input type="number" class="form-control compat-month" placeholder="1–12" min="1" max="12">
+      </div>
+      <div>
+        <label class="form-label">Tanggal Lahir</label>
+        <input type="number" class="form-control compat-day" placeholder="1–31" min="1" max="31">
+      </div>
+      <div>
+        <label class="form-label">Jam Lahir</label>
+        <input type="number" class="form-control compat-hour" placeholder="0–23" min="0" max="23">
+      </div>
+      <div>
+        <label class="form-label">Zona Waktu</label>
+        <select class="form-control compat-timezone">${tzOptions}</select>
+      </div>
+    </div>`;
+}
+
+function showCompatSection(type) {
+  const secId = `section-compat-${type}`;
+  const inputId = `compat-${type}-inputs`;
+  const sec = document.getElementById(secId);
+  if (!sec) return;
+  sec.style.display = 'block';
+  buildCompatForm(inputId);
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function hideCompatSection(type) {
+  const sec = document.getElementById(`section-compat-${type}`);
+  if (sec) sec.style.display = 'none';
+  const res = document.getElementById(`compat-${type}-result`);
+  if (res) { res.style.display = 'none'; res.innerHTML = ''; }
+  const frm = document.getElementById(`compat-${type}-form`);
+  if (frm) frm.style.display = 'block';
+}
+
+async function submitCompat(type) {
+  if (!_result || !_lastInput) {
+    alert('Harap hitung chart utama terlebih dahulu sebelum menambahkan analisa hubungan.');
+    return;
+  }
+
+  const sec = document.getElementById(`section-compat-${type}`);
+  const nameEl   = sec.querySelector('.compat-name');
+  const genderEl = sec.querySelector('.compat-gender');
+  const yearEl   = sec.querySelector('.compat-year');
+  const monthEl  = sec.querySelector('.compat-month');
+  const dayEl    = sec.querySelector('.compat-day');
+  const hourEl   = sec.querySelector('.compat-hour');
+  const tzEl     = sec.querySelector('.compat-timezone');
+
+  const year = parseInt(yearEl?.value);
+  if (!year || year < 1900 || year > 2050) {
+    alert('Harap isi tahun lahir yang valid (1900–2050).');
+    return;
+  }
+
+  // Tentukan relationship type
+  let relType = type === 'spouse' ? 'spouse'
+    : type === 'family' ? (document.getElementById('family-relation-type')?.value || 'child')
+    : (document.getElementById('friend-relation-type')?.value || 'friend');
+
+  const person2 = {
+    name:      nameEl?.value || 'Pasangan',
+    gender:    genderEl?.value || 'male',
+    birthYear: year,
+    birthMonth:parseInt(monthEl?.value) || 1,
+    birthDay:  parseInt(dayEl?.value) || 1,
+    birthHour: parseInt(hourEl?.value) || 12,
+    timezone:  tzEl?.value || '+7'
+  };
+
+  const person1 = {
+    name:      _lastInput.name || 'Anda',
+    gender:    _lastInput.gender,
+    birthYear: parseInt(_lastInput.birthYear),
+    birthMonth:parseInt(_lastInput.birthMonth),
+    birthDay:  parseInt(_lastInput.birthDay),
+    birthHour: parseInt(_lastInput.birthHour),
+    timezone:  _lastInput.timezone || '+7'
+  };
+
+  const resDiv = document.getElementById(`compat-${type}-result`);
+  const frmDiv = document.getElementById(`compat-${type}-form`);
+  resDiv.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted)">⏳ Menganalisa hubungan…</div>`;
+  resDiv.style.display = 'block';
+  frmDiv.style.display = 'none';
+
+  try {
+    const resp = await fetch('/api/compatibility', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ person1, person2, relationshipType: relType })
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || 'Gagal menganalisa kompatibilitas');
+    renderCompatResult(data.compatibility, resDiv, type);
+  } catch(e) {
+    resDiv.innerHTML = `<div style="color:#ef4444;padding:16px">❌ Error: ${e.message}</div>
+      <button class="btn btn-secondary" onclick="document.getElementById('compat-${type}-form').style.display='block'; this.parentElement.style.display='none'" style="margin-top:8px">← Kembali</button>`;
+  }
+}
+
+function renderCompatResult(c, container, type) {
+  const rating = c.compatRating || { label: '—', color: '#6b7280' };
+  const s = c.sections || {};
+  const sum = c.summary || {};
+
+  // Helper: render markdown-lite (bold + paragraph)
+  function mdToHtml(text) {
+    if (!text) return '';
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/^/, '<p>').replace(/$/, '</p>');
+  }
+
+  const sections9 = [
+    { icon:'👤', title:'Karakter ' + (c.nameB || 'Pasangan'),      body: s.profileB },
+    { icon:'⚛️', title:'Interaksi Elemen (BaZi · ZWDS · QMDJ)',  body: s.elementNarasi },
+    { icon:'⚖️', title:'Kelebihan & Area Perhatian',              body: s.strengthsWeaknesses },
+    { icon:'🔀', title:'Kombinasi & Benturan Chart',              body: s.clashCombine },
+    { icon:'🔭', title:'Potensi Hubungan ke Depan',               body: s.futureProspect },
+    { icon:'🤲', title:'Cara Menghandle',                         body: s.howToHandle },
+    { icon:'📝', title:'Kesimpulan Hubungan',                     body: s.conclusion },
+    { icon:'🌱', title:'Cara Meningkatkan Hubungan',              body: s.howToImprove },
+  ];
+
+  let html = `
+    <!-- Score banner -->
+    <div class="compat-score-bar" style="background:${rating.color}20; border:1px solid ${rating.color}; color:${rating.color}">
+      ${rating.label} &nbsp;·&nbsp; ${c.nameA || 'Anda'} ↔ ${c.nameB || 'Pasangan'}
+      <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:auto">
+        ${sum.dayMasterA?.label || ''} · ${sum.dayMasterB?.label || ''}
+      </span>
+    </div>
+
+    <!-- Summary chips -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      ${sum.stemHe?.he ? `<span style="background:#15803d22;border:1px solid #15803d;color:#15803d;padding:2px 8px;border-radius:12px;font-size:11px">✅ 六合 Stem</span>` : ''}
+      ${sum.stemChong   ? `<span style="background:#b91c1c22;border:1px solid #b91c1c;color:#b91c1c;padding:2px 8px;border-radius:12px;font-size:11px">⚔️ 冲 Stem</span>` : ''}
+      ${sum.dayBranchHe ? `<span style="background:#15803d22;border:1px solid #15803d;color:#15803d;padding:2px 8px;border-radius:12px;font-size:11px">✅ 六合 Branch</span>` : ''}
+      ${sum.dayBranchChong?`<span style="background:#b91c1c22;border:1px solid #b91c1c;color:#b91c1c;padding:2px 8px;border-radius:12px;font-size:11px">⚔️ 六冲 Branch</span>` : ''}
+      ${sum.sanHe       ? `<span style="background:#1d4ed822;border:1px solid #1d4ed8;color:#1d4ed8;padding:2px 8px;border-radius:12px;font-size:11px">✅ 三合 ${sum.sanHe}</span>` : ''}
+    </div>
+
+    <!-- Sections -->
+    ${sections9.map(sec => sec.body ? `
+      <div class="compat-section-card">
+        <h3>${sec.icon} ${sec.title}</h3>
+        <div class="compat-narasi">${mdToHtml(sec.body)}</div>
+      </div>` : '').join('')}
+
+    <!-- Buttons -->
+    <div class="compat-print-btn no-print">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Simpan PDF</button>
+      <button class="btn btn-secondary" onclick="resetCompatSection('${type}')">🔄 Ulang / Ganti Data</button>
+    </div>`;
+
+  container.innerHTML = html;
+}
+
+function resetCompatSection(type) {
+  const resDiv = document.getElementById(`compat-${type}-result`);
+  const frmDiv = document.getElementById(`compat-${type}-form`);
+  if (resDiv) { resDiv.innerHTML = ''; resDiv.style.display = 'none'; }
+  if (frmDiv) frmDiv.style.display = 'block';
+  // Clear form values
+  const sec = document.getElementById(`section-compat-${type}`);
+  sec?.querySelectorAll('input[type="text"], input[type="number"]').forEach(el => el.value = '');
+}
+
+// Tampilkan tombol trigger saat hasil muncul
+function showCompatTriggers() {
+  const t = document.getElementById('compat-triggers');
+  if (t) t.style.display = 'flex';
 }
 
 // ============================================================
