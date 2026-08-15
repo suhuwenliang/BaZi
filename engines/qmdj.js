@@ -585,7 +585,7 @@ function generateNianJia(year) {
     dun: 'yin', juNumber, yuan,
     type: 'nianjia', kongWang,
     ganzhi: yearGz,
-    label: `${year}年 · 年家奇门 · ${yuan}元${juNumber}局 · 阴遁`,
+    label: `Natal Tahun ${year} · Tahun (年家) · Yuan ${yuan} Periode ${juNumber} · Mundur Yin (阴遁)`,
     fourPillars: { year: yearGz, month:{gan:'',zhi:''}, day:{gan:'',zhi:''}, hour:{gan:'',zhi:''} }
   };
 }
@@ -667,7 +667,7 @@ function generateRiJia(year, month, day) {
   // Get four pillars
   const fourPillars = getFourPillars(year, month, day, '子');
 
-  const dunLabel = isYang ? '阳遁' : '阴遁';
+  const dunLabel = isYang ? 'Maju Yang (阳遁)' : 'Mundur Yin (阴遁)';
   return {
     palaces,
     zhiFuStar, zhiShiDoor,
@@ -675,7 +675,7 @@ function generateRiJia(year, month, day) {
     dun, juNumber, yuan,
     type: 'rijia', kongWang,
     ganzhi: dayGz,
-    label: `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')} · 日家奇门 · ${yuan}元${juNumber}局 · ${dunLabel}`,
+    label: `Natal Hari ${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')} · Harian (日家) · Yuan ${yuan} Periode ${juNumber} · ${dunLabel}`,
     fourPillars
   };
 }
@@ -869,7 +869,7 @@ function generateShiJia(now) {
   }
 
   const fourPillars = getFourPillars(year, month, day, hourBranch);
-  const dunLabel = isYang ? '阳遁' : '阴遁';
+  const dunLabel = isYang ? 'Maju Yang (阳遁)' : 'Mundur Yin (阴遁)';
   const timeStr = `${String(hour).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   return {
     palaces,
@@ -878,7 +878,7 @@ function generateShiJia(now) {
     dun, juNumber, yuan,
     type: 'shijia', kongWang,
     ganzhi: { stem: hourStem, branch: hourBranch },
-    label: `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')} ${timeStr} · 时家奇门 · ${yuan}元${juNumber}局 · ${dunLabel}`,
+    label: `Sekarang ${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')} ${timeStr} · Per Jam (时家) · Yuan ${yuan} Periode ${juNumber} · ${dunLabel}`,
     fourPillars, hourStem, hourBranch
   };
 }
@@ -888,38 +888,38 @@ function generateShiJia(now) {
 // ═══════════════════════════════════════════════════
 
 const DOOR_DATA = {
-  '开门': { nature:'大吉', summary:'开创发展、功成名就', advice:'利开业求官、出行谈判、建功立业。凡求官、出行、开业皆宜。', icon:'🔓' },
-  '休门': { nature:'大吉', summary:'安闲享福、贵人相助', advice:'利休养、访友、求贵人、上书陈事。有贵人暗中相助。', icon:'🌙' },
-  '生门': { nature:'大吉', summary:'生财旺财、繁衍生长', advice:'利求财、置产、经商投资。财运最佳之门。', icon:'🌱' },
-  '伤门': { nature:'中凶', summary:'进取行动、竞争争斗', advice:'利竞技、武事。文事不宜，易有口舌争斗。', icon:'⚡' },
-  '杜门': { nature:'小凶', summary:'封闭隐藏、拒绝拖延', advice:'利隐匿埋伏、保密事务。开拓之事不宜。', icon:'🚪' },
-  '景门': { nature:'中吉', summary:'文思大发、光明虚华', advice:'利文书考试、口才展示。实务经营需谨慎。', icon:'🎆' },
-  '死门': { nature:'大凶', summary:'死气沉沉、停滞困境', advice:'诸事不宜。利葬事丧仪、入墓之事。慎出行谋事。', icon:'💀' },
-  '惊门': { nature:'小凶', summary:'惊恐口舌、震动不安', advice:'易有惊吓、官非口舌。利制造声势、捕捉逃犯。', icon:'⚠️' },
+  '开门': { nature:'大吉', summary:'Membuka Peluang & Meraih Prestasi', advice:'Sangat baik untuk memulai usaha, melamar jabatan, bepergian, negosiasi, dan membangun karir. Semua urusan yang membutuhkan inisiatif dan keberanian sangat didukung arah ini.', icon:'🔓' },
+  '休门': { nature:'大吉', summary:'Ketenangan & Pertolongan Penolong', advice:'Baik untuk beristirahat, mengunjungi sahabat, mencari tokoh penolong, dan mengajukan permohonan. Ada tokoh penting yang diam-diam mendukung Anda.', icon:'🌙' },
+  '生门': { nature:'大吉', summary:'Keuangan Melimpah & Pertumbuhan', advice:'Sangat baik untuk mencari uang, investasi, berdagang, dan membeli properti. Ini adalah Pintu terbaik untuk urusan finansial.', icon:'🌱' },
+  '伤门': { nature:'中凶', summary:'Kompetisi & Aksi Agresif', advice:'Cocok untuk kompetisi, olahraga, dan urusan militer. Tidak baik untuk urusan dokumen dan diplomatik — waspadai konflik lisan dan pertengkaran.', icon:'⚡' },
+  '杜门': { nature:'小凶', summary:'Tertutup & Tersembunyi', advice:'Baik untuk menyembunyikan informasi, urusan rahasia, dan hal-hal yang membutuhkan kerahasiaan. Tidak baik untuk ekspansi dan membuka peluang baru.', icon:'🚪' },
+  '景门': { nature:'中吉', summary:'Kreativitas & Keahlian Presentasi', advice:'Baik untuk ujian tulis, presentasi, dan menampilkan bakat verbal. Untuk urusan bisnis praktis, perlu lebih teliti agar tidak hanya tampak bagus di permukaan.', icon:'🎆' },
+  '死门': { nature:'大凶', summary:'Stagnan & Terjebak', advice:'Tidak baik untuk hampir semua hal. Hindari memulai sesuatu, bepergian jauh, atau mengambil keputusan besar. Energi di arah ini sangat berat dan membebani.', icon:'💀' },
+  '惊门': { nature:'小凶', summary:'Kejutan & Ketidakstabilan', advice:'Waspadai berita mengejutkan, gosip, konflik verbal, dan ketidakstabilan emosi. Dapat digunakan untuk menciptakan momentum atau menangkap peluang dalam keadaan darurat.', icon:'⚠️' },
 };
 
 const STAR_DATA = {
-  '天蓬': { nature:'凶', summary:'凶险骁勇、桃花水事', advice:'主凶险、贼盗、桃花。利水利、军事。慎行事。', icon:'🌊' },
-  '天芮': { nature:'凶', summary:'疾病耗散、小人暗害', advice:'主疾病、阴谋、小人。慎防小人暗算。', icon:'🌑' },
-  '天冲': { nature:'中吉', summary:'龙骧虎步、锐意进取', advice:'主惊动奋发。利争竞、军事、进取创新。', icon:'🐉' },
-  '天辅': { nature:'大吉', summary:'福德吉祥、文明昌盛', advice:'主吉祥文明。利文事、外交、教化、遇贵人。', icon:'⭐' },
-  '天禽': { nature:'中性', summary:'中正稳固、调停居中', advice:'主稳定居中，寄于坤宫，助土之德。中正调和。', icon:'🦅' },
-  '天心': { nature:'大吉', summary:'通天彻地、智慧光明', advice:'主大吉。利治病、求官、谋事。有贵人天助。', icon:'💡' },
-  '天柱': { nature:'凶', summary:'好辩折损、破坏摧毁', advice:'主折损破坏、口舌是非。慎言防纠纷。', icon:'💥' },
-  '天任': { nature:'大吉', summary:'仁厚稳重、任重道远', advice:'主吉顺仁厚。利农事、地产、稳健发展。', icon:'🏔' },
-  '天英': { nature:'中凶', summary:'光明虚耀、虚华不实', advice:'主虚华浮夸。利文才展示，实务需踏实。', icon:'🌟' },
+  '天蓬': { nature:'凶', summary:'Keras & Penuh Risiko', advice:'Bintang ini membawa energi keras dan berbahaya. Waspadai pencurian, penipuan, dan urusan air. Tidak baik untuk perjalanan dan keputusan besar.', icon:'🌊' },
+  '天芮': { nature:'凶', summary:'Kesehatan & Ancaman Tersembunyi', advice:'Waspadai masalah kesehatan, musuh tersembunyi, dan penipuan halus. Lebih baik diam dan tidak mengambil keputusan besar di arah ini.', icon:'🌑' },
+  '天冲': { nature:'中吉', summary:'Energi & Tekad Maju', advice:'Bintang penuh semangat dan dorongan maju. Baik untuk kompetisi, inovasi, dan urusan yang membutuhkan keberanian. Energi keras tapi produktif.', icon:'🐉' },
+  '天辅': { nature:'大吉', summary:'Berkah & Kemakmuran Budaya', advice:'Bintang paling suportif — baik untuk urusan intelektual, diplomatik, pendidikan, dan bertemu tokoh berpengaruh. Membawa keberuntungan alami.', icon:'⭐' },
+  '天禽': { nature:'中性', summary:'Stabil & Penengah', advice:'Bintang netral yang menjaga keseimbangan. Ditempatkan di Pusat (Ruas 5) dan membantu energi keseluruhan chart. Tidak digunakan untuk penilaian arah langsung.', icon:'🦅' },
+  '天心': { nature:'大吉', summary:'Kecerdasan & Cahaya Ilahi', advice:'Bintang keberuntungan tinggi. Sangat baik untuk penyembuhan, melamar jabatan, dan merencanakan langkah penting. Ada pertolongan langit yang menyertai.', icon:'💡' },
+  '天柱': { nature:'凶', summary:'Pertikaian & Kerusakan', advice:'Bintang yang membawa konflik dan kerusakan. Waspadai pertengkaran, masalah hukum, dan kerusakan aset. Jaga tutur kata di arah ini.', icon:'💥' },
+  '天任': { nature:'大吉', summary:'Tanggung Jawab & Kekokohan', advice:'Bintang yang stabil dan dapat diandalkan. Sangat baik untuk pertanian, properti, dan pembangunan fondasi jangka panjang yang kokoh.', icon:'🏔' },
+  '天英': { nature:'中凶', summary:'Cahaya Semu & Keangkuhan', advice:'Penampilan luar lebih baik dari realita. Baik untuk menampilkan bakat dan kreativitas, tapi kurang efektif untuk urusan bisnis praktis. Jangan terlalu percaya diri.', icon:'🌟' },
 };
 
 const GOD_DATA = {
-  '值符': { nature:'大吉', summary:'天乙贵人、诸事皆利', advice:'最吉之神。落宫主得天助，所谋皆遂。', icon:'👑' },
-  '螣蛇': { nature:'凶',  summary:'虚惊怪异、梦幻口舌', advice:'主虚惊怪事、梦扰口舌。慎防受骗迷惑。', icon:'🐍' },
-  '腾蛇': { nature:'凶',  summary:'虚惊怪异、梦幻口舌', advice:'主虚惊怪事、梦扰口舌。慎防受骗迷惑。', icon:'🐍' },
-  '太阴': { nature:'吉',  summary:'阴谋隐匿、贵妇阴助', advice:'主暗谋隐密。利密谋、阴私、暗度陈仓。', icon:'🌙' },
-  '六合': { nature:'吉',  summary:'和合协助、人缘大旺', advice:'主和谐合作。利交际、联络、媒合、合作。', icon:'🤝' },
-  '白虎': { nature:'凶',  summary:'凶猛伤人、血光之灾', advice:'主凶险血光。慎防意外、争斗、车祸。', icon:'🐅' },
-  '玄武': { nature:'凶',  summary:'欺骗盗贼、小人暗算', advice:'主诈骗失窃。慎防小人、盗贼、欺诈。', icon:'🌑' },
-  '九地': { nature:'吉',  summary:'厚重稳固、城郭库藏', advice:'主稳固守成。利潜伏埋藏、房产土地。', icon:'🌍' },
-  '九天': { nature:'吉',  summary:'高远张扬、贵人天助', advice:'主声势高张。利求官晋升、大张旗鼓。', icon:'☀️' },
+  '值符': { nature:'大吉', summary:'Pemimpin Tertinggi — Pertolongan Langit', advice:'Dewa paling auspicous. Kehadiran Dewa ini di sebuah ruas berarti segala urusan mendapat bantuan tak terduga dari langit — semua rencana cenderung berhasil.', icon:'👑' },
+  '螣蛇': { nature:'凶',  summary:'Ular Terbang — Ilusi & Kebohongan', advice:'Waspadai berita bohong, mimpi buruk, dan konflik verbal. Jangan mudah percaya informasi yang beredar di arah ini.', icon:'🐍' },
+  '腾蛇': { nature:'凶',  summary:'Ular Terbang — Ilusi & Kebohongan', advice:'Waspadai berita bohong, mimpi buruk, dan konflik verbal. Jangan mudah percaya informasi yang beredar di arah ini.', icon:'🐍' },
+  '太阴': { nature:'吉',  summary:'Yin Besar — Strategi Tersembunyi', advice:'Baik untuk rencana rahasia, diplomasi diam-diam, dan urusan yang membutuhkan kerahasiaan. Ada dukungan dari tokoh wanita berpengaruh secara diam-diam.', icon:'🌙' },
+  '六合': { nature:'吉',  summary:'Enam Harmoni — Relasi & Kerjasama', advice:'Sangat baik untuk menjalin relasi, negosiasi, mediasi, dan semua bentuk kerjasama. Energi arah ini membawa kecocokan dan saling menguntungkan.', icon:'🤝' },
+  '白虎': { nature:'凶',  summary:'Harimau Putih — Bahaya & Kekerasan', advice:'Waspadai kecelakaan fisik, perkelahian, dan masalah medis mendadak. Hindari perjalanan dan aktivitas berisiko tinggi di arah ini.', icon:'🐅' },
+  '玄武': { nature:'凶',  summary:'Kura Hitam — Pencurian & Penipuan', advice:'Waspadai penipuan, pencurian, dan pengkhianatan. Jangan sembarangan mempercayai orang baru atau menandatangani kontrak di arah ini.', icon:'🌑' },
+  '九地': { nature:'吉',  summary:'Sembilan Bumi — Fondasi & Kekokohan', advice:'Baik untuk membangun fondasi jangka panjang, investasi properti, dan menjaga posisi saat ini. Energinya stabil dan memberikan perlindungan.', icon:'🌍' },
+  '九天': { nature:'吉',  summary:'Sembilan Langit — Ambisi & Promosi', advice:'Baik untuk melamar jabatan tinggi, ekspansi bisnis, dan memperluas pengaruh. Energinya membawa visibilitas dan dukungan dari atasan.', icon:'☀️' },
 };
 
 // 五行生克文字
@@ -962,11 +962,11 @@ function interpretPalace(p) {
   if (p.marks.includes('空')) score -= 1;
 
   let quality, qIcon;
-  if (score >= 3)        { quality = '大吉'; qIcon = '🟢'; }
-  else if (score >= 1)   { quality = '小吉'; qIcon = '🔵'; }
-  else if (score === 0)  { quality = '中平'; qIcon = '⚪'; }
-  else if (score >= -1)  { quality = '小凶'; qIcon = '🟡'; }
-  else                   { quality = '大凶'; qIcon = '🔴'; }
+  if (score >= 3)        { quality = 'Sangat Baik (大吉)'; qIcon = '🟢'; }
+  else if (score >= 1)   { quality = 'Baik (小吉)';        qIcon = '🔵'; }
+  else if (score === 0)  { quality = 'Netral (中平)';      qIcon = '⚪'; }
+  else if (score >= -1)  { quality = 'Kurang Baik (小凶)'; qIcon = '🟡'; }
+  else                   { quality = 'Berbahaya (大凶)';   qIcon = '🔴'; }
 
   // Star-Door relation
   const starElem = p.starElement;
@@ -1084,19 +1084,20 @@ function buildChartInterpretation(chart) {
 
   let overallQuality;
   const jScore = jiPatterns.length * 2 - xiongPatterns.length * 1.5;
-  if (jScore > 2)      overallQuality = '🟢 吉局';
-  else if (jScore > 0) overallQuality = '🔵 小吉局';
-  else if (jScore === 0) overallQuality = '⚪ 中平局';
-  else if (jScore > -2) overallQuality = '🟡 小凶局';
-  else                  overallQuality = '🔴 凶局';
+  if (jScore > 2)        overallQuality = '🟢 Baik (吉局)';
+  else if (jScore > 0)   overallQuality = '🔵 Cukup Baik (小吉局)';
+  else if (jScore === 0) overallQuality = '⚪ Netral (中平局)';
+  else if (jScore > -2)  overallQuality = '🟡 Perlu Waspada (小凶局)';
+  else                   overallQuality = '🔴 Kurang Menguntungkan (凶局)';
 
   // Individual palace interpretations
   const palaceInterps = palaces.map(p => ({ ...p, interp: interpretPalace(p) }));
 
   // Summary
-  const dunText = dun === 'yang' ? '阳遁' : '阴遁';
-  const typeText = { nianjia:'年家', rijia:'日家', shijia:'时家' }[type] || type;
-  const summary = `${yuan}元${juNumber}局 ${dunText} | 值符: ${zhiFuStar} 落${PALACE_NAMES[zhiFuPalace] || ''}${zhiFuPalace}宫 | 值使: ${zhiShiDoor} 落${PALACE_NAMES[zhiShiPalace] || ''}${zhiShiPalace}宫`;
+  const dunText = dun === 'yang' ? 'Maju Yang (阳遁)' : 'Mundur Yin (阴遁)';
+  const typeText = { nianjia:'Natal Tahun (年家)', rijia:'Natal Hari (日家)', shijia:'Per Jam (时家)' }[type] || type;
+  const PAL_DIR_ID = {1:'Utara',2:'Barat Daya',3:'Timur',4:'Tenggara',5:'Pusat',6:'Barat Laut',7:'Barat',8:'Timur Laut',9:'Selatan'};
+  const summary = `Yuan ${yuan} Periode ${juNumber} · ${dunText} | Bintang Pemimpin (值符): ${zhiFuStar} → ${PALACE_NAMES[zhiFuPalace]||''}${zhiFuPalace} (${PAL_DIR_ID[zhiFuPalace]||''}) | Gerbang Pemimpin (值使): ${zhiShiDoor} → ${PALACE_NAMES[zhiShiPalace]||''}${zhiShiPalace} (${PAL_DIR_ID[zhiShiPalace]||''})`;
 
   // Best direction (best palace)
   const sorted = [...palaceInterps].filter(p => p.palaceNumber !== 5).sort((a,b) => b.interp.score - a.interp.score);

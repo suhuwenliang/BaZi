@@ -608,6 +608,50 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 
 <script>
 // ============================================================
+// GLOBAL TRANSLATION TABLES
+// ============================================================
+const ZWDS_STAR_ID = {
+  '紫微':'Ziwei (Kaisar)','天机':'Tianji (Strategi)','天機':'Tianji (Strategi)',
+  '太阳':'Taiyang (Matahari)','太陽':'Taiyang (Matahari)',
+  '武曲':'Wuqu (Keuangan)','天同':'Tiantong (Harmoni)',
+  '廉贞':'Lianzhen (Integritas)','廉貞':'Lianzhen (Integritas)',
+  '天府':'Tianfu (Kemakmuran)','太阴':'Taiyin (Bulan)','太陰':'Taiyin (Bulan)',
+  '贪狼':'Tanlang (Ambisi)','貪狼':'Tanlang (Ambisi)',
+  '巨门':'Jumen (Komunikasi)','巨門':'Jumen (Komunikasi)',
+  '天相':'Tianxiang (Dukungan)','天梁':'Tianliang (Pelindung)',
+  '七杀':'Qisha (Ketegasan)','七殺':'Qisha (Ketegasan)',
+  '破军':'Pojun (Perubahan)','破軍':'Pojun (Perubahan)',
+  '文昌':'Wenzhang (Akademik)','文曲':'Wenqu (Seni)',
+  '左辅':'Zuofu (Asisten Kiri)','右弼':'Youbi (Asisten Kanan)',
+  '天魁':'Tiankui (Mentor Pria)','天钺':'Tianyue (Mentor Wanita)','天鉞':'Tianyue (Mentor Wanita)',
+  '禄存':'Lucun (Simpanan)','天马':'Tianma (Kuda Langit)','天馬':'Tianma (Kuda Langit)',
+  '地空':'Dikong (Kehampaan)','地劫':'Dijie (Gangguan)',
+  '火星':'Huoxing (Api)','铃星':'Lingxing (Lonceng)','鈴星':'Lingxing (Lonceng)',
+  '陀罗':'Tuoluo (Rintangan)','陀羅':'Tuoluo (Rintangan)',
+  '擎羊':'Qingyang (Domba)','天刑':'Tianxing (Hukum)',
+  '天姚':'Tianyao (Pesona)','红鸾':'Hongluan (Cinta)','紅鸞':'Hongluan (Cinta)',
+  '天喜':'Tianxi (Kegembiraan)','天官':'Tianguan (Pejabat)',
+  '天福':'Tianfu2 (Berkah)','孤辰':'Guchen (Terisolasi)','寡宿':'Guasu (Sendiri)',
+};
+const ZWDS_PALACE_ID = {
+  '命宫':'Istana Kehidupan (命宫)','兄弟宫':'Istana Saudara (兄弟宫)',
+  '夫妻宫':'Istana Pasangan (夫妻宫)','子女宫':'Istana Anak (子女宫)',
+  '财帛宫':'Istana Keuangan (财帛宫)','疾厄宫':'Istana Kesehatan (疾厄宫)',
+  '迁移宫':'Istana Perjalanan (迁移宫)','仆役宫':'Istana Sahabat (仆役宫)',
+  '官禄宫':'Istana Karir (官禄宫)','田宅宫':'Istana Properti (田宅宫)',
+  '福德宫':'Istana Kebahagiaan (福德宫)','父母宫':'Istana Orang Tua (父母宫)',
+};
+const MUTAGEN_ID = {
+  '禄':'Kemakmuran (化禄)','化禄':'Kemakmuran (化禄)',
+  '权':'Kekuasaan (化权)','化权':'Kekuasaan (化权)',
+  '科':'Reputasi (化科)','化科':'Reputasi (化科)',
+  '忌':'Hambatan (化忌)','化忌':'Hambatan (化忌)',
+};
+function transZwdsStar(name) { return ZWDS_STAR_ID[name] || name; }
+function transZwdsPalace(name) { return ZWDS_PALACE_ID[name] || name; }
+function transMutagen(type) { return MUTAGEN_ID[type] || type; }
+
+// ============================================================
 // STATE
 // ============================================================
 let _result = null;
@@ -1216,10 +1260,10 @@ function render4A(z) {
   let html = '<div class="palaces-grid">';
   z.palaces.forEach((palace, idx) => {
     const majorStarHtml = (palace.majorStars||[]).map(s =>
-      `<span class="star-chip major" title="${esc(s.brightness||'')}">★ ${esc(s.name||'')} ${s.brightness?`<small>(${esc(s.brightness)})</small>`:''}</span>`
+      `<span class="star-chip major" title="${esc(s.brightness||'')}">★ ${esc(transZwdsStar(s.name||''))} ${s.brightness?`<small>(${esc(s.brightness)})</small>`:''}</span>`
     ).join('');
     const minorStarHtml = (palace.minorStars||[]).slice(0,5).map(s =>
-      `<span class="star-chip">${esc(s.name||'')}</span>`
+      `<span class="star-chip">${esc(transZwdsStar(s.name||''))}</span>`
     ).join('');
     const mutagenHtml = (palace.mutagensHere||[]).map(m =>
       `<span class="tag tag-purple">${esc(m.type||'')} ${esc(m.star||'')}</span>`
@@ -1248,7 +1292,7 @@ function render4A(z) {
 function render4B(z) {
   const nm = z.natalMutagens;
   if (!nm) { document.getElementById('sec-4b').innerHTML = '<div style="color:var(--muted)">Tidak ada data 四化</div>'; return; }
-  let html = '<table><tr><th>Jenis 化</th><th>Bintang</th><th>Istana</th><th>Makna</th></tr>';
+  let html = '<table><tr><th>Transformasi 化</th><th>Bintang</th><th>Istana</th><th>Makna</th></tr>';
 
   // natalMutagens is an array: [{star, type, palace, meaning?}, ...]
   // type values: '禄','权','科','忌' or '化禄','化权','化科','化忌'
@@ -1267,9 +1311,9 @@ function render4B(z) {
     const typeKey = v.type||'';
     const isJi = typeKey.includes('忌');
     html += `<tr>
-      <td><span class="tag ${isJi?'tag-red':'tag-gold'}">${esc(typeKey)}</span></td>
-      <td style="color:var(--gold2); font-size:15px; font-family:serif">${esc(v.star||'—')}</td>
-      <td>${esc(v.palace||v.palaceName||'—')}</td>
+      <td><span class="tag ${isJi?'tag-red':'tag-gold'}">${esc(transMutagen(typeKey))}</span></td>
+      <td style="color:var(--gold2); font-size:13px">${esc(transZwdsStar(v.star||'—'))}</td>
+      <td>${esc(transZwdsPalace(v.palace||v.palaceName||'—'))}</td>
       <td style="color:var(--text); font-size:11px">${esc(v.meaning || MUTAGEN_MEANING[typeKey] || '—')}</td>
     </tr>`;
   });
@@ -1293,9 +1337,9 @@ function render4C(z) {
     const mutagenDesc = mutagenItems.map(m=>`${m.type||''}${m.star||''}`).join(' ');
     html += `<div class="daxian-item ${isCurrent?'current':''}">
       ${isCurrent?'<div style="font-size:10px; color:var(--purple)">▶ SEKARANG</div>':''}
-      <div class="dx-palace">${esc(palaceName)}</div>
+      <div class="dx-palace">${esc(transZwdsPalace(palaceName))}</div>
       <div class="dx-age">Usia ${period.ageStart||'?'}–${period.ageEnd||'?'}<br/>${period.yearStart||'?'}–${period.yearEnd||'?'}</div>
-      ${stars.length>0 ? `<div style="font-size:10px; color:var(--gold2); margin-top:3px">${stars.map(s=>esc(s.name)).join(' · ')}</div>` : ''}
+      ${stars.length>0 ? `<div style="font-size:10px; color:var(--gold2); margin-top:3px">${stars.map(s=>esc(transZwdsStar(s.name))).join(' · ')}</div>` : ''}
       ${mutagenDesc ? `<div style="font-size:10px; color:var(--purple); margin-top:2px">${esc(mutagenDesc)}</div>` : ''}
       ${period.meaning ? `<div class="dx-meaning">${esc(period.meaning)}</div>` : ''}
     </div>`;
@@ -1306,9 +1350,9 @@ function render4C(z) {
   const current = dx.current || dx.periods.find(p=>p.isCurrent);
   if (current) {
     const curPalaceName = current.palace?.name || current.palaceName || '';
-    const curStars = (current.palace?.majorStars || []).map(s=>s.name).join('、');
+    const curStars = (current.palace?.majorStars || []).map(s=>transZwdsStar(s.name)).join('、');
     html += `<div class="summary-box" style="margin-top:14px">
-      <strong>Da Xian Saat Ini: ${esc(curPalaceName)}</strong> (${esc(String(current.yearStart||''))}-${esc(String(current.yearEnd||''))})
+      <strong>Da Xian Saat Ini: ${esc(transZwdsPalace(curPalaceName))}</strong> (${esc(String(current.yearStart||''))}-${esc(String(current.yearEnd||''))})
       ${curStars ? `<br/>Bintang utama: ${esc(curStars)}` : ''}
       ${current.advice ? `<br/><em>${esc(current.advice)}</em>` : ''}
     </div>`;
@@ -1408,21 +1452,21 @@ function render4D(z) {
     <h4>🌙 Tahun Berjalan: ${esc(String(ln.year||''))} (${esc(ln.ganzhi||'')}) · Usia ${esc(String(ln.age||''))}</h4>`;
   if (ln.xiaoxianPalace) {
     const xp = ln.xiaoxianPalace;
-    const xStars = (xp.stars||[]).map(s=>s.name).join('、');
+    const xStars = (xp.stars||[]).map(s=>transZwdsStar(s.name)).join('、');
     html += `<div style="font-size:12px; margin-bottom:8px; color:var(--blue)">
-      小限宫 (Xiao Xian): <strong style="color:var(--gold)">${esc(xp.name||'')}</strong>
+      Istana Tahunan (小限宫 Xiao Xian): <strong style="color:var(--gold)">${esc(transZwdsPalace(xp.name||''))}</strong>
       ${xStars ? `· Bintang: <span style="color:var(--gold2)">${esc(xStars)}</span>` : ''}
     </div>`;
   }
   if (ln.mutagens && ln.mutagens.length > 0) {
     html += `<div style="margin-bottom:8px">
-      <div style="font-size:11px; color:var(--muted); margin-bottom:4px">四化 Tahun ${esc(String(ln.year||''))}:</div>
+      <div style="font-size:11px; color:var(--muted); margin-bottom:4px">Transformasi Tahunan (四化) — Tahun ${esc(String(ln.year||''))}:</div>
       <div style="display:flex; gap:6px; flex-wrap:wrap">`;
     ln.mutagens.forEach(m => {
       const isJi = (m.type||'').includes('忌');
       html += `<div style="background:var(--surface); border:1px solid ${isJi?'var(--red)':'rgba(232,184,109,0.4)'}; border-radius:4px; padding:6px 10px">
-        <div style="font-size:11px; color:${isJi?'var(--red)':'var(--gold)'}; font-weight:600">化${esc(m.type||'')}</div>
-        <div style="font-size:14px; color:var(--gold2); font-family:serif">${esc(m.star||'')}</div>
+        <div style="font-size:11px; color:${isJi?'var(--red)':'var(--gold)'}; font-weight:600">${esc(transMutagen(m.type||''))}</div>
+        <div style="font-size:13px; color:var(--gold2)">${esc(transZwdsStar(m.star||''))}</div>
         ${m.meaning ? `<div style="font-size:10px; color:var(--muted); max-width:160px">${esc(m.meaning)}</div>` : ''}
       </div>`;
     });
@@ -2020,7 +2064,7 @@ function renderQmdj(q) {
     const diGodHtml = p.diGod ? `<div class="qp-god-di">地: ${QM_GOD_SHORT[p.diGod]||p.diGod}</div>` : '';
 
     // Ji Gan (寄宫)
-    const jiGanHtml = p.jiGanStem ? `<div class="qp-jigan">寄: ${QM_STEM_SHORT[p.jiGanStem]||p.jiGanStem}</div>` : '';
+    const jiGanHtml = p.jiGanStem ? `<div class="qp-jigan">Tamu: ${QM_STEM_SHORT[p.jiGanStem]||p.jiGanStem}</div>` : '';
 
     // Hidden stems
     const hiddenHtml = p.hiddenStems && p.hiddenStems.length > 0
@@ -2076,18 +2120,18 @@ function renderQmdj(q) {
     <div style="font-size:13px">${kw.length > 0 ? kw.join('、') : '—'}</div>
     <div style="font-size:11px;color:var(--muted);margin-top:4px">Arah yang jatuh ke kekosongan (空亡) energinya kosong — tindakan di sini cenderung sia-sia.</div>
     <div style="font-size:12px;font-weight:700;color:var(--gold);margin:10px 0 4px">🎯 Pemimpin Chart (值符 / 值使)</div>
-    <div style="font-size:12px">符 Bintang Pemimpin: <strong>${q.zhiFuStar}</strong> <span style="color:var(--muted)">(${STAR_ID[q.zhiFuStar]||''})</span> → ${q.zhiFuPalaceName}${q.zhiFuPalace}宫 ${PAL_DIR[q.zhiFuPalace]||''}</div>
-    <div style="font-size:12px;margin-top:4px">使 Gerbang Pemimpin: <strong>${q.zhiShiDoor}</strong> <span style="color:var(--muted)">(${DOOR_ID[q.zhiShiDoor]||''})</span> → ${q.zhiShiPalaceName}${q.zhiShiPalace}宫 ${PAL_DIR[q.zhiShiPalace]||''}</div>`;
+    <div style="font-size:12px">符 Bintang Pemimpin: <strong>${STAR_ID[q.zhiFuStar]||q.zhiFuStar}</strong> → Ruas ${PAL_DIR[q.zhiFuPalace]||''} (${q.zhiFuPalaceName}${q.zhiFuPalace})</div>
+    <div style="font-size:12px;margin-top:4px">使 Gerbang Pemimpin: <strong>${DOOR_ID[q.zhiShiDoor]||q.zhiShiDoor}</strong> → Ruas ${PAL_DIR[q.zhiShiPalace]||''} (${q.zhiShiPalaceName}${q.zhiShiPalace})</div>`;
 
   const bd = q.bestDirection;
   const cd = q.cautionDirection;
   document.getElementById('qmdj-direction-box').innerHTML = `
     <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Arah Terbaik untuk Aktivitas Penting</div>
-    ${bd ? `<div style="font-size:16px;font-weight:700">${bd.direction||''} — ${PAL_DIR[bd.palace]||''} (${bd.palaceName}${bd.palace}宫)</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:2px">Kualitas: ${bd.quality} · ${bd.reason||''}</div>` : '<div>—</div>'}
+    ${bd ? `<div style="font-size:16px;font-weight:700">${bd.direction||''} — ${PAL_DIR[bd.palace]||''} <span style="font-size:11px;color:var(--muted)">(${bd.palaceName}${bd.palace})</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">${bd.quality} · ${bd.reason||''}</div>` : '<div>—</div>'}
     <div style="font-size:12px;font-weight:700;color:#ef4444;margin:10px 0 4px">⚠️ Arah Perlu Hati-hati</div>
-    ${cd ? `<div style="font-size:15px;font-weight:600">${cd.direction||''} — ${PAL_DIR[cd.palace]||''} (${cd.palaceName}${cd.palace}宫)</div>
-    <div style="font-size:11px;color:var(--muted);margin-top:2px">Kualitas: ${cd.quality}</div>` : '<div>—</div>'}`;
+    ${cd ? `<div style="font-size:15px;font-weight:600">${cd.direction||''} — ${PAL_DIR[cd.palace]||''} <span style="font-size:11px;color:var(--muted)">(${cd.palaceName}${cd.palace})</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:2px">${cd.quality}</div>` : '<div>—</div>'}`;
 
   // Patterns / 格局
   const pats = q.patterns || { ji:[], xiong:[], all:[] };
@@ -2120,15 +2164,19 @@ function renderQmdj(q) {
     const doorD = itp.doorSummary || '';
     const starD = itp.starSummary || '';
     const godD  = itp.godSummary  || '';
-    const marksStr = (p.marks||[]).length > 0 ? ` · Tanda: ${p.marks.join('、')}` : '';
+    const MARK_ID = {'刑':'Konflik (刑)','墓':'Kuburan (墓)','迫':'Tekanan (迫)','空':'Kosong (空)','时空':'Kosong Waktu (时空)','马':'Kuda (马)'};
+    const marksStr = (p.marks||[]).length > 0 ? ` · Tanda: ${p.marks.map(m=>MARK_ID[m]||m).join(', ')}` : '';
+    const DI_GOD_SHORT = {'合':'六合 (Harmoni)','蛇':'Ular Terbang (Penipuan)','虎':'Harimau Putih (Bahaya)',
+      '武':'Kura Hitam (Pencuri)','地':'Sembilan Bumi (Stabil)','天':'Sembilan Langit (Peluang)',
+      '阴':'Yin Besar (Tersembunyi)','符':'Pemimpin (值符)'};
     interpHtml += `
       <div class="qmdj-interp-card">
-        <h4>${itp.qIcon||''} ${p.palaceName}${p.palaceNumber}宫 — ${DIRS[p.palaceNumber]||''} <span style="font-size:11px;color:var(--muted)">${itp.quality||''}${marksStr}</span></h4>
-        <div class="qmdj-layer"><strong>天干 (Batang Langit):</strong> 天 ${p.earthStem||'—'} / 地 ${p.skyStem||'—'}${p.hiddenStems&&p.hiddenStems.length>0?' · Tersembunyi: '+p.hiddenStems.join(' '):''}</div>
-        <div class="qmdj-layer"><strong>九星 (Bintang):</strong> ${p.star||'—'} <span style="color:var(--muted); font-size:11px">${STAR_ID[p.star]||''}</span> — ${starD}</div>
-        <div class="qmdj-layer"><strong>八门 (Gerbang):</strong> ${p.door||'—'} <span style="color:var(--muted); font-size:11px">${DOOR_ID[p.door]||''}</span> — ${doorD}</div>
-        <div class="qmdj-layer"><strong>八神 (Dewa):</strong> ${p.god||'—'} <span style="color:var(--muted); font-size:11px">${GOD_ID[p.god]||''}</span> — ${godD}</div>
-        ${p.diGod ? `<div class="qmdj-layer"><strong>地神:</strong> ${p.diGod} <span style="color:var(--muted);font-size:11px">${GOD_ID[p.diGod]||''}</span></div>` : ''}
+        <h4>${itp.qIcon||''} Ruas ${DIRS[p.palaceNumber]||''} <span style="font-size:10px;color:var(--muted)">(${p.palaceName}${p.palaceNumber})</span> — <span style="font-size:11px;color:var(--muted)">${itp.quality||''}${marksStr}</span></h4>
+        <div class="qmdj-layer"><strong>Batang Langit (天干):</strong> Langit: ${p.earthStem||'—'} / Bumi: ${p.skyStem||'—'}${p.hiddenStems&&p.hiddenStems.length>0?' · Tersembunyi: '+p.hiddenStems.join(' '):''}</div>
+        <div class="qmdj-layer"><strong>Bintang (九星):</strong> <span style="color:var(--muted)">${STAR_ID[p.star]||p.star||'—'}</span> — ${starD}</div>
+        <div class="qmdj-layer"><strong>Gerbang (八门):</strong> <span style="color:var(--muted)">${DOOR_ID[p.door]||p.door||'—'}</span> — ${doorD}</div>
+        <div class="qmdj-layer"><strong>Dewa (八神):</strong> <span style="color:var(--muted)">${GOD_ID[p.god]||p.god||'—'}</span> — ${godD}</div>
+        ${p.diGod ? `<div class="qmdj-layer"><strong>Dewa Bumi:</strong> <span style="color:var(--muted);font-size:11px">${DI_GOD_SHORT[p.diGod]||GOD_ID[p.diGod]||p.diGod}</span></div>` : ''}
         <div class="qmdj-layer" style="color:var(--gold2);font-style:italic;margin-top:6px">💡 ${itp.doorAdvice||''}</div>
       </div>`;
   });
@@ -2138,9 +2186,9 @@ function renderQmdj(q) {
   if (ctr) {
     interpHtml += `
       <div class="qmdj-interp-card" style="opacity:0.8">
-        <h4>🔷 中5宫 — Pusat (天禽 Tianqin)</h4>
-        <div class="qmdj-layer"><strong>天干:</strong> ${ctr.skyStem||'—'} · 天禽寄坤二</div>
-        <div class="qmdj-layer">Ruas Pusat bersifat netral — energinya dialihkan ke Ruas Barat Daya (坤2). Tidak digunakan langsung dalam penilaian arah.</div>
+        <h4>🔷 Ruas Pusat (中5) — Tianqin (天禽)</h4>
+        <div class="qmdj-layer"><strong>Batang Langit:</strong> ${ctr.skyStem||'—'} · Tianqin ditempatkan di Ruas Barat Daya (坤2)</div>
+        <div class="qmdj-layer">Ruas Pusat bersifat netral — energinya dialihkan ke Ruas Barat Daya. Tidak digunakan langsung dalam penilaian arah.</div>
       </div>`;
   }
 
