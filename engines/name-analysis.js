@@ -640,8 +640,8 @@ function analyzeLatinName(name) {
   if (data) return { name, ...data, found: true };
   return {
     name,
-    origin: 'Tidak ditemukan dalam database',
-    meaning: `Nama "${name}" tidak ada dalam database lokal. Untuk etimologi lengkap, konsultasi sumber seperti behindthename.com atau kamus bahasa asal nama tersebut.`,
+    origin: null,
+    meaning: null,
     found: false
   };
 }

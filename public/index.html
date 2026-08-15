@@ -188,6 +188,8 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .btn-row { display: none !important; }
   .no-print { display: none !important; }
   #export-section { display: none !important; }
+  /* Expand all Da Yun / Liunian accordion rows when printing */
+  [id^="acc4d_"] { display: block !important; }
   .card { border: 1px solid #bbb !important; break-before: page !important; page-break-before: always !important; background: white !important; }
   .card:first-of-type { break-before: auto !important; page-break-before: auto !important; }
   .card-header { background: #f5ede0 !important; break-inside: avoid; page-break-inside: avoid; }
@@ -370,7 +372,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
       </div>
 
       <!-- Quick location buttons -->
-      <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+      <div class="no-print" style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(106.8456,-6.2088,'WIB')">📍 Jakarta</button>
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(107.6191,-6.9175,'WIB')">📍 Bandung</button>
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(110.3695,-7.7956,'WIB')">📍 Yogyakarta</button>
@@ -927,7 +929,7 @@ function renderName(na, input) {
       chars.forEach(c => {
         const pinyinDisplay = (c.pinyin && c.pinyin !== '(tidak tersedia)') ? c.pinyin : '—';
         const notInDb = !c.inDatabase;
-        html += `<div class="palace-card" style="min-width:160px; text-align:center">
+        html += `<div class="palace-card" style="width:280px; flex:0 0 280px; text-align:center">
           <div style="font-size:36px; color:var(--gold); font-family:serif">${esc(c.char)}</div>
           <div style="font-size:11px; color:var(--muted)">${pinyinDisplay} · ${c.strokes||'?'} goresan</div>
           <div style="font-size:12px; margin:4px 0">${esc(c.meaning||'—')}</div>
@@ -2816,7 +2818,7 @@ function resetForm() {
 // SECTION 9/10/11 — COMPATIBILITY FUNCTIONS
 // ============================================================
 
-// Buat form input untuk orang kedua (sama seperti form utama tapi lebih ringkas)
+// Buat form input untuk orang kedua — layout sama persis dengan Section 1
 function buildCompatForm(containerId) {
   // Fallback: kalau _tzList belum terisi, clone dari #tz-select yang sudah ada
   const tzSrc = (_tzList && _tzList.length > 0)
@@ -2826,39 +2828,98 @@ function buildCompatForm(containerId) {
     `<option value="${tz.value}" ${tz.value==='+7'?'selected':''}>${tz.label}</option>`).join('');
 
   document.getElementById(containerId).innerHTML = `
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px">
-      <div>
-        <label class="form-label">Nama Lengkap</label>
-        <input type="text" class="form-control compat-name" placeholder="Nama lengkap">
+    <div class="form-grid">
+      <div class="sep">Identitas</div>
+      <div class="form-group">
+        <label>Nama Lengkap (Latin)</label>
+        <input type="text" class="compat-name" placeholder="Nama lengkap">
       </div>
-      <div>
-        <label class="form-label">Jenis Kelamin</label>
-        <select class="form-control compat-gender">
-          <option value="male">Pria</option>
-          <option value="female">Wanita</option>
+      <div class="form-group">
+        <label>Nama Mandarin / 华文名</label>
+        <input type="text" class="compat-chinese-name" placeholder="Contoh: 胡慧娟">
+      </div>
+      <div class="form-group">
+        <label>Marga / Surname 姓</label>
+        <input type="text" class="compat-surname" placeholder="Contoh: 胡">
+      </div>
+      <div class="form-group">
+        <label>Jenis Kelamin</label>
+        <select class="compat-gender">
+          <option value="male">Pria / 男</option>
+          <option value="female">Wanita / 女</option>
         </select>
       </div>
-      <div>
-        <label class="form-label">Tahun Lahir</label>
-        <input type="number" class="form-control compat-year" placeholder="cth: 1985" min="1900" max="2050">
+    </div>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="sep">Tanggal &amp; Waktu Lahir (Waktu Setempat)</div>
+      <div class="form-group">
+        <label>Tahun</label>
+        <input type="number" class="compat-year" placeholder="cth: 1985" min="1900" max="2050">
       </div>
-      <div>
-        <label class="form-label">Bulan Lahir</label>
-        <input type="number" class="form-control compat-month" placeholder="1–12" min="1" max="12">
+      <div class="form-group">
+        <label>Bulan (1-12)</label>
+        <input type="number" class="compat-month" placeholder="1–12" min="1" max="12">
       </div>
-      <div>
-        <label class="form-label">Tanggal Lahir</label>
-        <input type="number" class="form-control compat-day" placeholder="1–31" min="1" max="31">
+      <div class="form-group">
+        <label>Tanggal (1-31)</label>
+        <input type="number" class="compat-day" placeholder="1–31" min="1" max="31">
       </div>
-      <div>
-        <label class="form-label">Jam Lahir</label>
-        <input type="number" class="form-control compat-hour" placeholder="0–23" min="0" max="23">
+      <div class="form-group">
+        <label>Jam (0-23)</label>
+        <input type="number" class="compat-hour" placeholder="0–23" min="0" max="23">
       </div>
-      <div>
-        <label class="form-label">Zona Waktu</label>
-        <select class="form-control compat-timezone">${tzOptions}</select>
+      <div class="form-group">
+        <label>Menit (0-59)</label>
+        <input type="number" class="compat-minute" placeholder="0–59" min="0" max="59" value="0">
       </div>
+    </div>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="sep">Zona Waktu &amp; Koordinat (untuk Waktu Matahari Sejati)</div>
+      <div class="form-group">
+        <label>Zona Waktu / GMT Offset</label>
+        <select class="compat-timezone">${tzOptions}</select>
+      </div>
+      <div class="form-group">
+        <label>Bujur / Longitude</label>
+        <input type="number" class="compat-longitude" step="0.0001" placeholder="cth: 106.8456">
+      </div>
+      <div class="form-group">
+        <label>Lintang / Latitude (opsional)</label>
+        <input type="number" class="compat-latitude" step="0.0001" placeholder="cth: -6.2088">
+      </div>
+    </div>
+    <div class="no-print" style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',106.8456,-6.2088,'+7')">📍 Jakarta</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',107.6191,-6.9175,'+7')">📍 Bandung</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',110.3695,-7.7956,'+7')">📍 Yogyakarta</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',112.7521,-7.2575,'+7')">📍 Surabaya</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',104.7456,-2.9761,'+7')">📍 Palembang</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',109.3425,-0.0263,'+7')">📍 Pontianak</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',117.1536,-0.5016,'+8')">📍 Samarinda</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',116.8529,-1.2654,'+8')">📍 Balikpapan</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',119.4221,-5.1477,'+8')">📍 Makassar</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',115.2191,-8.6705,'+8')">📍 Denpasar</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',98.6722,3.5952,'+7')">📍 Medan</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',103.8198,1.3521,'+8')">📍 Singapura</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',121.5654,25.0330,'+8')">📍 Taipei</button>
+      <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCompatCoord('${containerId}',116.3912,39.9042,'+8')">📍 Beijing</button>
     </div>`;
+}
+
+// Set koordinat dan timezone untuk compat form tertentu
+function setCompatCoord(containerId, lng, lat, tzVal) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  const tzSel = c.querySelector('.compat-timezone');
+  const lngEl = c.querySelector('.compat-longitude');
+  const latEl = c.querySelector('.compat-latitude');
+  if (lngEl) lngEl.value = lng;
+  if (latEl) latEl.value = lat;
+  if (tzSel) {
+    for (let i = 0; i < tzSel.options.length; i++) {
+      if (tzSel.options[i].value === tzVal) { tzSel.selectedIndex = i; break; }
+    }
+  }
 }
 
 function showCompatSection(type) {
@@ -2893,7 +2954,12 @@ async function submitCompat(type) {
   const monthEl  = sec.querySelector('.compat-month');
   const dayEl    = sec.querySelector('.compat-day');
   const hourEl   = sec.querySelector('.compat-hour');
+  const minuteEl = sec.querySelector('.compat-minute');
   const tzEl     = sec.querySelector('.compat-timezone');
+  const lngEl    = sec.querySelector('.compat-longitude');
+  const latEl    = sec.querySelector('.compat-latitude');
+  const cnEl     = sec.querySelector('.compat-chinese-name');
+  const surEl    = sec.querySelector('.compat-surname');
 
   const year = parseInt(yearEl?.value);
   if (!year || year < 1900 || year > 2050) {
@@ -2907,13 +2973,18 @@ async function submitCompat(type) {
     : (document.getElementById('friend-relation-type')?.value || 'friend');
 
   const person2 = {
-    name:      nameEl?.value || 'Pasangan',
-    gender:    genderEl?.value || 'male',
-    birthYear: year,
-    birthMonth:parseInt(monthEl?.value) || 1,
-    birthDay:  parseInt(dayEl?.value) || 1,
-    birthHour: parseInt(hourEl?.value) || 12,
-    timezone:  tzEl?.value || '+7'
+    name:        nameEl?.value || 'Pasangan',
+    chineseName: cnEl?.value || '',
+    surname:     surEl?.value || '',
+    gender:      genderEl?.value || 'male',
+    birthYear:   year,
+    birthMonth:  parseInt(monthEl?.value) || 1,
+    birthDay:    parseInt(dayEl?.value) || 1,
+    birthHour:   parseInt(hourEl?.value) || 12,
+    birthMinute: parseInt(minuteEl?.value) || 0,
+    timezone:    tzEl?.value || '+7',
+    longitude:   parseFloat(lngEl?.value) || null,
+    latitude:    parseFloat(latEl?.value) || null
   };
 
   const person1 = {
