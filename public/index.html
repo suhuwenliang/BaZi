@@ -221,8 +221,16 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   /* Prevent individual items from splitting mid-element */
   .palace-card, .daxian-item, .dayun-item, .life-section,
   .liunian-card, .yongshen-box, .shensha-item, .tengod-item,
-  .summary-box, .comp-item, .pillar-card, .qmdj-interp-card, .qmdj-palace { break-inside: avoid; page-break-inside: avoid; }
+  .summary-box, .comp-item, .pillar-card, .qmdj-interp-card, .qmdj-palace,
+  .compat-section-card { break-inside: avoid; page-break-inside: avoid; }
   tr { break-inside: avoid; page-break-inside: avoid; }
+  /* Compat section cards: light background in print */
+  .compat-section-card { background: #faf6f0 !important; border-color: #bbb !important; }
+  .compat-section-card h3 { color: #5a3a00 !important; }
+  .compat-score-bar { background: #f5ede0 !important; color: #3a2000 !important; border-color: #bbb !important; flex-wrap: wrap; }
+  /* Chinese char cards: fit 3 cards across A4 page (180mm usable ÷ 3) */
+  .chars-flex { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+  .char-cell { width: auto !important; flex: none !important; }
   /* Print color overrides — light theme */
   th { background: #f5ede0 !important; color: #3a2000 !important; border-color: #bbb !important; }
   td { border-color: #bbb !important; color: #1a1a1a !important; }
@@ -253,9 +261,12 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .pillar-card .ganzhi-detail { color: #555 !important; }
   .bar-track { background: #e8e0d0 !important; }
 }
-/* Responsive — mobile */
-@media (max-width: 768px) {
+/* Responsive — mobile (screen only — does NOT apply to print) */
+@media screen and (max-width: 768px) {
   .container { padding: 10px; }
+  /* App header compact */
+  .app-header { padding: 12px 10px; }
+  .app-header h1 { font-size: 18px; letter-spacing: 0; }
   /* Tables: horizontal scroll instead of overflow */
   table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
   /* Grid overrides */
@@ -269,6 +280,11 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .remedy-grid { grid-template-columns: 1fr; }
   .three-layer { grid-template-columns: 1fr 1fr; }
   .form-grid { grid-template-columns: 1fr; }
+  /* Chinese char cards — stack one per row on mobile */
+  .char-cell { width: 100% !important; flex: 0 0 100% !important; }
+  /* Compat score bar — wrap on narrow screens */
+  .compat-score-bar { flex-wrap: wrap; font-size: 12px; padding: 8px 10px; }
+  .compat-section-card { padding: 10px; }
   /* Compact items */
   .dayun-item { min-width: 80px; padding: 6px 8px; }
   .daxian-item { min-width: 90px; }
@@ -278,10 +294,11 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .btn-row .btn { width: 100%; }
   /* Card header */
   .card-header h2 { font-size: 13px; }
+  .card-header .section-num { width: 20px; height: 20px; font-size: 10px; }
   /* Pillar card text */
   .pillar-card .ganzhi-detail { font-size: 10px; }
   .bone-total { font-size: 24px; }
-  /* Feng shui app grid — stack to 1 column on very small screens */
+  /* Feng shui app grid — stack to 1 column */
   .dir-app-grid { grid-template-columns: 1fr !important; }
   /* QMDJ: keep 3 cols but compact */
   #qmdj-grid { max-width: 100% !important; }
@@ -290,6 +307,19 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .qmdj-tabs { gap: 5px; }
   .qmdj-tabs .btn { font-size: 11px; padding: 5px 8px; }
   #qmdj-kongwang-box, #qmdj-direction-box { padding: 8px; }
+  /* Summary box readable */
+  .summary-box { font-size: 12px; }
+}
+/* Very small phones (iPhone SE, Galaxy A series) */
+@media screen and (max-width: 400px) {
+  .container { padding: 8px; }
+  .app-header h1 { font-size: 16px; }
+  .pillars-grid { grid-template-columns: repeat(2, 1fr); }
+  .pillars-grid .ganzhi { font-size: 20px; }
+  .card-body { padding: 10px; }
+  .dayun-item { min-width: 68px; padding: 5px 6px; font-size: 11px; }
+  .qmdj-palace { min-height: 90px; font-size: 9px; padding: 4px; }
+  .compat-score-bar { font-size: 11px; }
 }
 .liunian-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 8px; }
 .liunian-card h4 { color: var(--gold); font-size: 13px; margin-bottom: 8px; }
@@ -948,11 +978,11 @@ function renderName(na, input) {
     // Per char (field is 'chars', not 'characters')
     const chars = cn.chars || cn.characters || [];
     if (chars.length > 0) {
-      html += `<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px">`;
+      html += `<div class="chars-flex" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px">`;
       chars.forEach(c => {
         const pinyinDisplay = (c.pinyin && c.pinyin !== '(tidak tersedia)') ? c.pinyin : '—';
         const notInDb = !c.inDatabase;
-        html += `<div class="palace-card" style="width:280px; flex:0 0 280px; text-align:center">
+        html += `<div class="palace-card char-cell" style="width:280px; flex:0 0 280px; text-align:center">
           <div style="font-size:36px; color:var(--gold); font-family:serif">${esc(c.char)}</div>
           <div style="font-size:11px; color:var(--muted)">${pinyinDisplay} · ${c.strokes||'?'} goresan</div>
           <div style="font-size:12px; margin:4px 0">${esc(c.meaning||'—')}</div>
