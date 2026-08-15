@@ -181,21 +181,20 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
   );
   // Urutkan Da Yun berdasar score untuk tahu mana terbaik dan terburuk
   const sortedDaYuns = [...nearDaYuns].sort((a,b) => (b.quality?.score||0) - (a.quality?.score||0));
-  // Lucky = periode terbaik, Warn = periode terburuk (minimal 1 per kategori)
+  const bestScore  = sortedDaYuns[0]?.quality?.score ?? 0;
+  const worstScore = sortedDaYuns[sortedDaYuns.length-1]?.quality?.score ?? 0;
+  // Lucky = score>=1 ATAU merupakan Da Yun terbaik (tidak wajib score tinggi)
+  // Warn  = score<=-1 ATAU merupakan Da Yun terburuk (hanya jika lebih buruk dari yang terbaik)
   nearDaYuns.forEach(dy => {
     const score = dy.quality?.score ?? 0;
-    const bestScore = sortedDaYuns[0]?.quality?.score ?? 0;
-    const worstScore = sortedDaYuns[sortedDaYuns.length-1]?.quality?.score ?? 0;
-    const isLucky = score >= 1 || (score === bestScore && score >= 0);
-    const isWarn  = score <= -1 || (score === worstScore && score <= 0 && nearDaYuns.length > 1);
-    if (isLucky && !isWarn) {
-      for (let y = Math.max(dy.yearStart, currentYear); y <= Math.min(dy.yearEnd, currentYear + 10); y++) {
-        luckyYears.push(y);
-      }
-    } else if (isWarn) {
-      for (let y = Math.max(dy.yearStart, currentYear); y <= Math.min(dy.yearEnd, currentYear + 10); y++) {
-        warnYears.push(y);
-      }
+    const isBest  = score === bestScore;
+    const isWorst = score === worstScore && worstScore < bestScore;
+    const startY  = Math.max(dy.yearStart, currentYear);
+    const endY    = Math.min(dy.yearEnd, currentYear + 10);
+    if (score >= 1 || (isBest && score >= 0)) {
+      for (let y = startY; y <= endY; y++) luckyYears.push(y);
+    } else if (score <= -1 || isWorst) {
+      for (let y = startY; y <= endY; y++) warnYears.push(y);
     }
   });
 

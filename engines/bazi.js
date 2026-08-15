@@ -615,7 +615,12 @@ function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXing
   const sorted = Object.entries(wuXingDistribution).sort((a,b) => b[1].pct - a[1].pct);
 
   return {
-    pillars: `Anda lahir dengan Day Master ${dayMasterStem} (${dmEl} ${dayMasterInfo.polarity || ''}). ${dayMasterInfo.character || ''} Kekuatan utama Anda: ${dayMasterInfo.strength || '—'}. Area yang perlu perhatian: ${dayMasterInfo.weakness || '—'}.`,
+    pillars: {
+      intro:      `Anda lahir dengan Day Master ${dayMasterStem} (${dmEl} ${dayMasterInfo.polarity || ''}).`,
+      character:  dayMasterInfo.character || '',
+      strengths:  `Kekuatan utama Anda: ${dayMasterInfo.strength || '—'}.`,
+      weaknesses: `Area yang perlu perhatian: ${dayMasterInfo.weakness || '—'}.`
+    },
 
     hiddenStems: `Di balik Earthly Branch (地支) empat pilar Anda, terdapat berbagai energi tersembunyi (藏干). Unsur tersembunyi yang paling dominan berkontribusi pada kedalaman karakter Anda yang mungkin tidak terlihat di permukaan.`,
 

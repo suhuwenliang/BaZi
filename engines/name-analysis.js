@@ -227,11 +227,11 @@ function analyzeChineseChar(char) {
     char,
     strokes: approxStrokes,
     pinyin: '(tidak tersedia)',
-    meaning: `Karakter dengan unsur ${el} — ${EL_MEANING[el] || ''}. Karakter ini belum ada dalam database; stroke count merupakan aproksimasi.`,
+    meaning: `Karakter dengan unsur ${el} — ${EL_MEANING[el] || ''}.`,
     element: el,
     radical: '(tidak tersedia)',
     inDatabase: false,
-    note: 'Stroke count merupakan aproksimasi berdasarkan kode Unicode.'
+    note: ''
   };
 }
 
