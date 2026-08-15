@@ -791,7 +791,7 @@ function renderName(na, input) {
           <div style="font-size:11px; color:var(--muted)">${esc(c.pinyin||'')} · ${c.strokes||'?'} goresan</div>
           <div style="font-size:12px; margin:4px 0">${esc(c.meaning||'—')}</div>
           <div style="font-size:11px; color:${colorForElement(c.element||'')}">Unsur: ${esc(c.element||'?')}</div>
-          <div style="font-size:10px; color:var(--muted)">Radikal: ${esc(c.radical||'—')}</div>
+          ${(c.radical && c.radical !== '(tidak tersedia)') ? `<div style="font-size:10px; color:var(--muted)">Radikal: ${esc(c.radical)}</div>` : ''}
         </div>`;
       });
       html += '</div>';
@@ -972,7 +972,14 @@ function render3B(b) {
     '辰':'Chén – Naga','巳':'Sì – Ular','午':'Wǔ – Kuda','未':'Wèi – Kambing',
     '申':'Shēn – Monyet','酉':'Yǒu – Ayam','戌':'Xū – Anjing','亥':'Hài – Babi'
   };
-  let html = '<table class="hidden-stems-table"><tr><th>Pilar</th><th>Cabang 地支</th><th>Batang Tersembunyi 藏干</th><th>Jenis Qi</th><th>Bobot</th><th>Sepuluh Dewa</th></tr>';
+  const TEN_GOD_ID = {
+    '比肩':'Bǐ Jiān – Saudara Kandung','劫财':'Jié Cái – Perampok Rezeki',
+    '食神':'Shí Shén – Dewa Makanan','伤官':'Shāng Guān – Melukai Pejabat',
+    '偏财':'Piān Cái – Kekayaan Tidak Langsung','正财':'Zhèng Cái – Kekayaan Langsung',
+    '七杀':'Qī Shā – Tujuh Pembunuh','正官':'Zhèng Guān – Pejabat Resmi',
+    '偏印':'Piān Yìn – Stempel Tidak Langsung','正印':'Zhèng Yìn – Stempel Resmi'
+  };
+  let html = '<table class="hidden-stems-table"><tr><th>Pilar</th><th>Cabang 地支</th><th>Batang Tersembunyi 藏干</th><th>Jenis Qi</th><th>Bobot</th><th>Sepuluh Dewa 十神</th></tr>';
   const pillarNames = {'year':'年 Tahun','month':'月 Bulan','day':'日 Hari','hour':'时 Jam'};
   const TYPE_ID = {'本气':'Qi Utama','中气':'Qi Tengah','余气':'Qi Sisa'};
   Object.entries(hs).forEach(([pillar, pillarData]) => {
@@ -993,7 +1000,10 @@ function render3B(b) {
         </td>
         <td><span class="tag ${s.type==='本气'?'tag-gold':s.type==='中气'?'tag-blue':'tag-green'}">${esc(TYPE_ID[s.type]||s.type||'')}</span></td>
         <td>${s.weight||0}%</td>
-        <td style="color:var(--purple)">${esc(s.tenGod||'—')}</td>
+        <td style="color:var(--purple)">
+          <span style="font-size:13px; font-family:serif">${esc(s.tenGod||'—')}</span>
+          ${s.tenGod && TEN_GOD_ID[s.tenGod] ? `<div style="font-size:10px; color:var(--muted); margin-top:2px">${esc(TEN_GOD_ID[s.tenGod])}</div>` : ''}
+        </td>
       </tr>`;
     });
   });
@@ -1011,19 +1021,22 @@ function render3B(b) {
 function render3C(b) {
   const wx = b.wuXing;
   if (!wx) { document.getElementById('sec-3c').innerHTML = '<div class="error-box">Data tidak tersedia</div>'; return; }
+  const WX_ID = {'木':'Kayu (Mù)','火':'Api (Huǒ)','土':'Tanah (Tǔ)','金':'Logam (Jīn)','水':'Air (Shuǐ)'};
   const elements = ['木','火','土','金','水'];
   const classes = ['wx-mu','wx-huo','wx-tu','wx-jin','wx-shui'];
-  let html = '<div style="max-width:500px">';
+  let html = '<div style="max-width:520px">';
   elements.forEach((el, i) => {
     const pct = wx.distribution?.[el]?.pct || 0;
-    html += `<div class="wxbar">
-      <div class="label">${el}</div>
-      <div class="bar-track"><div class="bar-fill ${classes[i]}" style="width:${pct}%"></div></div>
+    html += `<div class="wxbar" style="align-items:center">
+      <div class="label" style="width:120px; text-align:left; flex-shrink:0">
+        <span style="font-size:18px; font-family:serif; color:var(--gold)">${el}</span>
+        <span style="font-size:11px; color:var(--muted); margin-left:5px">${WX_ID[el]}</span>
+      </div>
+      <div class="bar-track" style="flex:1"><div class="bar-fill ${classes[i]}" style="width:${pct}%"></div></div>
       <div class="pct">${pct}%</div>
     </div>`;
   });
   html += '</div>';
-  const WX_ID = {'木':'Kayu (Mù)','火':'Api (Huǒ)','土':'Tanah (Tǔ)','金':'Logam (Jīn)','水':'Air (Shuǐ)'};
   const dmStrong = wx.isDMStrong;
   const dmLabel = dmStrong ? 'kuat (旺身 Wang Shen) — Day Master memiliki banyak dukungan' : 'perlu dukungan (弱身 Ruo Shen) — Day Master membutuhkan penguatan';
 
@@ -2137,6 +2150,11 @@ function renderQmdj(q) {
 
   loading.style.display = 'none';
   content.style.display = 'block';
+
+  // Re-render Section 6 now that QMDJ data is available
+  if (_result?.comprehensive?.comparison) {
+    render6(_result.comprehensive.comparison);
+  }
 }
 
 // ============================================================

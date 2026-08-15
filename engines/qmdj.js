@@ -1005,65 +1005,65 @@ function detectPatterns(palaces, chart) {
     const god   = p.god || p.godShort;
     const star  = p.star;
 
-    // 三奇升殿
-    if (tStem === '乙' && p.palaceNumber === 3) found.push({ name:'乙奇升殿(日奇归震)', type:'吉', desc:'日奇归东方震宫，百事可为，贵人显现。' });
-    if (tStem === '丙' && p.palaceNumber === 9) found.push({ name:'丙奇升殿(月奇归离)', type:'吉', desc:'月奇归南方离宫，光明大吉，出行求财皆利。' });
-    if (tStem === '丁' && p.palaceNumber === 7) found.push({ name:'丁奇升殿(星奇归兑)', type:'吉', desc:'星奇归西方兑宫，文星当令，考试求职大利。' });
+    // 三奇升殿 (Tiga Bintang Istimewa Naik Tahta)
+    if (tStem === '乙' && p.palaceNumber === 3) found.push({ name:'乙奇升殿 · Bintang Hari Naik Tahta', type:'吉', desc:'Bintang 乙 (Hari/Kayu Yin) berada di Ruas Timur-Petir (3) — posisi paling kuat. Peluang besar terbuka lebar, tokoh pelindung dan pemberi keberuntungan akan muncul. Sangat baik untuk memulai usaha, maju, dan bepergian.' });
+    if (tStem === '丙' && p.palaceNumber === 9) found.push({ name:'丙奇升殿 · Bintang Bulan Naik Tahta', type:'吉', desc:'Bintang 丙 (Bulan/Api Yang) berada di Ruas Selatan-Api (9) — cahaya terang bersinar penuh. Sangat menguntungkan untuk bepergian, mencari rezeki, promosi, dan semua urusan yang membutuhkan visibilitas.' });
+    if (tStem === '丁' && p.palaceNumber === 7) found.push({ name:'丁奇升殿 · Bintang Bintang Naik Tahta', type:'吉', desc:'Bintang 丁 (Bintang/Api Yin) berada di Ruas Barat-Danau (7) — bintang sastra dan kecerdasan bersinar. Sangat baik untuk ujian, melamar pekerjaan, presentasi, dan semua urusan akademik atau intelektual.' });
 
-    // 三奇入墓
-    if (tStem === '乙' && p.palaceNumber === 2) found.push({ name:'乙奇入墓', type:'凶', desc:'日奇入坤二未土墓，文书受阻，贵人不应。' });
-    if (tStem === '丙' && p.palaceNumber === 6) found.push({ name:'丙奇入墓', type:'凶', desc:'月奇入乾六戌土墓，财运受阻，光明被掩。' });
-    if (tStem === '丁' && p.palaceNumber === 8) found.push({ name:'丁奇入墓', type:'凶', desc:'星奇入艮八丑土墓，文书受阻，消息不通。' });
+    // 三奇入墓 (Tiga Bintang Istimewa Masuk Kuburan)
+    if (tStem === '乙' && p.palaceNumber === 2) found.push({ name:'乙奇入墓 · Bintang Hari Masuk Kuburan', type:'凶', desc:'Bintang 乙 (Hari) jatuh ke Ruas Barat Daya (2, unsur Tanah Kuburan) — tokoh pelindung tidak muncul, urusan surat-menyurat dan dokumen penting terhambat. Hindari meminta bantuan atau melamar sesuatu di periode ini.' });
+    if (tStem === '丙' && p.palaceNumber === 6) found.push({ name:'丙奇入墓 · Bintang Bulan Masuk Kuburan', type:'凶', desc:'Bintang 丙 (Bulan) jatuh ke Ruas Barat Laut (6, unsur Tanah Kuburan) — cahaya tertutup, rezeki dan finansial terhambat. Hindari pengeluaran besar dan investasi di periode ini.' });
+    if (tStem === '丁' && p.palaceNumber === 8) found.push({ name:'丁奇入墓 · Bintang Bintang Masuk Kuburan', type:'凶', desc:'Bintang 丁 (Bintang) jatuh ke Ruas Timur Laut (8, unsur Tanah Kuburan) — komunikasi terputus, dokumen terhambat. Tidak baik untuk ujian, presentasi, atau urusan yang membutuhkan kecerdasan verbal.' });
 
-    // 六仪击刑
+    // 六仪击刑 (Enam Yi Menyerang)
     if (p.marks.includes('刑')) {
-      found.push({ name:`六仪击刑(${tStem}落${p.palaceName}${p.palaceNumber})`, type:'凶', desc:'六仪蕴含地支落入相刑宫位，主车祸、刑罚、大破财，动必有灾伤。' });
+      found.push({ name:`六仪击刑 · Bentrokan Energi (${tStem} di ${p.palaceName}${p.palaceNumber})`, type:'凶', desc:`Elemen batang langit (${tStem}) dan Ruas ${p.palaceName}${p.palaceNumber} saling bertabrakan secara energetik — waspadai kecelakaan, masalah hukum/penalti, kerugian finansial besar. Hindari semua tindakan penting di arah ${p.palaceName} ini.` });
     }
 
-    // 奇仪相合 (天地盘合化)
+    // 奇仪相合 (Harmoni Langit-Bumi)
     const combos = [['乙','庚'],['丙','辛'],['丁','壬'],['戊','癸']];
     for (const [a,b] of combos) {
       if ((tStem===a&&dStem===b)||(tStem===b&&dStem===a)) {
-        found.push({ name:`奇仪相合(${a}${b}合)`, type:'吉', desc:'天地盘天干五合，万事和合，利交易合作、和解。' });
+        found.push({ name:`奇仪相合 · Harmoni Langit-Bumi (${a}${b})`, type:'吉', desc:'Langit dan Bumi berpadu dalam harmoni sempurna — semua urusan berjalan mulus dan alami. Sangat menguntungkan untuk transaksi bisnis, kerjasama, negosiasi, mediasi, dan perjanjian damai.' });
       }
     }
 
-    // 飞干格 (天庚落日干宫)
-    if (tStem === '庚') found.push({ name:`太白临${p.palaceName}宫`, type:'凶', desc:'庚金太白当令，此宫所谋之事受挫，出行破财。' });
+    // 太白临宫 / 飞干格 (Logam Putih Mendominasi)
+    if (tStem === '庚') found.push({ name:`太白临宫 · Logam Putih Menguasai ${p.palaceName}宫`, type:'凶', desc:`庚 (Logam Yang, simbol konflik) mendominasi Ruas ${p.palaceName}${p.palaceNumber} — usaha di arah ini mudah gagal atau terhambat, bepergian bisa merugi. Segala rencana besar di arah ${p.palaceName} perlu ditunda atau ekstra waspada.` });
 
-    // 天网 (壬癸同宫)
+    // 天网地网 (Jaring Langit-Bumi)
     if ((tStem==='癸'&&dStem==='壬')||(tStem==='壬'&&dStem==='癸')||(tStem==='癸'&&dStem==='癸')) {
-      found.push({ name:'天网地网', type:'凶', desc:'壬癸相叠，天网地网张，万事受困，行动不利。' });
+      found.push({ name:'天网地网 · Jaring Langit dan Bumi', type:'凶', desc:'Energi Air berlapis ganda (壬癸 tumpang tindih) — seperti terjebak dalam jaring. Semua tindakan terperangkap, sangat tidak menguntungkan untuk maju atau bergerak. Lebih baik diam dan menunggu kondisi membaik.' });
     }
 
-    // 门迫
+    // 门迫 (Gerbang Menekan Ruas)
     if (p.marks.includes('迫')) {
-      found.push({ name:`门迫(${door}迫${p.palaceName}宫)`, type:'凶', desc:'门五行克宫五行，人事强行作为引发环境反噬，吉门吉减凶门凶增。' });
+      found.push({ name:`门迫 · Gerbang Menekan Ruas (${door} di ${p.palaceName}宫)`, type:'凶', desc:`Gerbang ${door} menyerang unsur Ruas ${p.palaceName}${p.palaceNumber} — memaksa situasi justru memperburuk keadaan. Jika gerbang ini adalah gerbang buruk, efek negatifnya berlipat ganda. Jangan paksa keadaan di arah ini.` });
     }
 
-    // 值符伏吟 (值符落值符宫的本位)
+    // 值符伏吟 (Bintang Pemimpin Kembali ke Asal)
     if (star === chart.zhiFuStar && STAR_HOME[star] === p.palaceNumber) {
-      found.push({ name:'值符伏吟', type:'凶', desc:'值符星回归本位，极静之局，主停滞拖延，宜静守不宜妄动。' });
+      found.push({ name:'值符伏吟 · Bintang Pemimpin Balik ke Asal', type:'凶', desc:'Bintang pemimpin (值符) kembali ke posisi asalnya — chart masuk kondisi sangat statis dan stagnan. Segala urusan terhenti dan mengalami penundaan panjang. Lebih baik diam, menunggu, dan tidak mengambil keputusan besar.' });
     }
 
-    // 天遁
-    if (tStem==='丙' && door==='生门') found.push({ name:'天遁', type:'吉', desc:'丙奇+生门同宫，日月精华同辉，大吉，利升迁求财见贵。' });
-    // 地遁
-    if (tStem==='乙' && door==='开门') found.push({ name:'地遁', type:'吉', desc:'乙奇+开门同宫，日精入明堂，大吉，利建造防守。' });
-    // 人遁
-    if (tStem==='丁' && door==='休门' && (god==='太阴'||god==='阴')) found.push({ name:'人遁', type:'吉', desc:'丁奇+休门+太阴，三才和谐，利和谈结交贵人。' });
+    // 天遁 / 地遁 / 人遁 (Tiga Penyelamatan)
+    if (tStem==='丙' && door==='生门') found.push({ name:'天遁 · Penyelamatan Langit', type:'吉', desc:'Bintang 丙 (Api) bertemu Pintu Kehidupan (生门) — energi paling auspicous di QMDJ. Sinar surya bersatu dengan gerbang kehidupan: sangat baik untuk promosi jabatan, mencari rezeki, bertemu tokoh penting, dan memulai usaha baru. Gunakan arah ini untuk tindakan penting.' });
+    if (tStem==='乙' && door==='开门') found.push({ name:'地遁 · Penyelamatan Bumi', type:'吉', desc:'Bintang 乙 (Kayu Yin) bertemu Pintu Terbuka (开门) — energi bumi bersinar menerangi jalan. Sangat baik untuk konstruksi, investasi jangka panjang, pertahanan posisi, dan membangun fondasi yang kuat.' });
+    if (tStem==='丁' && door==='休门' && (god==='太阴'||god==='阴')) found.push({ name:'人遁 · Penyelamatan Manusia', type:'吉', desc:'Bintang 丁 + Pintu Istirahat (休门) + Dewa Tersembunyi (太阴) berpadu — tiga energi manusia harmonis. Sangat baik untuk negosiasi rahasia, membangun relasi penting, dan urusan yang membutuhkan kepercayaan dan kerahasiaan.' });
 
-    // 三吉门 + 三奇
+    // 三奇得门 (Tiga Bintang + Gerbang Baik)
     if (['开门','休门','生门'].includes(door) && ['乙','丙','丁'].includes(tStem)) {
-      found.push({ name:`三奇得门(${tStem}奇+${door})`, type:'吉', desc:'三奇得三吉门助力，谋事必成，大吉之象。' });
+      const doorNames = {'开门':'Pintu Terbuka','休门':'Pintu Istirahat','生门':'Pintu Kehidupan'};
+      const stemNames = {'乙':'Hari (乙)','丙':'Bulan (丙)','丁':'Bintang (丁)'};
+      found.push({ name:`三奇得门 · Bintang Istimewa + Gerbang Baik (${tStem}+${door})`, type:'吉', desc:`Bintang istimewa ${stemNames[tStem]||tStem} bertemu ${doorNames[door]||door} — dua kekuatan positif berpadu. Apapun yang direncanakan di arah ini akan berhasil. Ini adalah salah satu pertanda paling menguntungkan dalam QMDJ.` });
     }
   }
 
-  // 空亡
+  // 空亡 (Kekosongan Waktu)
   if (chart.kongWang && chart.kongWang.length > 0) {
     const kongPalaces = palaces.filter(p => p.marks.includes('空')).map(p => p.palaceName+p.palaceNumber);
     if (kongPalaces.length > 0) {
-      found.push({ name:`时空亡(${chart.kongWang.join('')})`, type:'凶', desc:`空亡地支: ${chart.kongWang.join('、')}。落入空亡宫位: ${kongPalaces.join('、')}。空亡之宫气力不足，谋事需防无效结果。` });
+      found.push({ name:`时空亡 · Jam/Hari Masuk Kekosongan (${chart.kongWang.join('')})`, type:'凶', desc:`Elemen waktu jatuh ke kekosongan (空亡) — Ruas yang terpengaruh: ${kongPalaces.join('、')}. Energi di ruas-ruas ini melemah secara signifikan: tindakan yang dilakukan di arah ini cenderung tidak membuahkan hasil nyata. Tunda urusan penting dari ruas-ruas tersebut.` });
     }
   }
 

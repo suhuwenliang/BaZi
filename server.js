@@ -272,18 +272,40 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
   };
 }
 
+const ZWDS_STAR_ID = {
+  '紫微':'Ziwei (Kaisar)','天机':'Tianji (Strategi)','天機':'Tianji (Strategi)',
+  '太阳':'Taiyang (Matahari)','太陽':'Taiyang (Matahari)',
+  '武曲':'Wuqu (Keuangan)','天同':'Tiantong (Harmoni)',
+  '廉贞':'Lianzhen (Integritas)','廉貞':'Lianzhen (Integritas)',
+  '天府':'Tianfu (Kemakmuran)','太阴':'Taiyin (Bulan)','太陰':'Taiyin (Bulan)',
+  '贪狼':'Tanlang (Ambisi)','貪狼':'Tanlang (Ambisi)',
+  '巨门':'Jumen (Komunikasi)','巨門':'Jumen (Komunikasi)',
+  '天相':'Tianxiang (Dukungan)','天梁':'Tianliang (Pelindung)',
+  '七杀':'Qisha (Ketegasan)','七殺':'Qisha (Ketegasan)',
+  '破军':'Pojun (Perubahan)','破軍':'Pojun (Perubahan)',
+  '文昌':'Wenzhang (Akademik)','文曲':'Wenqu (Seni)',
+  '左辅':'Zuofu (Asisten Kiri)','右弼':'Youbi (Asisten Kanan)',
+  '天魁':'Tiankui (Mentor Pria)','天钺':'Tianyue (Mentor Wanita)','天鉞':'Tianyue (Mentor Wanita)',
+  '禄存':'Lucun (Simpanan)','天马':'Tianma (Kuda Langit)','天馬':'Tianma (Kuda Langit)',
+};
+function translateZwdsStar(name) { return ZWDS_STAR_ID[name] || name; }
+function translateZwdsStars(arr) { return arr.map(translateZwdsStar).join('、'); }
+
 function buildComparison(bazi, zwds) {
   const baziDM = bazi.dayMaster?.stem || '—';
   const baziChar = bazi.dayMaster?.character?.substring(0, 80) || '—';
-  const mingStars = zwds?.palaces?.[0]?.majorStars?.map(s => s.name).join('、') || '(kosong)';
+  const mingStarsRaw = zwds?.palaces?.[0]?.majorStars?.map(s => s.name) || [];
+  const mingStars = mingStarsRaw.length ? translateZwdsStars(mingStarsRaw) : '(kosong)';
 
   // Temukan tema-tema yang KONVERGEN antara BaZi dan ZWDS
   const yongShen = bazi.wuXing?.yongShen || '';
   const isDMWeak = !bazi.wuXing?.isDMStrong;
   const dominantTG = bazi.tenGods?.dominant?.god || '';
   const mingStarList = zwds?.palaces?.[0]?.majorStars?.map(s=>s.name) || [];
-  const careerStars = zwds?.palaces?.[8]?.majorStars?.map(s=>s.name) || [];
-  const wealthStars = zwds?.palaces?.[4]?.majorStars?.map(s=>s.name) || [];
+  const careerStarsRaw = zwds?.palaces?.[8]?.majorStars?.map(s=>s.name) || [];
+  const wealthStarsRaw = zwds?.palaces?.[4]?.majorStars?.map(s=>s.name) || [];
+  const careerStars = careerStarsRaw.map(translateZwdsStar);
+  const wealthStars = wealthStarsRaw.map(translateZwdsStar);
   const baziCurrentDY = bazi.daYun?.current;
   const zwdsCurrentDX = zwds?.daXian?.current;
 
@@ -295,7 +317,7 @@ function buildComparison(bazi, zwds) {
   const hasQiSha = careerStars.some(s => s.includes('七杀'));
   const hasTanLang = mingStarList.some(s => s.includes('贪狼'));
   if (isOutputWealth || hasQiSha || hasTanLang) {
-    convergenceThemes.push('💼 <strong>Jalur Mandiri & Kreativitas:</strong> BaZi menunjukkan pola Output-Wealth yang dominan (kemakmuran melalui keahlian & ide pribadi, bukan birokrasi). Zi Wei memperkuat ini melalui energi di Istana Karir ' + (careerStars.join('、') || '—') + ' dan bintang Ming Gong ' + (mingStarList.join('、') || '—') + '. Keduanya sepakat: jalur terbaik adalah mandiri atau melalui inisiatif personal, bukan tangga jabatan formal.');
+    convergenceThemes.push('💼 <strong>Jalur Mandiri & Kreativitas:</strong> BaZi menunjukkan pola Output-Wealth yang dominan (kemakmuran melalui keahlian & ide pribadi, bukan birokrasi). Zi Wei memperkuat ini melalui energi di Istana Karir ' + (careerStars.join('、') || '—') + ' dan bintang Ming Gong ' + (mingStarList.map(translateZwdsStar).join('、') || '—') + '. Keduanya sepakat: jalur terbaik adalah mandiri atau melalui inisiatif personal, bukan tangga jabatan formal.');
   }
 
   // Tema 2: Disiplin diri & fokus
@@ -322,27 +344,27 @@ function buildComparison(bazi, zwds) {
     },
     karakter: {
       bazi: `Day Master ${baziDM}: ${baziChar}...`,
-      zwds: `Bintang Ming Gong: ${mingStars}`,
+      zwds: `Bintang Istana Kehidupan (命宫): ${mingStars}`,
       kesimpulan: 'Persamaan karakter di kedua sistem menunjukkan sifat yang benar-benar melekat kuat dalam kepribadian Anda.'
     },
     karir: {
       bazi: (bazi.careers || []).slice(0, 3).join(', '),
-      zwds: `官禄宫: ${careerStars.join('、') || '—'}`,
+      zwds: `Istana Karir (官禄宫): ${careerStars.join('、') || '—'}`,
       kesimpulan: 'Bidang yang muncul di kedua sistem adalah jalur karir paling alami bagi Anda.'
     },
     keuangan: {
       bazi: `Yong Shen: ${bazi.wuXing?.yongShen}, Ten God finansial: ${bazi.tenGods?.byStem?.year_gan?.god || '—'}`,
-      zwds: `财帛宫: ${wealthStars.join('、') || '—'}`,
-      kesimpulan: 'Perhatikan periode Da Yun yang mendukung dari BaZi, dan tahun-tahun dengan 化禄 di 财帛宫 dari ZWDS.'
+      zwds: `Istana Keuangan (财帛宫): ${wealthStars.join('、') || '—'}`,
+      kesimpulan: 'Perhatikan periode Da Yun yang mendukung dari BaZi, dan tahun-tahun dengan 化禄 di Istana Keuangan dari ZWDS.'
     },
     percintaan: {
       bazi: `Shio serasi: ${(bazi.shioCompatibility?.best || []).join(', ')}`,
-      zwds: `夫妻宫: ${zwds?.palaces?.[2]?.majorStars?.map(s=>s.name).join('、') || '—'}`,
+      zwds: `Istana Pasangan (夫妻宫): ${translateZwdsStars(zwds?.palaces?.[2]?.majorStars?.map(s=>s.name) || []) || '—'}`,
       kesimpulan: 'Gabungkan kriteria dari keduanya untuk gambaran pasangan ideal yang lebih lengkap.'
     },
     kesehatan: {
       bazi: `Unsur lemah: ${bazi.wuXing?.weakest}`,
-      zwds: `疾厄宫: ${zwds?.palaces?.[5]?.majorStars?.map(s=>s.name).join('、') || '—'}`,
+      zwds: `Istana Kesehatan (疾厄宫): ${translateZwdsStars(zwds?.palaces?.[5]?.majorStars?.map(s=>s.name) || []) || '—'}`,
       kesimpulan: 'Perhatikan organ/area yang ditunjukkan keduanya untuk pemeriksaan kesehatan preventif.'
     }
   };
