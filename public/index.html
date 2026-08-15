@@ -190,6 +190,24 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   #export-section { display: none !important; }
   /* Expand all Da Yun / Liunian accordion rows when printing */
   [id^="acc4d_"] { display: block !important; }
+  /* Sub-section page breaks: 3B, 3C … / 4B, 4C … each start on new page */
+  .card-body > h3 ~ h3 { break-before: page !important; page-break-before: always !important; }
+  /* Keep sub-section heading attached to its content (no orphan heading) */
+  .card-body > h3 { break-after: avoid !important; page-break-after: avoid !important; }
+  /* Hide decorative hr separators between sub-sections */
+  .card-body > hr { display: none !important; }
+  /* ── Printing a compat section: hide main content ── */
+  body[data-print-compat] .app-header { display: none !important; }
+  body[data-print-compat] #form-section { display: none !important; }
+  body[data-print-compat] #results { display: none !important; }
+  body[data-print-compat] #qmdj-section { display: none !important; }
+  body[data-print-compat] #compat-triggers { display: none !important; }
+  body[data-print-compat] #export-section { display: none !important; }
+  body[data-print-compat] #section-compat-spouse,
+  body[data-print-compat] #section-compat-family,
+  body[data-print-compat] #section-compat-friend { display: none !important; }
+  /* The active compat card is shown via JS (no-print removed, display:block set) */
+  body[data-print-compat] [id^="section-compat-"][style*="display: block"] { display: block !important; break-before: auto !important; }
   .card { border: 1px solid #bbb !important; break-before: page !important; page-break-before: always !important; background: white !important; }
   .card:first-of-type { break-before: auto !important; page-break-before: auto !important; }
   .card-header { background: #f5ede0 !important; break-inside: avoid; page-break-inside: avoid; }
@@ -911,8 +929,8 @@ function renderName(na, input) {
     na.latin.forEach(ln => {
       html += `<div class="palace-card">
         <div class="palace-name">${esc(ln.name)}</div>
-        <div style="font-size:12px; color:var(--muted)">Asal: <span style="color:var(--text)">${esc(ln.origin||'—')}</span></div>
-        <div style="font-size:12px; margin-top:4px">${esc(ln.meaning||'—')}</div>
+        ${ln.origin ? `<div style="font-size:12px; color:var(--muted)">Asal: <span style="color:var(--text)">${esc(ln.origin)}</span></div>` : ''}
+        ${ln.meaning ? `<div style="font-size:12px; margin-top:4px">${esc(ln.meaning)}</div>` : ''}
       </div>`;
     });
     html += '</div>';
@@ -1622,7 +1640,7 @@ function render4D(z) {
   html += `</tbody></table></div>`;
 
   // ── BAGIAN 3: Accordion Breakdown Bulanan per Tahun ───────
-  html += `<h4 style="color:var(--gold2); font-size:13px; margin:0 0 10px">🗓️ Breakdown Bulanan — Klik Tahun untuk Melihat Detail</h4>`;
+  html += `<h4 style="color:var(--gold2); font-size:13px; margin:0 0 10px">🗓️ Breakdown Bulanan</h4>`;
 
   for (let y = curYear; y <= curYear + 10; y++) {
     const yGz   = _4d_yearGanzhi(y);
@@ -2906,6 +2924,26 @@ function buildCompatForm(containerId) {
     </div>`;
 }
 
+// Print hanya section compat tertentu (bukan seluruh halaman)
+function printCompatSection(type) {
+  const card = document.getElementById(`section-compat-${type}`);
+  if (!card) { window.print(); return; }
+
+  const origDisplay = card.style.display;
+  card.classList.remove('no-print');
+  card.style.display = 'block';
+  document.body.setAttribute('data-print-compat', type);
+
+  const restore = () => {
+    card.classList.add('no-print');
+    card.style.display = origDisplay;
+    document.body.removeAttribute('data-print-compat');
+    window.removeEventListener('afterprint', restore);
+  };
+  window.addEventListener('afterprint', restore);
+  window.print();
+}
+
 // Set koordinat dan timezone untuk compat form tertentu
 function setCompatCoord(containerId, lng, lat, tzVal) {
   const c = document.getElementById(containerId);
@@ -3072,7 +3110,7 @@ function renderCompatResult(c, container, type) {
 
     <!-- Buttons -->
     <div class="compat-print-btn no-print">
-      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Simpan PDF</button>
+      <button class="btn btn-primary" onclick="printCompatSection('${type}')">🖨️ Print / Simpan PDF</button>
       <button class="btn btn-secondary" onclick="resetCompatSection('${type}')">🔄 Ulang / Ganti Data</button>
     </div>`;
 
