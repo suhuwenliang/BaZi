@@ -190,12 +190,13 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   #export-section { display: none !important; }
   /* Expand all Da Yun / Liunian accordion rows when printing */
   [id^="acc4d_"] { display: block !important; }
-  /* Sub-section page breaks: 3B, 3C … / 4B, 4C … each start on new page */
-  .card-body > h3 ~ h3 { break-before: page !important; page-break-before: always !important; }
+  /* Sub-section page breaks for Section 3 (BaZi) and Section 4 (ZWDS) ONLY */
+  /* 3B, 3C … / 4B, 4C … each start on a new page */
+  .page-break-subsec > h3 ~ h3 { break-before: page !important; page-break-before: always !important; }
   /* Keep sub-section heading attached to its content (no orphan heading) */
-  .card-body > h3 { break-after: avoid !important; page-break-after: avoid !important; }
-  /* Hide decorative hr separators between sub-sections */
-  .card-body > hr { display: none !important; }
+  .page-break-subsec > h3 { break-after: avoid !important; page-break-after: avoid !important; }
+  /* Hide decorative hr separators only in sections 3 & 4 */
+  .page-break-subsec > hr { display: none !important; }
   /* ── Printing a compat section: hide main content ── */
   body[data-print-compat] .app-header { display: none !important; }
   body[data-print-compat] #form-section { display: none !important; }
@@ -203,11 +204,16 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   body[data-print-compat] #qmdj-section { display: none !important; }
   body[data-print-compat] #compat-triggers { display: none !important; }
   body[data-print-compat] #export-section { display: none !important; }
-  body[data-print-compat] #section-compat-spouse,
-  body[data-print-compat] #section-compat-family,
-  body[data-print-compat] #section-compat-friend { display: none !important; }
-  /* The active compat card is shown via JS (no-print removed, display:block set) */
-  body[data-print-compat] [id^="section-compat-"][style*="display: block"] { display: block !important; break-before: auto !important; }
+  /* Hide only the TWO inactive compat cards, show the active one */
+  body[data-print-compat="spouse"] #section-compat-family,
+  body[data-print-compat="spouse"] #section-compat-friend { display: none !important; }
+  body[data-print-compat="family"] #section-compat-spouse,
+  body[data-print-compat="family"] #section-compat-friend { display: none !important; }
+  body[data-print-compat="friend"] #section-compat-spouse,
+  body[data-print-compat="friend"] #section-compat-family { display: none !important; }
+  body[data-print-compat="spouse"] #section-compat-spouse,
+  body[data-print-compat="family"] #section-compat-family,
+  body[data-print-compat="friend"] #section-compat-friend { display: block !important; break-before: auto !important; page-break-before: auto !important; }
   .card { border: 1px solid #bbb !important; break-before: page !important; page-break-before: always !important; background: white !important; }
   .card:first-of-type { break-before: auto !important; page-break-before: auto !important; }
   .card-header { background: #f5ede0 !important; break-inside: avoid; page-break-inside: avoid; }
@@ -466,7 +472,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
     <div class="section-num">3</div>
     <h2>BaZi 八字 — Empat Pilar</h2>
   </div>
-  <div class="card-body">
+  <div class="card-body page-break-subsec">
     <!-- 3A: Pillars -->
     <h3 style="color:var(--gold2); font-size:13px; margin-bottom:10px">3A · Empat Pilar 四柱</h3>
     <div id="sec-3a"></div>
@@ -509,7 +515,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
     <div class="section-num">4</div>
     <h2>Zi Wei Dou Shu 紫微斗數</h2>
   </div>
-  <div class="card-body">
+  <div class="card-body page-break-subsec">
     <div id="sec-zwds-meta" style="margin-bottom:14px"></div>
     <!-- 12 Palaces -->
     <h3 style="color:var(--gold2); font-size:13px; margin-bottom:10px">4A · 12 Istana (宫)</h3>
