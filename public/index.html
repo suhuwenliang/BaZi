@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BaZi & Zi Wei Dou Shu</title>
+<title>BaZi, Zi Wei Dou Shu & Qi Men Dun Jia</title>
 <style>
 :root {
   --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #16213e; --surface3: #0f3460;
@@ -277,8 +277,8 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 <body>
 
 <div class="app-header">
-  <h1>⭐ 四柱八字 &amp; 紫微斗數</h1>
-  <div class="subtitle">BaZi &amp; Zi Wei Dou Shu · Kalkulasi Deterministik · Berbasis Library Terverifikasi</div>
+  <h1>八字 · 紫微斗數 · 奇門遁甲</h1>
+  <div class="subtitle">BaZi, Zi Wei Dou Shu &amp; Qi Men Dun Jia</div>
 </div>
 
 <div class="container">
@@ -542,9 +542,8 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 
     <!-- Tab selector -->
     <div class="qmdj-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="btn btn-secondary qmdj-tab active" onclick="switchQmdjTab('nianjia',this)">📅 年家 (Natal Tahun)</button>
-      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('rijia',this)">🗓 日家 (Natal Hari)</button>
-      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('shijia',this)">⏰ 时家 (Sekarang)</button>
+      <button class="btn btn-secondary qmdj-tab active" onclick="switchQmdjTab('nianjia',this)">📅 年家 · Natal Tahun</button>
+      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('rijia',this)">🗓 日家 · Natal Hari</button>
     </div>
 
     <!-- Loading indicator -->
@@ -580,27 +579,16 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 </div>
 
 <!-- ===== SECTION 9: EXPORT ===== -->
-<div class="card" id="export-section">
-  <div class="card-header">
-    <div class="section-num">9</div>
-    <h2>Export &amp; Berbagi</h2>
+<!-- Action buttons — Print & Mulai Baru -->
+<div id="export-section" style="border-top:1px solid var(--border); margin-top:16px; padding:24px 16px; text-align:center">
+  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="window.print()" style="font-size:14px; padding:12px 36px; min-width:180px">
+      🖨️ Print / Simpan PDF
+    </button>
+    <button class="btn btn-secondary no-print" onclick="resetForm()" style="font-size:14px; padding:12px 36px; min-width:180px; border:1px solid var(--gold); color:var(--gold2)">
+      ✨ Mulai Baru
+    </button>
   </div>
-  <div class="card-body">
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Simpan PDF</button>
-    </div>
-    <div style="margin-top:10px; font-size:11px; color:var(--muted)">
-      Klik tombol di atas untuk mencetak atau menyimpan hasil sebagai file PDF.
-    </div>
-  </div>
-</div>
-
-<!-- MULAI BARU — always at the very bottom -->
-<div class="no-print" style="text-align:center; padding:28px 16px 20px; border-top:1px solid var(--border); margin-top:8px">
-  <button class="btn btn-secondary" onclick="resetForm()" style="font-size:14px; padding:12px 36px; background:var(--surface3); border:1px solid var(--gold); border-radius:8px; color:var(--gold2); cursor:pointer; letter-spacing:1px; transition:all 0.2s">
-    ✨ MULAI BARU
-  </button>
-  <div style="font-size:11px; color:var(--muted); margin-top:8px">Kosongkan semua data untuk perhitungan baru</div>
 </div>
 
 </div><!-- #results -->
@@ -2028,76 +2016,77 @@ function renderQmdj(q) {
     let doorColor = GOOD_DOORS.includes(p.door) ? '#22c55e' : BAD_DOORS.includes(p.door) ? '#ef4444' : '#94a3b8';
     let starColor = GOOD_STARS.includes(p.star) ? '#f59e0b' : BAD_STARS.includes(p.star) ? '#f87171' : '#e2e8f0';
 
-    // Marks HTML
-    const markHtml = (p.marks||[]).map(m => {
-      const cls = m==='刑'?'xing':m==='墓'?'mu':m==='迫'?'po':m==='空'||m==='时空'?'kong':m==='马'?'ma':'';
-      return `<span class="qp-mark ${cls}">${m}</span>`;
-    }).join('');
+    // Full translation tables (readable for general audience)
+    const QM_PAL_FULL = {
+      '坎':'Utara','坤':'Barat Daya','震':'Timur','巽':'Tenggara',
+      '中':'Pusat','乾':'Barat Laut','兑':'Barat','艮':'Timur Laut','离':'Selatan'
+    };
+    const QM_STAR_FULL = {
+      '天蓬':'Tianpeng — Hujan Lebat','天任':'Tianren — Bertanggung Jawab',
+      '天冲':'Tianchong — Penuh Energi','天辅':'Tianfu — Mendukung',
+      '天英':'Tianying — Kehormatan','天芮':'Tianrui — Pemulihan',
+      '天柱':'Tianzhu — Pilar','天心':'Tianxin — Hati Langit','天禽':'Tianqin — (Pusat)'
+    };
+    const QM_DOOR_FULL = {
+      '开门':'Pintu Terbuka','休门':'Pintu Istirahat','生门':'Pintu Kehidupan',
+      '伤门':'Pintu Luka','杜门':'Pintu Tersumbat','景门':'Pintu Cerah',
+      '死门':'Pintu Kematian','惊门':'Pintu Kejutan'
+    };
+    const QM_GOD_FULL = {
+      '值符':'Pemimpin Chart','腾蛇':'Ular Terbang (Tipuan)','螣蛇':'Ular Terbang (Tipuan)',
+      '太阴':'Yin Tersembunyi','六合':'Enam Harmoni','白虎':'Harimau Putih (Bahaya)',
+      '玄武':'Kura Hitam (Pencurian)','九地':'Sembilan Bumi (Stabil)','九天':'Sembilan Langit (Peluang)'
+    };
+    const MARK_FULL = {
+      '刑':['xing','⚔️ Konflik'],'墓':['mu','⚫ Terkubur'],'迫':['po','🔴 Tertekan'],
+      '空':['kong','🌑 Kosong'],'时空':['kong','🌑 Kosong'],'马':['ma','🐴 Gerak']
+    };
 
-    // Quality icon
+    // Quality icon & banner color
     const itp = p.interp || {};
     const qIcon = itp.qIcon || '';
+    const qText = itp.quality || '';
+    const bannerBg = qText.includes('Sangat Baik')?'#15803d':qText.includes('Baik')?'#1d4ed8':
+                     qText.includes('Berbahaya')?'#b91c1c':qText.includes('Kurang')?'#b45309':'#374151';
 
-    // Translation tables for palace grid
-    const QM_STEM_SHORT = {
-      '甲':'甲(KY+)','乙':'乙(KY-)','丙':'丙(A+)','丁':'丁(A-)','戊':'戊(T+)',
-      '己':'己(T-)','庚':'庚(L+)','辛':'辛(L-)','壬':'壬(Ar+)','癸':'癸(Ar-)'
-    };
-    const QM_PAL_SHORT = {
-      '坎':'坎·Utara','坤':'坤·BrtDy','震':'震·Timur','巽':'巽·TgGra',
-      '中':'中·Pusat','乾':'乾·BrtLt','兑':'兑·Barat','艮':'艮·TmrLt','离':'离·Selatan'
-    };
-    const QM_STAR_SHORT = {
-      '天蓬':'蓬(Hujan)','天任':'任(Tggj)','天冲':'冲(Energi)','天辅':'辅(Dukung)',
-      '天英':'英(Honor)','天芮':'芮(Pulih)','天柱':'柱(Pilar)','天心':'心(HatiLgt)','天禽':'禽(Tengah)'
-    };
-    const QM_DOOR_SHORT = {
-      '开门':'开(Terbuka)','休门':'休(Istirahat)','生门':'生(Kehidupan)','伤门':'伤(Luka)',
-      '杜门':'杜(Tertutup)','景门':'景(Dokumen)','死门':'死(Hindari)','惊门':'惊(Kejutan)'
-    };
-    const QM_GOD_SHORT = {
-      '值符':'值符(Pimpin)','腾蛇':'蛇(Tipuan)','螣蛇':'蛇(Tipuan)','太阴':'太阴(Tersemb)',
-      '六合':'六合(Harmoni)','白虎':'虎(Bahaya)','玄武':'武(Pencuri)','九地':'九地(Stabil)','九天':'九天(Peluang)'
-    };
-
-    // Di God
-    const diGodHtml = p.diGod ? `<div class="qp-god-di">地: ${QM_GOD_SHORT[p.diGod]||p.diGod}</div>` : '';
-
-    // Ji Gan (寄宫)
-    const jiGanHtml = p.jiGanStem ? `<div class="qp-jigan">Tamu: ${QM_STEM_SHORT[p.jiGanStem]||p.jiGanStem}</div>` : '';
-
-    // Hidden stems
-    const hiddenHtml = p.hiddenStems && p.hiddenStems.length > 0
-      ? `<div class="qp-hidden">${p.hiddenStems.map(s=>QM_STEM_SHORT[s]||s).join(' ')}</div>` : '';
+    // Marks
+    const markHtml = (p.marks||[]).map(m => {
+      const mk = MARK_FULL[m] || ['', m];
+      return `<span class="qp-mark ${mk[0]}" style="font-size:10px;padding:2px 5px">${mk[1]}</span>`;
+    }).join('');
 
     // Fu/Shi badges
     let badge = '';
-    if (isFuPal) badge += `<span style="font-size:9px;background:var(--gold);color:#000;padding:1px 4px;border-radius:3px;margin-right:2px">符</span>`;
-    if (isShiPal) badge += `<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 4px;border-radius:3px">使</span>`;
+    if (isFuPal) badge += `<span style="font-size:9px;background:var(--gold);color:#000;padding:1px 5px;border-radius:3px;margin-right:2px">★ Bintang Pimpin</span>`;
+    if (isShiPal) badge += `<span style="font-size:9px;background:var(--blue);color:#fff;padding:1px 5px;border-radius:3px">★ Pintu Pimpin</span>`;
 
-    const eS = QM_STEM_SHORT[p.earthStem]||p.earthStem||'—';
-    const sS = QM_STEM_SHORT[p.skyStem]||p.skyStem||'—';
-    const stemDisplay = isCenter
-      ? `<div class="qp-sky" style="color:var(--muted); font-size:11px">${sS}</div>`
-      : `<div class="qp-sky" style="font-size:12px">${eS}</div><div class="qp-earth" style="font-size:11px">${sS}</div>`;
-
-    const palLabel = QM_PAL_SHORT[p.palaceName] || p.palaceName+p.palaceNumber;
-    const starLabel = QM_STAR_SHORT[p.star] || p.star || '—';
-    const doorLabel = QM_DOOR_SHORT[p.door] || p.door || '—';
-    const godLabel  = QM_GOD_SHORT[p.godShort||p.god] || p.godShort||p.god||'—';
+    const dirFull  = QM_PAL_FULL[p.palaceName] || p.palaceName;
+    const starFull = QM_STAR_FULL[p.star] || p.star || '—';
+    const doorFull = QM_DOOR_FULL[p.door] || p.door || '—';
+    const godFull  = QM_GOD_FULL[p.godShort||p.god] || p.godShort||p.god||'—';
 
     grid.innerHTML += `
-      <div class="qmdj-palace ${borderClass}" title="${p.palaceName}${p.palaceNumber}宫 — ${p.interp?.quality||''}">
-        <div class="qp-quality">${qIcon}</div>
-        <div class="qp-name" style="font-size:9px">${palLabel} ${badge}</div>
-        <div class="qp-stems">${stemDisplay}</div>
-        ${hiddenHtml}
-        <div class="qp-star" style="color:${starColor}; font-size:11px">${starLabel}</div>
-        ${isCenter ? '' : `<div class="qp-door" style="color:${doorColor}; font-size:11px">${doorLabel}</div>`}
-        ${isCenter ? '' : `<div class="qp-god" style="font-size:10px">${godLabel}</div>`}
-        ${diGodHtml}
-        ${jiGanHtml}
-        ${markHtml ? `<div class="qp-marks">${markHtml}</div>` : ''}
+      <div class="qmdj-palace ${borderClass}" style="padding:8px; display:flex; flex-direction:column; gap:3px;">
+        <!-- Kualitas -->
+        <div style="background:${bannerBg};color:#fff;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700;text-align:center">
+          ${qIcon} ${qText||'Pusat'}
+        </div>
+        <!-- Arah -->
+        <div style="font-size:11px;font-weight:700;color:var(--gold);border-bottom:1px solid var(--border);padding-bottom:3px;margin-bottom:2px">
+          ${isCenter?'⬛ Pusat':('🧭 '+dirFull)} ${badge}
+        </div>
+        ${isCenter ? `<div style="font-size:10px;color:var(--muted);text-align:center">Tianqin<br>(Tidak aktif di Pusat)</div>` : `
+        <!-- Bintang -->
+        <div style="font-size:11px"><span style="color:var(--muted);font-size:10px">⭐ Bintang:</span><br>
+          <span style="color:${starColor};font-weight:600">${starFull}</span></div>
+        <!-- Pintu -->
+        <div style="font-size:11px"><span style="color:var(--muted);font-size:10px">🚪 Pintu:</span><br>
+          <span style="color:${doorColor};font-weight:600">${doorFull}</span></div>
+        <!-- Dewa -->
+        <div style="font-size:10px;color:var(--green)"><span style="color:var(--muted)">👁 Dewa:</span> ${godFull}</div>
+        `}
+        <!-- Tanda khusus -->
+        ${markHtml ? `<div class="qp-marks" style="margin-top:2px">${markHtml}</div>` : ''}
       </div>`;
   });
 
