@@ -27,8 +27,8 @@ const CHINESE_CHARS = {
   '郭': { strokes: 15, pinyin: 'guō',  meaning: 'Tembok kota luar — perlindungan dan batas', element: '金', radical: '阜' },
   '孙': { strokes: 10, pinyin: 'sūn',  meaning: 'Cucu, keturunan — kesinambungan dan warisan', element: '木', radical: '子' },
   '何': { strokes: 7,  pinyin: 'hé',   meaning: 'Apa, mengapa — intelektualitas dan rasa ingin tahu', element: '水', radical: '人' },
-  '许': { strokes: 11, pinyin: 'xǔ',   meaning: 'Mengizinkan, berjanji — kepercayaan dan integritas', element: '金', radical: '言' },
-  '邓': { strokes: 11, pinyin: 'dèng', meaning: 'Nama klan kuno — keturunan bangsawan', element: '金', radical: '阜' },
+  '许': { strokes: 6,  pinyin: 'xǔ',   meaning: 'Mengizinkan, berjanji — kepercayaan, integritas, dan keteguhan janji', element: '金', radical: '言' },
+  '邓': { strokes: 4,  pinyin: 'dèng', meaning: 'Marga kuno, nama negeri — tradisi dan identitas yang mengakar kuat', element: '土', radical: '阜' },
   '蔡': { strokes: 17, pinyin: 'cài',  meaning: 'Tumbuhan liar, sayuran hijau — kemandirian dan adaptabilitas', element: '木', radical: '艸' },
   '冯': { strokes: 12, pinyin: 'féng', meaning: 'Menyeberangi sungai — keberanian dan tekad', element: '水', radical: '冫' },
   '谢': { strokes: 17, pinyin: 'xiè',  meaning: 'Berterima kasih, mundur dengan anggun — rasa syukur dan kebijaksanaan', element: '金', radical: '言' },
@@ -73,13 +73,13 @@ const CHINESE_CHARS = {
   '龙': { strokes: 16, pinyin: 'lóng',meaning: 'Naga, simbol kekaisaran — kekuasaan, keberuntungan, dan kehebatan', element: '木', radical: '龙' },
   '凤': { strokes: 6,  pinyin: 'fèng',meaning: 'Phoenix/Feniks, keanggunan — keindahan, kebangkitan, dan kemuliaan wanita', element: '火', radical: '几' },
   '仁': { strokes: 4,  pinyin: 'rén', meaning: 'Kebajikan, kemanusiaan, cinta sesama — inti dari ajaran Konfusius', element: '木', radical: '人' },
-  '义': { strokes: 13, pinyin: 'yì',  meaning: 'Kebenaran, keadilan, kesetiaan — nilai moral tertinggi', element: '金', radical: '羊' },
+  '义': { strokes: 3,  pinyin: 'yì', meaning: 'Kebenaran, keadilan — moralitas yang teguh dan kesetiaan sejati', element: '金', radical: '丶' },
   '礼': { strokes: 17, pinyin: 'lǐ',  meaning: 'Kesopanan, tata krama, ritual — harmoni sosial', element: '火', radical: '示' },
   '智': { strokes: 12, pinyin: 'zhì', meaning: 'Kebijaksanaan, kecerdasan tinggi — pengetahuan yang mendalam', element: '水', radical: '日' },
   '信': { strokes: 9,  pinyin: 'xìn', meaning: 'Kepercayaan, kejujuran, surat — integritas yang bisa diandalkan', element: '木', radical: '人' },
   '平': { strokes: 5,  pinyin: 'píng',meaning: 'Damai, datar, seimbang — ketenangan dan keseimbangan', element: '木', radical: '干' },
   '安': { strokes: 6,  pinyin: 'ān',  meaning: 'Aman, tenteram, damai — ketentraman lahir dan batin', element: '土', radical: '宀' },
-  '宁': { strokes: 14, pinyin: 'níng',meaning: 'Tenang, damai, lebih suka — ketenangan jiwa yang dalam', element: '水', radical: '宀' },
+  '宁': { strokes: 5,  pinyin: 'níng', meaning: 'Tenang, damai — ketenangan jiwa yang mendalam dan kebijaksanaan', element: '水', radical: '宀' },
   '泰': { strokes: 10, pinyin: 'tài', meaning: 'Makmur, sangat, Tai Chi — kemakmuran dan ketenangan agung', element: '水', radical: '水' },
   '恩': { strokes: 10, pinyin: 'ēn',  meaning: 'Karunia, belas kasih, kebaikan — budi baik yang diterima dan diberikan', element: '水', radical: '心' },
   '慧': { strokes: 15, pinyin: 'huì', meaning: 'Kecerdasan, budi yang cerah — kebijaksanaan spiritual dan intelektual', element: '火', radical: '心' },
@@ -118,14 +118,12 @@ const CHINESE_CHARS = {
   '峰': { strokes: 10, pinyin: 'fēng', meaning: 'Puncak gunung — ambisi mencapai puncak dan prestasi tertinggi', element: '土', radical: '山' },
   '旭': { strokes: 6,  pinyin: 'xù',   meaning: 'Matahari terbit — harapan baru, awal cerah, dan semangat yang membarakan', element: '火', radical: '日' },
   '坚': { strokes: 7,  pinyin: 'jiān', meaning: 'Teguh, kokoh — keteguhan hati yang tidak goyah menghadapi cobaan', element: '土', radical: '土' },
-  '浩': { strokes: 10, pinyin: 'hào',  meaning: 'Luas seperti samudra — kebesaran jiwa dan kemurahan hati tanpa batas', element: '水', radical: '氵' },
   '海': { strokes: 10, pinyin: 'hǎi',  meaning: 'Laut, samudra — keluasan pikiran, kedalaman jiwa, dan kemurahan hati', element: '水', radical: '氵' },
   '江': { strokes: 6,  pinyin: 'jiāng',meaning: 'Sungai besar — aliran kehidupan yang terus berkembang dan memberikan', element: '水', radical: '氵' },
   // Karakter cahaya, sinar, kemuliaan
   '光': { strokes: 6,  pinyin: 'guāng',meaning: 'Cahaya, sinar, kemuliaan — kecemerlangan yang menerangi dan menginspirasi sekitar', element: '火', radical: '儿' },
   '灿': { strokes: 7,  pinyin: 'càn',  meaning: 'Bersinar cemerlang — kejayaan yang menyilaukan dan penuh semangat', element: '火', radical: '火' },
   '耀': { strokes: 20, pinyin: 'yào',  meaning: 'Bersinar terang, jaya — kemegahan yang memancar dan diakui semua orang', element: '火', radical: '羽' },
-  '明': { strokes: 8,  pinyin: 'míng', meaning: 'Terang benderang, bijaksana — kecerdasan yang bersinar dan pikiran yang jernih', element: '火', radical: '日' },
   '亮': { strokes: 9,  pinyin: 'liàng',meaning: 'Cerah, bersinar — kejernihan pikiran dan kejujuran yang terang', element: '火', radical: '亠' },
   '炎': { strokes: 8,  pinyin: 'yán',  meaning: 'Api berkobar — semangat yang membara dan vitalitas yang kuat', element: '火', radical: '火' },
   '焱': { strokes: 12, pinyin: 'yàn', meaning: 'Api besar menyala — semangat besar yang berkobar tanpa henti', element: '火', radical: '火' },
@@ -142,15 +140,10 @@ const CHINESE_CHARS = {
   '刚': { strokes: 6,  pinyin: 'gāng', meaning: 'Keras, teguh baja — karakter kuat yang tak mudah goyah', element: '金', radical: '刀' },
   '毅': { strokes: 15, pinyin: 'yì',   meaning: 'Tekad bulat, gigih — keteguhan hati dalam menapaki jalan hidup', element: '金', radical: '殳' },
   '勇': { strokes: 9,  pinyin: 'yǒng', meaning: 'Berani, pemberani — keberanian menghadapi tantangan dan mengambil tindakan', element: '金', radical: '力' },
-  '强': { strokes: 12, pinyin: 'qiáng',meaning: 'Kuat, tangguh — kekuatan fisik dan mental yang luar biasa', element: '金', radical: '弓' },
   '超': { strokes: 12, pinyin: 'chāo', meaning: 'Melampaui, unggul — kemampuan melewati batas dan meraih lebih banyak', element: '木', radical: '走' },
   '飞': { strokes: 3,  pinyin: 'fēi',  meaning: 'Terbang — ambisi tinggi dan kebebasan yang tak terbatas', element: '木', radical: '飞' },
   '腾': { strokes: 13, pinyin: 'téng', meaning: 'Melonjak, melesat — kemajuan pesat dan semangat yang tak tertahankan', element: '火', radical: '月' },
-  // Karakter nama umum tambahan
-  '安': { strokes: 6,  pinyin: 'ān',   meaning: 'Damai, tenteram — kedamaian batin dan ketenangan jiwa yang abadi', element: '土', radical: '宀' },
-  '平': { strokes: 5,  pinyin: 'píng', meaning: 'Damai, seimbang — keseimbangan hidup dan ketentraman yang stabil', element: '木', radical: '干' },
   '康': { strokes: 11, pinyin: 'kāng', meaning: 'Sehat, sejahtera — kesehatan sempurna dan kehidupan penuh berkah', element: '金', radical: '广' },
-  '宁': { strokes: 5,  pinyin: 'níng', meaning: 'Tenang, damai — ketenangan jiwa yang mendalam dan kebijaksanaan', element: '水', radical: '宀' },
   '和': { strokes: 8,  pinyin: 'hé',   meaning: 'Harmonis, selaras — keselarasan dengan sesama dan keseimbangan alam', element: '木', radical: '口' },
   '顺': { strokes: 9,  pinyin: 'shùn', meaning: 'Lancar, sesuai — perjalanan hidup yang mulus dan penuh kemudahan', element: '水', radical: '页' },
   '兴': { strokes: 6,  pinyin: 'xīng', meaning: 'Maju, bersemangat — semangat tumbuh dan berkembang tanpa henti', element: '火', radical: '八' },
@@ -187,8 +180,6 @@ const CHINESE_CHARS = {
   '珊': { strokes: 9,  pinyin: 'shān',meaning: 'Terumbu karang, indah — keindahan yang unik terbentuk dari waktu dan ketekunan', element: '金', radical: '玉' },
   '诗': { strokes: 8,  pinyin: 'shī', meaning: 'Puisi — jiwa seni yang tinggi, kepekaan estetis, dan ekspresi yang indah', element: '木', radical: '言' },
   '蕾': { strokes: 16, pinyin: 'lěi', meaning: 'Kuncup bunga — potensi yang belum mekar, masa depan yang cerah menanti', element: '木', radical: '艸' },
-  // Karakter nilai/kebajikan
-  '勇': { strokes: 9,  pinyin: 'yǒng',meaning: 'Berani, gagah — keberanian sejati yang bersumber dari hati yang kuat', element: '金', radical: '力' },
   '廉': { strokes: 13, pinyin: 'lián',meaning: 'Jujur, bersih hati — integritas tanpa kompromi dan hidup yang lurus', element: '金', radical: '广' },
   '道': { strokes: 12, pinyin: 'dào', meaning: 'Jalan, prinsip hidup — kebijaksanaan dalam menjalani hidup sesuai alam semesta', element: '水', radical: '辶' },
   '诚': { strokes: 8,  pinyin: 'chéng',meaning: 'Tulus, jujur, ikhlas — kejujuran yang tulus dan kepercayaan yang tak tergoyahkan', element: '土', radical: '言' },
@@ -204,27 +195,18 @@ const CHINESE_CHARS = {
   '冬': { strokes: 5,  pinyin: 'dōng',meaning: 'Musim dingin — ketenangan dalam penantian dan kekuatan yang tersimpan', element: '水', radical: '冫' },
   '天': { strokes: 4,  pinyin: 'tiān',meaning: 'Langit, surga, alam — koneksi dengan yang lebih tinggi dan jiwa yang bebas', element: '金', radical: '大' },
   '地': { strokes: 6,  pinyin: 'dì',  meaning: 'Bumi, tanah — keteguhan, kesuburan, dan kemampuan menopang kehidupan', element: '土', radical: '土' },
-  '云': { strokes: 4,  pinyin: 'yún', meaning: 'Awan — kebebasan, transformasi, dan kemampuan mengisi ruang yang dibutuhkan', element: '水', radical: '二' },
   '星': { strokes: 9,  pinyin: 'xīng',meaning: 'Bintang — cahaya yang terus bersinar dalam kegelapan, tujuan yang menginspirasi', element: '火', radical: '日' },
   '月': { strokes: 4,  pinyin: 'yuè', meaning: 'Bulan — kelembutan, siklus, dan keindahan yang hadir dalam ketenangan malam', element: '水', radical: '月' },
-  '风': { strokes: 4,  pinyin: 'fēng',meaning: 'Angin — kebebasan, kecepatan, dan kemampuan menyentuh semua yang dilewati', element: '木', radical: '风' },
-  '晓': { strokes: 10, pinyin: 'xiǎo',meaning: 'Fajar, memahami — pencerahan dan awal yang penuh kemungkinan', element: '火', radical: '日' },
   // Karakter nama lainnya yang umum
   '锋': { strokes: 12, pinyin: 'fēng',meaning: 'Ujung tajam, pelopor — ketajaman pikiran dan kemampuan memimpin di garis terdepan', element: '金', radical: '金' },
   '俊': { strokes: 9,  pinyin: 'jùn', meaning: 'Tampan, berbakat, unggul — kombinasi penampilan memukau dan kemampuan luar biasa', element: '木', radical: '人' },
-  '亮': { strokes: 9,  pinyin: 'liàng',meaning: 'Bersinar, terang, cemerlang — pikiran yang cerah dan prestasi yang gemilang', element: '火', radical: '亠' },
-  '超': { strokes: 12, pinyin: 'chāo',meaning: 'Melampaui, mengatasi — tekad untuk selalu melebihi ekspektasi dan batas', element: '木', radical: '走' },
   '鹏': { strokes: 13, pinyin: 'péng',meaning: 'Burung raksasa mitologi — ambisi setinggi langit dan potensi yang tak terbatas', element: '木', radical: '鸟' },
-  '康': { strokes: 11, pinyin: 'kāng',meaning: 'Sehat, makmur, tenteram — kesehatan yang prima dan kemakmuran yang berkelanjutan', element: '土', radical: '广' },
-  '兴': { strokes: 6,  pinyin: 'xīng',meaning: 'Bangkit, berkembang, gembira — semangat yang terus tumbuh dan kebahagiaan berbagi', element: '木', radical: '八' },
   '庆': { strokes: 6,  pinyin: 'qìng',meaning: 'Merayakan, berkah — setiap hari adalah perayaan dan setiap momen adalah berkah', element: '木', radical: '广' },
   '祥': { strokes: 11, pinyin: 'xiáng',meaning: 'Pertanda baik, keberuntungan — aura positif yang menarik keberuntungan', element: '土', radical: '示' },
-  '和': { strokes: 8,  pinyin: 'hé',  meaning: 'Harmoni, damai — kemampuan menciptakan keselarasan di mana pun berada', element: '木', radical: '口' },
   '泽': { strokes: 8,  pinyin: 'zé',  meaning: 'Rawa berkah, kemurahan — limpahan karunia yang dibagikan kepada sesama', element: '水', radical: '氵' },
   '烨': { strokes: 12, pinyin: 'yè',  meaning: 'Bersinar, menyala-nyala — semangat membara dan cahaya yang menghangatkan', element: '火', radical: '火' },
   '睿': { strokes: 14, pinyin: 'ruì', meaning: 'Bijaksana, cerdas mendalam — kebijaksanaan yang menembus hal-hal tersembunyi', element: '水', radical: '目' },
   '源': { strokes: 13, pinyin: 'yuán',meaning: 'Sumber, asal — kembali ke akar dan menjadi sumber bagi banyak orang', element: '水', radical: '氵' },
-
   // ── Marga tambahan (百家姓) ───────────────────────────────────────
   '钱': { strokes: 10, pinyin: 'qián', meaning: 'Uang, logam berharga — kemakmuran dan nilai kehidupan', element: '金', radical: '金' },
   '孔': { strokes: 4,  pinyin: 'kǒng', meaning: 'Lubang, marga Konfusius — kebijaksanaan abadi dan kebesaran budaya', element: '木', radical: '子' },
@@ -260,19 +242,11 @@ const CHINESE_CHARS = {
   '鲁': { strokes: 15, pinyin: 'lǔ', meaning: 'Negara kuno Lu (tanah Konfusius) — kearifan dan tradisi', element: '水', radical: '鱼' },
   '倪': { strokes: 10, pinyin: 'ní', meaning: 'Marga kuno — ketenangan dan ketahanan', element: '土', radical: '人' },
   '龘': { strokes: 48, pinyin: 'dá', meaning: 'Tiga naga, puncak keagungan — kekuatan tertinggi dan ambisi setinggi langit', element: '木', radical: '龙' },
-
-  // ── Karakter nama pria tambahan ─────────────────────────────────
-  '熙': { strokes: 16, pinyin: 'xī', meaning: 'Bersinar, ceria, makmur — kegembiraan yang memancar dan kemakmuran cerah', element: '火', radical: '火' },
   '翔': { strokes: 12, pinyin: 'xiáng', meaning: 'Melayang tinggi, terbang bebas — kebebasan, ambisi, dan pandangan jauh', element: '木', radical: '羽' },
   '浦': { strokes: 10, pinyin: 'pǔ', meaning: 'Tepi sungai, pelabuhan — keterbukaan dan kemampuan menghubungkan', element: '水', radical: '氵' },
   '乐': { strokes: 5,  pinyin: 'lè', meaning: 'Bahagia, musik, senang — kegembiraan hidup dan harmoni jiwa', element: '木', radical: '木' },
-  '毅': { strokes: 15, pinyin: 'yì', meaning: 'Teguh, berani, tangguh — tekad yang tidak goyah menghadapi rintangan', element: '金', radical: '殳' },
   '璋': { strokes: 15, pinyin: 'zhāng', meaning: 'Giok setengah lingkaran — kemuliaan dan bakat yang cemerlang', element: '金', radical: '玉' },
-  '轩': { strokes: 7,  pinyin: 'xuān', meaning: 'Elegan, tinggi hati yang baik — keanggunan dan ambisi mulia', element: '木', radical: '车' },
-  '腾': { strokes: 13, pinyin: 'téng', meaning: 'Terbang, melompat tinggi — semangat tak tertahankan dan pencapaian pesat', element: '火', radical: '肉' },
-  '焱': { strokes: 12, pinyin: 'yàn', meaning: 'Api yang menyala-nyala — semangat membara dan energi yang kuat', element: '火', radical: '火' },
   '栋': { strokes: 9,  pinyin: 'dòng', meaning: 'Balok utama rumah — tulang punggung keluarga dan dukungan kuat', element: '木', radical: '木' },
-  '义': { strokes: 3,  pinyin: 'yì', meaning: 'Kebenaran, keadilan — moralitas yang teguh dan kesetiaan sejati', element: '金', radical: '丶' },
   '昱': { strokes: 9,  pinyin: 'yù', meaning: 'Cahaya matahari bersinar — kecemerlangan yang terus memancar', element: '火', radical: '日' },
   '璟': { strokes: 17, pinyin: 'jǐng', meaning: 'Kilau giok — bakat yang bersinar dan karakter yang mulia', element: '金', radical: '玉' },
   '奕': { strokes: 9,  pinyin: 'yì', meaning: 'Besar, megah, bermain catur — keagungan dan kecerdasan strategis', element: '火', radical: '大' },
@@ -303,11 +277,9 @@ const CHINESE_CHARS = {
   '润': { strokes: 10, pinyin: 'rùn', meaning: 'Lembab, menutrisi — memberi manfaat dan memelihara pertumbuhan', element: '水', radical: '氵' },
   '粲': { strokes: 13, pinyin: 'càn', meaning: 'Bersinar cemerlang — kecantikan dan kecemerlangan yang memukau', element: '火', radical: '米' },
   '凛': { strokes: 15, pinyin: 'lǐn', meaning: 'Teguh, berwibawa, dingin — kewibawaan yang menebarkan rasa hormat', element: '水', radical: '冫' },
-
   // ── Karakter nama wanita tambahan ───────────────────────────────
   '璃': { strokes: 15, pinyin: 'lí', meaning: 'Kaca, giok transparan — kejernihan dan keindahan yang tembus cahaya', element: '金', radical: '玉' },
   '瑶': { strokes: 13, pinyin: 'yáo', meaning: 'Giok indah, permata surgawi — keindahan langka dan kemuliaan', element: '金', radical: '玉' },
-  '曦': { strokes: 20, pinyin: 'xī', meaning: 'Sinar fajar pertama — awal yang penuh harapan dan cahaya baru', element: '火', radical: '日' },
   '漫': { strokes: 14, pinyin: 'màn', meaning: 'Melimpah, luas, bebas — kebebasan ekspresi dan jiwa yang tak terbatas', element: '水', radical: '氵' },
   '妍': { strokes: 7,  pinyin: 'yán', meaning: 'Cantik, indah — kecantikan alami yang menawan tanpa kepura-puraan', element: '木', radical: '女' },
   '涵': { strokes: 11, pinyin: 'hán', meaning: 'Mengandung, memelihara — kebijaksanaan yang menampung dan jiwa besar', element: '水', radical: '氵' },
@@ -315,7 +287,6 @@ const CHINESE_CHARS = {
   '萱': { strokes: 12, pinyin: 'xuān', meaning: 'Bunga daylily — melupakan kesedihan, keibuan, dan kebaikan hati', element: '木', radical: '艸' },
   '婉': { strokes: 11, pinyin: 'wǎn', meaning: 'Lembut, sopan, elegan — kelembutan yang memukau dan budi pekerti halus', element: '木', radical: '女' },
   '璐': { strokes: 17, pinyin: 'lù', meaning: 'Giok berkilau — kemuliaan dan keindahan yang langka', element: '金', radical: '玉' },
-  '晴': { strokes: 12, pinyin: 'qíng', meaning: 'Cerah, terang setelah hujan — optimisme dan keceriaan yang menghangatkan', element: '火', radical: '日' },
   '蓉': { strokes: 13, pinyin: 'róng', meaning: 'Bunga hibiskus, melebur — keindahan dan kemampuan menyatukan semua', element: '木', radical: '艸' },
   '梦': { strokes: 13, pinyin: 'mèng', meaning: 'Mimpi, impian — visi dan harapan yang menginspirasi tindakan nyata', element: '水', radical: '夕' },
   '琪': { strokes: 12, pinyin: 'qí', meaning: 'Giok mulia, istimewa — keistimewaan dan nilai yang membedakan', element: '金', radical: '玉' },
@@ -340,7 +311,6 @@ const CHINESE_CHARS = {
   '柔': { strokes: 9,  pinyin: 'róu', meaning: 'Lembut, fleksibel — kekuatan dalam kelembutan dan adaptabilitas yang bijak', element: '木', radical: '木' },
   '霓': { strokes: 16, pinyin: 'ní', meaning: 'Pelangi kedua, keindahan surgawi — pesona yang langka dan memukau', element: '水', radical: '雨' },
   '璨': { strokes: 18, pinyin: 'càn', meaning: 'Permata bercahaya — kecemerlangan dan keindahan yang tak tertandingi', element: '金', radical: '玉' },
-
   // ── Karakter alam & konsep tambahan ────────────────────────────
   '曙': { strokes: 17, pinyin: 'shǔ', meaning: 'Fajar, menyingsing — awal baru yang menjanjikan dan cahaya setelah kegelapan', element: '火', radical: '日' },
   '霄': { strokes: 15, pinyin: 'xiāo', meaning: 'Langit tinggi, angkasa — cita-cita setinggi langit dan jiwa yang bebas', element: '水', radical: '雨' },
@@ -355,7 +325,6 @@ const CHINESE_CHARS = {
   '鹤': { strokes: 16, pinyin: 'hè', meaning: 'Burung bangau — umur panjang, keanggunan, dan kebijaksanaan', element: '土', radical: '鸟' },
   '麟': { strokes: 23, pinyin: 'lín', meaning: 'Qilin (unicorn Tiongkok) — keberuntungan langka dan kebajikan tertinggi', element: '木', radical: '鹿' },
   '璿': { strokes: 18, pinyin: 'xuán', meaning: 'Giok langka, bintang Utara — kemuliaan langit dan bintang penuntun', element: '金', radical: '玉' },
-
   // ── Kebajikan & konsep tambahan ─────────────────────────────────
   '孝': { strokes: 7,  pinyin: 'xiào', meaning: 'Berbakti kepada orang tua — nilai fundamental dan fondasi moral', element: '木', radical: '老' },
   '恒': { strokes: 9,  pinyin: 'héng', meaning: 'Kekonstanan, ketekunan — konsistensi yang membawa keberhasilan jangka panjang', element: '水', radical: '心' },
@@ -363,32 +332,117 @@ const CHINESE_CHARS = {
   '节': { strokes: 5,  pinyin: 'jié', meaning: 'Simpul, integritas, hemat — pengendalian diri dan prinsip yang tak tergoyahkan', element: '木', radical: '竹' },
   '睦': { strokes: 13, pinyin: 'mù', meaning: 'Harmonis, bersahabat — kerukunan dan kedamaian dalam hubungan', element: '土', radical: '目' },
   '端': { strokes: 14, pinyin: 'duān', meaning: 'Benar, tegak, awal — integritas sempurna dan awal yang baik', element: '木', radical: '立' },
-  '廉': { strokes: 13, pinyin: 'lián', meaning: 'Bersih hati, jujur — kemurnian tanpa kompromi dan hidup lurus', element: '金', radical: '广' },
   '毓': { strokes: 13, pinyin: 'yù', meaning: 'Melahirkan, mendidik — pemberi kehidupan dan pendidik generasi', element: '水', radical: '毋' },
   '贞': { strokes: 9,  pinyin: 'zhēn', meaning: 'Setia, lurus, bertanya — kesetiaan teguh dan karakter yang tak tergoyahkan', element: '火', radical: '贝' },
   '淑': { strokes: 11, pinyin: 'shū', meaning: 'Baik, murni, berbudi — kebaikan hati yang tulus dan perilaku yang mulia', element: '水', radical: '氵' },
-
   // ── Karakter angka & keberuntungan ─────────────────────────────
   '亿': { strokes: 3,  pinyin: 'yì', meaning: 'Seratus juta, tak terbatas — kemakmuran dalam jumlah tak terhitung', element: '木', radical: '人' },
   '吉': { strokes: 6,  pinyin: 'jí', meaning: 'Beruntung, auspisious — keberuntungan dan pertanda baik di setiap langkah', element: '土', radical: '口' },
   '禄': { strokes: 12, pinyin: 'lù', meaning: 'Rezeki, keberuntungan karir — kelimpahan material dan kemajuan jabatan', element: '木', radical: '示' },
-  '泰': { strokes: 10, pinyin: 'tài', meaning: 'Makmur, Tai Chi — kemakmuran dan ketenangan agung', element: '水', radical: '水' },
   '财': { strokes: 7,  pinyin: 'cái', meaning: 'Kekayaan, harta — kemakmuran material dan kecerdasan finansial', element: '金', radical: '贝' },
   '旺': { strokes: 8,  pinyin: 'wàng', meaning: 'Makmur, penuh semangat — vitalitas yang meluap dan kemakmuran yang berkembang', element: '火', radical: '日' },
   '盈': { strokes: 9,  pinyin: 'yíng', meaning: 'Penuh, melimpah — kelimpahan dan kepenuhan dalam segala aspek', element: '水', radical: '皿' },
-
   // ── Karakter khusus Taiwan / tradisional ────────────────────────
   '謙': { strokes: 17, pinyin: 'qiān', meaning: 'Rendah hati (tradisional) — kebijaksanaan sejati dalam ketawadhu-an', element: '土', radical: '言' },
   '諺': { strokes: 16, pinyin: 'yàn', meaning: 'Peribahasa, amsal — kebijaksanaan yang diwariskan lewat generasi', element: '木', radical: '言' },
-  '熙': { strokes: 16, pinyin: 'xī', meaning: 'Bersinar, makmur — kegembiraan yang terpancar dan kemakmuran cerah', element: '火', radical: '火' },
   '弈': { strokes: 9,  pinyin: 'yì', meaning: 'Bermain catur Go — kecerdasan strategis dan ketenangan dalam kompetisi', element: '木', radical: '弋' },
-
   // ── Karakter posisi / jabatan ────────────────────────────────────
   '帅': { strokes: 9,  pinyin: 'shuài', meaning: 'Panglima, tampan, memimpin — kepemimpinan kharismatik dan penampilan yang mengesankan', element: '金', radical: '巾' },
   '将': { strokes: 9,  pinyin: 'jiāng', meaning: 'Jenderal, akan, membawa — kepemimpinan militer dan kemampuan membawa perubahan', element: '木', radical: '寸' },
   '卿': { strokes: 10, pinyin: 'qīng', meaning: 'Pejabat tinggi, panggilan akrab — kedudukan terhormat dan hubungan yang erat', element: '金', radical: '卩' },
   '爵': { strokes: 17, pinyin: 'jué', meaning: 'Gelar bangsawan, cangkir giok — kehormatan tertinggi dan kemewahan terhormat', element: '金', radical: '爪' },
-};
+  // ── Marga umum Tionghoa Indonesia yang belum ada ────────────────
+  '郑': { strokes: 8,  pinyin: 'zhèng', meaning: 'Negara Zheng kuno, tegak lurus — identitas kuat dan karakter yang lurus', element: '土', radical: '阜' },
+  '蒋': { strokes: 13, pinyin: 'jiǎng', meaning: 'Sejenis tanaman air — marga terhormat dengan sejarah panjang', element: '木', radical: '艸' },
+  '白': { strokes: 5,  pinyin: 'bái',  meaning: 'Putih, murni, bersih — kejernihan hati dan kepolosan jiwa yang tulus', element: '金', radical: '白' },
+  '田': { strokes: 5,  pinyin: 'tián', meaning: 'Ladang, sawah — kerja keras, kesuburan, dan hasil dari ketekunan', element: '土', radical: '田' },
+  '杜': { strokes: 7,  pinyin: 'dù',   meaning: 'Menghentikan, pohon pear liar — ketegasan dan kemampuan menetapkan batas', element: '木', radical: '木' },
+  '丁': { strokes: 2,  pinyin: 'dīng', meaning: 'Paku besi, ke-4 dari Sepuluh Batang — keteguhan dan kekuatan dasar', element: '火', radical: '一' },
+  '沈': { strokes: 7,  pinyin: 'shěn', meaning: 'Tenggelam, dalam — kedalaman pemikiran dan kemampuan memahami hal tersembunyi', element: '水', radical: '氵' },
+  '阮': { strokes: 7,  pinyin: 'ruǎn', meaning: 'Marga kuno, alat musik — keindahan seni dan warisan budaya yang kaya', element: '金', radical: '阜' },
+  '莫': { strokes: 10, pinyin: 'mò',   meaning: 'Jangan, tidak ada — kebijaksanaan dalam menahan diri dan ketenangan batin', element: '木', radical: '艸' },
+  '常': { strokes: 11, pinyin: 'cháng',meaning: 'Konstan, sering, normal — ketekunan konsisten yang membawa kemakmuran abadi', element: '火', radical: '巾' },
+  '吕': { strokes: 6,  pinyin: 'lǚ',   meaning: 'Tulang punggung, nada musik — struktur yang kuat dan harmoni dalam kehidupan', element: '土', radical: '口' },
+  '熊': { strokes: 14, pinyin: 'xióng',meaning: 'Beruang — kekuatan besar, keberanian, dan perlindungan yang teguh', element: '火', radical: '火' },
+  '谭': { strokes: 14, pinyin: 'tán',  meaning: 'Kolam dalam, mendalam — kebijaksanaan yang dalam dan wawasan yang tak terduga', element: '水', radical: '言' },
+  '于': { strokes: 3,  pinyin: 'yú',   meaning: 'Di, pada, saat — kehadiran penuh dan koneksi dengan momen', element: '土', radical: '二' },
+  '陶': { strokes: 10, pinyin: 'táo',  meaning: 'Tanah liat, membentuk, menyenangkan — kreativitas dalam membentuk dan kegembiraan hidup', element: '土', radical: '阜' },
+  '乔': { strokes: 6,  pinyin: 'qiáo', meaning: 'Tinggi menjulang, marga kuno — ambisi tinggi dan kepribadian yang menonjol', element: '木', radical: '乙' },
+  '邱': { strokes: 7,  pinyin: 'qiū',  meaning: 'Bukit kecil, marga kuno — keteguhan dan pandangan yang luas dari ketinggian', element: '土', radical: '阜' },
+  '石': { strokes: 5,  pinyin: 'shí',  meaning: 'Batu, solid — keteguhan, kekuatan, dan fondasi yang tak tergoyahkan', element: '土', radical: '石' },
+  '廖': { strokes: 14, pinyin: 'liào', meaning: 'Marga kuno, luas — keluasan wawasan dan jiwa yang lapang', element: '金', radical: '广' },
+  '庄': { strokes: 6,  pinyin: 'zhuāng',meaning: 'Desa, serius, megah — kestabilan dan keseriusan yang dihormati', element: '木', radical: '士' },
+  '邝': { strokes: 8,  pinyin: 'kuàng',meaning: 'Marga Kanton kuno — identitas budaya yang kuat dan tradisi luhur', element: '土', radical: '阜' },
+  // ── Nama wanita paling umum yang belum ada ──────────────────────
+  '爱': { strokes: 10, pinyin: 'ài',   meaning: 'Cinta, kasih sayang — hati yang penuh cinta tulus dan kemampuan memberi tanpa pamrih', element: '水', radical: '心' },
+  '娜': { strokes: 9,  pinyin: 'nà',   meaning: 'Anggun, luwes — keanggunan alami dan kelenturan dalam menghadapi hidup', element: '木', radical: '女' },
+  '珠': { strokes: 10, pinyin: 'zhū',  meaning: 'Mutiara, permata — keindahan yang tersembunyi dan nilai yang tak ternilai', element: '金', radical: '玉' },
+  '花': { strokes: 8,  pinyin: 'huā',  meaning: 'Bunga, mekar — keindahan yang mekar pada waktunya dan semangat yang harum', element: '木', radical: '艸' },
+  '玲': { strokes: 9,  pinyin: 'líng', meaning: 'Gemerincing lembut, jernih — kepribadian yang menyenangkan dan pikiran yang jernih', element: '金', radical: '玉' },
+  '芬': { strokes: 7,  pinyin: 'fēn',  meaning: 'Harum, semerbak — keharuman nama yang menyebar jauh dan pengaruh positif', element: '木', radical: '艸' },
+  '莉': { strokes: 10, pinyin: 'lì',   meaning: 'Bunga jasmin — keharuman lembut yang mengharumkan sekitar', element: '木', radical: '艸' },
+  '彩': { strokes: 11, pinyin: 'cǎi',  meaning: 'Warna-warni, berwarna — kehidupan yang penuh warna dan bakat yang beragam', element: '木', radical: '彡' },
+  '惠': { strokes: 12, pinyin: 'huì',  meaning: 'Anugerah, kebaikan hati — kemurahan hati yang mengalir kepada sesama', element: '水', radical: '心' },
+  '荣': { strokes: 9,  pinyin: 'róng', meaning: 'Jaya, mekar, terhormat — kejayaan yang terus mekar dan nama yang dimuliakan', element: '木', radical: '木' },
+  '桂': { strokes: 10, pinyin: 'guì',  meaning: 'Pohon osmanthus, kemuliaan — keharuman abadi dan pencapaian yang diakui', element: '木', radical: '木' },
+  '锦': { strokes: 13, pinyin: 'jǐn',  meaning: 'Kain brokat emas — keindahan yang kaya dan bakat yang berlapis-lapis', element: '金', radical: '金' },
+  '萍': { strokes: 12, pinyin: 'píng', meaning: 'Teratai air, terapung — kelenturan hidup dan kemampuan beradaptasi dengan arus', element: '木', radical: '艸' },
+  '慈': { strokes: 13, pinyin: 'cí',   meaning: 'Belas kasih, kemurahan — cinta kasih yang besar dan kelembutan seorang ibu', element: '水', radical: '心' },
+  '芸': { strokes: 10, pinyin: 'yún',  meaning: 'Sejenis tanaman wangi — keharuman yang halus dan manfaat yang diam-diam dirasakan', element: '木', radical: '艸' },
+  '蕊': { strokes: 15, pinyin: 'ruǐ',  meaning: 'Putik bunga — potensi tersembunyi dan awal kehidupan yang penuh kemungkinan', element: '木', radical: '艸' },
+  '冰': { strokes: 6,  pinyin: 'bīng', meaning: 'Es, bening seperti kristal — kemurnian absolut dan kejernihan yang memukau', element: '水', radical: '冫' },
+  '欢': { strokes: 22, pinyin: 'huān', meaning: 'Gembira, suka cita — kebahagiaan yang tulus dan kemampuan membawa keceriaan', element: '木', radical: '欠' },
+  '绿': { strokes: 11, pinyin: 'lǜ',   meaning: 'Hijau, penuh kehidupan — vitalitas alam dan harapan yang selalu hidup', element: '木', radical: '糸' },
+  '仙': { strokes: 5,  pinyin: 'xiān', meaning: 'Peri, abadi — keindahan yang melampaui dunia dan kemurnian surgawi', element: '木', radical: '人' },
+  '缘': { strokes: 15, pinyin: 'yuán', meaning: 'Takdir, jalinan — hubungan yang terjalin oleh takdir dan ikatan yang bermakna', element: '木', radical: '糸' },
+  '娇': { strokes: 9,  pinyin: 'jiāo', meaning: 'Manja, lembut, cantik menggemaskan — kelembutan yang memikat dan pesona alamiah', element: '木', radical: '女' },
+  '绮': { strokes: 12, pinyin: 'qǐ',   meaning: 'Kain sutra bermotif indah — keindahan yang kompleks dan bakat yang berlapis', element: '木', radical: '糸' },
+  '菊': { strokes: 11, pinyin: 'jú',   meaning: 'Bunga krisan — ketahanan di musim dingin, keanggunan yang tak layu', element: '木', radical: '艸' },
+  '蓓': { strokes: 13, pinyin: 'bèi',  meaning: 'Kuncup bunga yang belum mekar — potensi tersembunyi yang siap mekar', element: '木', radical: '艸' },
+  '苑': { strokes: 8,  pinyin: 'yuàn', meaning: 'Taman, kebun bunga — tempat keindahan tumbuh dan jiwa yang terpelihara', element: '木', radical: '艸' },
+  '苓': { strokes: 8,  pinyin: 'líng', meaning: 'Poria cocos, tanaman obat — manfaat tersembunyi dan kualitas yang menyembuhkan', element: '木', radical: '艸' },
+  '苗': { strokes: 8,  pinyin: 'miáo', meaning: 'Bibit tanaman, keturunan — awal yang segar dan potensi yang belum terwujud', element: '木', radical: '艸' },
+  '妙': { strokes: 7,  pinyin: 'miào', meaning: 'Ajaib, indah, sempurna — keistimewaan yang mengundang kekaguman', element: '火', radical: '女' },
+  '颂': { strokes: 10, pinyin: 'sòng', meaning: 'Memuji, merayakan — semangat berbagi keindahan dan menghargai hal baik', element: '金', radical: '页' },
+  '好': { strokes: 6,  pinyin: 'hǎo',  meaning: 'Baik, bagus, suka — kebaikan yang nyata dan daya tarik positif yang alami', element: '木', radical: '女' },
+  '念': { strokes: 8,  pinyin: 'niàn', meaning: 'Rindu, mengingat, pemikiran — hati yang setia dan kenangan yang indah', element: '水', radical: '心' },
+  '思': { strokes: 9,  pinyin: 'sī',   meaning: 'Berpikir, merindukan — kedalaman pikiran dan kecintaan pada kebijaksanaan', element: '水', radical: '心' },
+  // ── Nama pria paling umum yang belum ada ────────────────────────
+  '辰': { strokes: 7,  pinyin: 'chén', meaning: 'Benda langit, waktu — koneksi dengan kosmik dan kemampuan memanfaatkan waktu', element: '土', radical: '辰' },
+  '翰': { strokes: 16, pinyin: 'hàn',  meaning: 'Kuas tulis, berbulu — bakat literatur dan kemampuan mengekspresikan gagasan', element: '木', radical: '羽' },
+  '才': { strokes: 3,  pinyin: 'cái',  meaning: 'Bakat, kemampuan — potensi alami yang berkembang dan kecakapan yang menonjol', element: '木', radical: '十' },
+  '威': { strokes: 9,  pinyin: 'wēi',  meaning: 'Wibawa, kekuatan, otoritas — kewibawaan alami yang menginspirasi kepercayaan', element: '火', radical: '女' },
+  '富': { strokes: 12, pinyin: 'fù',   meaning: 'Kaya, berlimpah — kemakmuran sejati yang datang dari kebijaksanaan dan kerja keras', element: '水', radical: '宀' },
+  '君': { strokes: 7,  pinyin: 'jūn',  meaning: 'Pemimpin, tuan, pria mulia — kepemimpinan yang bijaksana dan karakter yang mulia', element: '土', radical: '口' },
+  '武': { strokes: 8,  pinyin: 'wǔ',   meaning: 'Ksatria, seni bela diri — keberanian yang disiplin dan kekuatan yang terlatih', element: '土', radical: '止' },
+  '进': { strokes: 7,  pinyin: 'jìn',  meaning: 'Maju, naik, berkembang — kemajuan yang konsisten dan semangat untuk terus bertumbuh', element: '金', radical: '辶' },
+  '雄': { strokes: 12, pinyin: 'xióng',meaning: 'Jantan, gagah, pahlawan — keberanian maskulin dan kekuatan yang menginspirasi', element: '火', radical: '隹' },
+  '亨': { strokes: 7,  pinyin: 'hēng', meaning: 'Makmur, lancar, sukses — kemakmuran yang mengalir dan kelancaran di setiap langkah', element: '火', radical: '亠' },
+  '利': { strokes: 7,  pinyin: 'lì',   meaning: 'Menguntungkan, tajam, manfaat — ketajaman pikiran dan kemampuan memberi manfaat', element: '金', radical: '刀' },
+  '宝': { strokes: 8,  pinyin: 'bǎo',  meaning: 'Harta, berharga, permata — nilai yang tak ternilai dan kelebihan yang langka', element: '金', radical: '宀' },
+  '贤': { strokes: 15, pinyin: 'xián', meaning: 'Berbudi luhur, berbakat, bijak — kebijaksanaan dan bakat yang menjadi teladan', element: '金', radical: '贝' },
+  '健': { strokes: 11, pinyin: 'jiàn', meaning: 'Sehat, kuat, tegap — vitalitas yang prima dan semangat yang selalu segar', element: '木', radical: '人' },
+  '彦': { strokes: 9,  pinyin: 'yàn',  meaning: 'Cendekiawan, berbakat — kecerdasan dan bakat yang diakui oleh semua', element: '火', radical: '彡' },
+  '启': { strokes: 7,  pinyin: 'qǐ',   meaning: 'Membuka, memulai, mencerahkan — kemampuan membuka jalan baru dan menginspirasi', element: '木', radical: '户' },
+  '书': { strokes: 4,  pinyin: 'shū',  meaning: 'Buku, menulis — kecintaan pada pengetahuan dan kemampuan mengabadikan gagasan', element: '木', radical: '乙' },
+  '学': { strokes: 8,  pinyin: 'xué',  meaning: 'Belajar, ilmu — semangat belajar tanpa henti dan pencarian pengetahuan', element: '水', radical: '子' },
+  '汉': { strokes: 5,  pinyin: 'hàn',  meaning: 'Sungai Han, bangsa Han — kebanggaan identitas dan warisan peradaban', element: '水', radical: '氵' },
+  '新': { strokes: 13, pinyin: 'xīn',  meaning: 'Baru, segar, inovatif — semangat pembaruan dan kemampuan menciptakan sesuatu baru', element: '金', radical: '斤' },
+  '发': { strokes: 5,  pinyin: 'fā',   meaning: 'Berkembang, sukses, rambut — perkembangan yang pesat dan kemakmuran yang memancar', element: '水', radical: '又' },
+  '业': { strokes: 13, pinyin: 'yè',   meaning: 'Usaha, pekerjaan, karma — dedikasi pada tujuan dan hasil dari kerja keras', element: '木', radical: '木' },
+  '松': { strokes: 8,  pinyin: 'sōng', meaning: 'Pohon pinus — keteguhan abadi, kemurnian, dan umur panjang yang dihormati', element: '木', radical: '木' },
+  '长': { strokes: 8,  pinyin: 'zhǎng',meaning: 'Tumbuh, senior, pemimpin — pertumbuhan yang berkelanjutan dan kebijaksanaan yang matang', element: '木', radical: '长' },
+  '生': { strokes: 5,  pinyin: 'shēng',meaning: 'Kehidupan, lahir, tumbuh — vitalitas kehidupan dan kemampuan terus bertumbuh', element: '木', radical: '生' },
+  // ── Karakter nama netral / umum yang belum ada ──────────────────
+  '贵': { strokes: 9,  pinyin: 'guì',  meaning: 'Mulia, berharga, terhormat — kedudukan terhormat dan nilai diri yang tinggi', element: '金', radical: '贝' },
+  '良': { strokes: 7,  pinyin: 'liáng',meaning: 'Baik, murni, unggul — kebaikan yang tulus dan kualitas yang genuine', element: '土', radical: '艮' },
+  '奇': { strokes: 8,  pinyin: 'qí',   meaning: 'Luar biasa, unik, ajaib — keistimewaan yang membedakan dan bakat yang tak terduga', element: '土', radical: '大' },
+  '可': { strokes: 5,  pinyin: 'kě',   meaning: 'Bisa, pantas, diizinkan — kemampuan dan kelayakan yang terbuka lebar', element: '木', radical: '口' },
+  '丰': { strokes: 4,  pinyin: 'fēng', meaning: 'Berlimpah, subur — kelimpahan dari kerja keras dan rezeki yang mengalir', element: '土', radical: '丰' },
+  '大': { strokes: 3,  pinyin: 'dà',   meaning: 'Besar, agung, unggul — kebesaran jiwa dan visi yang melampaui batasan', element: '火', radical: '大' },
+  '立': { strokes: 5,  pinyin: 'lì',   meaning: 'Berdiri tegak, mendirikan — kemandirian dan kemampuan membangun sesuatu yang kokoh', element: '土', radical: '立' },
+  '同': { strokes: 6,  pinyin: 'tóng', meaning: 'Sama, bersama, harmoni — kebersamaan dan kemampuan menyatukan perbedaan', element: '木', radical: '口' },
+};;
 
 // Unsur Wu Xing berdasarkan jumlah stroke (五行数理)
 // Sumber: 五格剖象法 numerologi Tionghoa
@@ -409,9 +463,22 @@ function analyzeChineseChar(char) {
   const data = CHINESE_CHARS[char];
   if (data) return { char, ...data, inDatabase: true };
 
-  // Fallback: hitung stroke dari unicode (aproksimasi)
+  // Fallback: estimasi stroke dari posisi Unicode CJK
+  // CJK Unified Ideographs: U+4E00–U+9FFF
+  // Karakter awal (simpler) cenderung stroke lebih sedikit
   const code = char.charCodeAt(0);
-  const approxStrokes = (code % 20) + 4;
+  // Estimasi lebih baik: karakter di awal blok CJK (0x4E00) umumnya 1-8 stroke
+  // yang di tengah 8-15, di akhir 15-24. Range: 0x4E00-0x9FFF (~20992 chars)
+  const cjkStart = 0x4E00;
+  const cjkEnd   = 0x9FFF;
+  let approxStrokes;
+  if (code >= cjkStart && code <= cjkEnd) {
+    const ratio = (code - cjkStart) / (cjkEnd - cjkStart);
+    approxStrokes = Math.round(2 + ratio * 22); // range 2-24
+    approxStrokes = Math.max(2, Math.min(24, approxStrokes));
+  } else {
+    approxStrokes = (code % 20) + 4; // untuk karakter di luar blok CJK utama
+  }
   const el = getElementByStrokes(approxStrokes);
   const EL_MEANING = {
     '木': 'Pertumbuhan, kreativitas, kelenturan, kepemimpinan alami',
@@ -423,12 +490,12 @@ function analyzeChineseChar(char) {
   return {
     char,
     strokes: approxStrokes,
-    pinyin: '(tidak tersedia)',
+    pinyin: null,  // null = tidak diketahui (bukan string "(tidak tersedia)")
     meaning: `Karakter dengan unsur ${el} — ${EL_MEANING[el] || ''}.`,
     element: el,
-    radical: '(tidak tersedia)',
+    radical: null,
     inDatabase: false,
-    note: ''
+    note: 'Karakter belum ada di database lokal. Stroke dan unsur adalah estimasi.'
   };
 }
 

@@ -925,12 +925,15 @@ function renderName(na, input) {
     if (chars.length > 0) {
       html += `<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px">`;
       chars.forEach(c => {
+        const pinyinDisplay = (c.pinyin && c.pinyin !== '(tidak tersedia)') ? c.pinyin : '—';
+        const notInDb = !c.inDatabase;
         html += `<div class="palace-card" style="min-width:160px; text-align:center">
           <div style="font-size:36px; color:var(--gold); font-family:serif">${esc(c.char)}</div>
-          <div style="font-size:11px; color:var(--muted)">${esc(c.pinyin||'')} · ${c.strokes||'?'} goresan</div>
+          <div style="font-size:11px; color:var(--muted)">${pinyinDisplay} · ${c.strokes||'?'} goresan</div>
           <div style="font-size:12px; margin:4px 0">${esc(c.meaning||'—')}</div>
           <div style="font-size:11px; color:${colorForElement(c.element||'')}">Unsur: ${esc(c.element||'?')}</div>
           ${(c.radical && c.radical !== '(tidak tersedia)') ? `<div style="font-size:10px; color:var(--muted)">Radikal: ${esc(c.radical)}</div>` : ''}
+          ${notInDb ? `<div style="font-size:10px; color:#f59e0b; margin-top:4px">⚠ Data estimasi</div>` : ''}
         </div>`;
       });
       html += '</div>';
