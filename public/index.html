@@ -1770,6 +1770,27 @@ function render5(c, b) {
 
   html += `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">`;
 
+  // Businesses
+  html += `<h3 style="color:var(--gold2); font-size:13px; margin-bottom:8px">🏪 Bisnis / Jenis Usaha yang Cocok</h3>`;
+  if (c.businesses) {
+    if (c.businesses.yongShenHint) {
+      html += `<div style="font-size:12px; color:var(--blue); font-style:italic; margin-bottom:8px">${esc(c.businesses.yongShenHint)}</div>`;
+    }
+    if (c.businesses.suitable && c.businesses.suitable.length > 0) {
+      html += `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px">`;
+      c.businesses.suitable.forEach(b => html += `<span class="tag tag-gold">${esc(b)}</span>`);
+      html += `</div>`;
+    }
+    if (c.businesses.avoid && c.businesses.avoid.length > 0) {
+      html += `<div style="font-size:12px; color:var(--muted); margin-bottom:4px">❌ Jenis usaha yang kurang cocok:</div>`;
+      html += `<div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px">`;
+      c.businesses.avoid.forEach(b => html += `<span class="tag tag-red">${esc(b)}</span>`);
+      html += `</div>`;
+    }
+  }
+
+  html += `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">`;
+
   // Partner
   html += `<h3 style="color:var(--gold2); font-size:13px; margin-bottom:8px">💕 Kriteria Pasangan Ideal</h3>`;
   if (c.partner) {

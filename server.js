@@ -208,8 +208,10 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
   const birthYear = parseInt(inputData.birthYear);
   const age = currentYear - birthYear;
 
-  // Gabungkan karir dari BaZi + ZWDS
+  // Gabungkan karir & bisnis dari BaZi + ZWDS
   const baziCareers = bazi.careers || [];
+  const baziBusiness = bazi.businesses || [];
+  const baziBusinessAvoid = bazi.businessAvoid || [];
   const zwdsGuanLu = zwds?.palaces?.[8]?.majorStars?.map(s => s.name).join('、') || '—';
   const zwdsCai = zwds?.palaces?.[4]?.majorStars?.map(s => s.name).join('、') || '—';
 
@@ -286,7 +288,6 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
       },
       combined: baziCareers.slice(0, 5),
       avoid: (() => {
-        // Profesi yang kurang cocok = yang membutuhkan unsur dominan berlebih (bukan yongShen)
         const AVOID_MAP = {
           '木': ['Birokrasi kaku', 'Pekerjaan rutin repetitif', 'Industri logam berat'],
           '火': ['Pekerjaan administratif tertutup', 'Industri berat tanpa ekspresi', 'Pengarsipan pasif'],
@@ -295,6 +296,20 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
           '水': ['Pekerjaan monoton berulang', 'Peran eksekusi tanpa analisis', 'Industri yang menuntut konformitas ketat'],
         };
         return AVOID_MAP[dominant] || [];
+      })()
+    },
+    businesses: {
+      suitable: baziBusiness,
+      avoid: baziBusinessAvoid,
+      yongShenHint: (() => {
+        const HINT_MAP = {
+          '木': 'Bisnis terbaik Anda berkaitan dengan alam, pertumbuhan organik, pendidikan, tekstil, fashion, tanaman, atau produk sehat.',
+          '火': 'Bisnis terbaik Anda berkaitan dengan media, hiburan, restoran, energi, teknologi, marketing, atau kecantikan.',
+          '土': 'Bisnis terbaik Anda berkaitan dengan properti, konstruksi, pertanian, makanan & minuman, logistik, atau waralaba.',
+          '金': 'Bisnis terbaik Anda berkaitan dengan manufaktur, logam, kesehatan, hukum, keuangan, atau teknologi presisi.',
+          '水': 'Bisnis terbaik Anda berkaitan dengan perdagangan, investasi, transportasi, teknologi informasi, komunikasi, atau jasa konsultasi.',
+        };
+        return HINT_MAP[yongShen] || '';
       })()
     },
     partner: {

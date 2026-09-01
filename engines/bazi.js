@@ -20,7 +20,7 @@ const { toTrueSolarTime } = require('../utils/solar-time');
 const { calculateBoneWeight } = require('./bone-weight');
 const {
   DAY_MASTER, TEN_GODS, WU_XING, SHEN_SHA,
-  KUA_DATA, CAREER_BY_DAYMASTER, SHIO_COMPATIBILITY,
+  KUA_DATA, CAREER_BY_DAYMASTER, BUSINESS_BY_DAYMASTER, BUSINESS_AVOID_BY_ELEMENT, SHIO_COMPATIBILITY,
   calculateKuaNumber
 } = require('./interpretations');
 
@@ -418,8 +418,10 @@ function calculateBazi(params) {
     source: '八宅風水 (Eight Mansions Feng Shui) — Kua Number method'
   };
 
-  // ---- PROFESI & SHIO ----
+  // ---- PROFESI, BISNIS & SHIO ----
   const careers = CAREER_BY_DAYMASTER[dayMasterStem] || [];
+  const businesses = BUSINESS_BY_DAYMASTER[dayMasterStem] || [];
+  const businessAvoid = BUSINESS_AVOID_BY_ELEMENT[dominantElement] || [];
   const yearShio = BRANCH_SHIO[pillars.year.zhi] || '';
   const shioKey = Object.keys(SHIO_COMPATIBILITY).find(k => k.includes(pillars.year.zhi));
   const shioCompat = shioKey ? SHIO_COMPATIBILITY[shioKey] : null;
@@ -477,6 +479,8 @@ function calculateBazi(params) {
     boneWeight,
     fengshui,
     careers,
+    businesses,
+    businessAvoid,
     shioCompatibility: shioCompat,
     yearShio,
     interpretation,

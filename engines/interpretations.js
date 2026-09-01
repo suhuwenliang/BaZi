@@ -492,6 +492,30 @@ const CAREER_BY_DAYMASTER = {
   '癸': ['Konselor', 'Rohaniwan', 'Musisi', 'Terapis', 'Peneliti', 'Seniman spiritual']
 };
 
+// BISNIS / JENIS USAHA BERDASARKAN DAY MASTER
+// ============================================================
+const BUSINESS_BY_DAYMASTER = {
+  '甲': ['Developer properti & konstruksi', 'Klinik/rumah sakit swasta', 'Firma hukum & konsultan', 'Lembaga pendidikan & kursus', 'Startup teknologi', 'Agribisnis & perkebunan', 'Perusahaan skala besar & holding'],
+  '乙': ['Butik fashion & aksesori', 'Salon kecantikan & spa', 'Florist & dekorasi interior', 'Agensi branding & desain kreatif', 'Bisnis online & e-commerce', 'Konsultan SDM & rekrutmen', 'Perhiasan & produk kecantikan'],
+  '丙': ['Event organizer & hiburan', 'Restoran, kafe & F&B', 'Agensi marketing & media sosial', 'Konten kreator & media digital', 'Bisnis pelatihan & motivasi', 'Pariwisata & travel agent', 'Studio foto & videografi'],
+  '丁': ['Restoran spesialis & fine dining', 'Jasa IT & pengembangan software', 'Klinik spesialis & laboratorium', 'Penerbitan & jasa penulisan konten', 'Bisnis health & wellness', 'Studio desain & kreatif', 'Konsultasi teknis & riset'],
+  '戊': ['Developer properti & real estate', 'Usaha konstruksi & material bangunan', 'Agribisnis & pertanian skala besar', 'Waralaba & franchise', 'Hotel, vila & penginapan', 'Logistik, gudang & distribusi', 'Pertambangan & sumber daya alam'],
+  '己': ['Kafe, katering & restoran keluarga', 'Toko produk organik & kesehatan', 'Daycare, PAUD & kursus anak', 'Apotek & toko suplemen', 'Fashion modest & busana muslim', 'Jasa pembukuan & administrasi', 'Bisnis produk rumahan & UMKM'],
+  '庚': ['Manufaktur & industri', 'Dealer kendaraan & otomotif', 'Gym, fitnes & pusat olahraga', 'Trading komoditas & bahan baku', 'Perusahaan konstruksi baja & besi', 'Bisnis peralatan, mesin & alat berat', 'Distributor produk industrial'],
+  '辛': ['Toko perhiasan & aksesori premium', 'Klinik estetika & kecantikan medis', 'Fashion & butik brand premium', 'Studio musik, rekaman & produksi', 'Jasa audit, akuntansi & pajak', 'Optik & alat kesehatan', 'Bisnis produk presisi & berkualitas tinggi'],
+  '壬': ['Investasi & perusahaan sekuritas', 'Bisnis impor-ekspor & perdagangan', 'Konsultan strategi & manajemen', 'Platform teknologi & SaaS', 'Logistik & jasa pengiriman', 'Holding company & ventura modal', 'Bisnis keuangan, leasing & pembiayaan'],
+  '癸': ['Spa, wellness & healing center', 'Studio seni, musik & kreatif', 'Bisnis herbal, suplemen & holistik', 'Konsultasi spiritual & metafisika', 'Bisnis ramah lingkungan & eco', 'Jasa terapi & konseling', 'Penerbitan & konten inspiratif']
+};
+
+// JENIS USAHA YANG PERLU DIHINDARI BERDASARKAN UNSUR DOMINAN
+const BUSINESS_AVOID_BY_ELEMENT = {
+  '木': ['Industri logam & smelting berat', 'Bisnis penebangan/eksploitasi kayu masif', 'Usaha yang menuntut konfrontasi keras tanpa kreativitas'],
+  '火': ['Bisnis administratif tertutup tanpa ekspresi', 'Industri berat monoton tanpa unsur sosial', 'Usaha isolasi tanpa interaksi dan networking'],
+  '土': ['Spekulasi forex & kripto agresif tanpa dasar', 'Startup teknologi tanpa model bisnis jelas', 'Bisnis yang berubah-ubah sangat cepat & tidak stabil'],
+  '金': ['Bisnis seni bebas tanpa standar & struktur', 'Bidang abu-abu tanpa regulasi jelas', 'Spekulasi liar tanpa analisis risiko matang'],
+  '水': ['Usaha manufaktur repetitif tanpa inovasi', 'Bisnis tanpa riset & analisis mendalam', 'Industri yang menghambat kreativitas & mobilitas']
+};
+
 module.exports = {
   DAY_MASTER,
   TEN_GODS,
@@ -501,5 +525,7 @@ module.exports = {
   PALACE_INFO,
   SHIO_COMPATIBILITY,
   CAREER_BY_DAYMASTER,
+  BUSINESS_BY_DAYMASTER,
+  BUSINESS_AVOID_BY_ELEMENT,
   calculateKuaNumber
 };
