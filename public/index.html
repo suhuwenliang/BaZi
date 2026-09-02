@@ -1060,7 +1060,7 @@ function renderName(na, input) {
         <div style="font-size:12px; color:var(--muted); margin-bottom:4px">
           Keselarasan dengan Yong Shen BaZi: <strong style="color:var(--gold2)">${esc(harm.rating||score+'/5')}</strong>
         </div>
-        <div style="background:var(--surface2); border-radius:8px; height:12px; overflow:hidden">
+        <div class="bar-track" style="height:12px; overflow:hidden">
           <div style="width:${pct}%; height:100%; background:${pct>=70?'var(--green)':pct>=40?'var(--gold)':'var(--red)'}; border-radius:8px"></div>
         </div>
         ${harm.notes ? `<div style="font-size:11px; color:var(--muted); margin-top:4px">${harm.notes.map(n=>`• ${esc(n)}`).join('<br>')}</div>` : ''}
@@ -1209,6 +1209,45 @@ function render3B(b) {
   if (b.interpretation?.hiddenStems) {
     html += `<div class="summary-box"><strong>Ringkasan 藏干:</strong> ${esc(b.interpretation.hiddenStems)}</div>`;
   }
+
+  // Penjelasan kontekstual Bintang Tersembunyi
+  const TEN_GOD_DAILY = {
+    '比肩': { icon:'🤝', label:'Bi Jian (Saudara)', daily:'Karakter mandiri dan kompetitif. Anda cenderung mengandalkan diri sendiri dan kurang mudah menerima bantuan orang lain. Di tempat kerja, Anda bisa menjadi rival yang kuat. Kembangkan kolaborasi — keberhasilan terbesar datang ketika Anda bisa bekerja tim, bukan hanya solo.' },
+    '劫财': { icon:'⚔️', label:'Jie Cai (Perampok)', daily:'Sisi tersembunyi yang ambisius dan berani ambil risiko. Bisa menarik persaingan tidak sehat atau kehilangan kekayaan melalui orang terdekat. Waspadai investasi bersama tanpa perjanjian jelas. Energi ini juga bisa menjadi kekuatan jika disalurkan ke olahraga kompetitif atau bisnis yang membutuhkan keberanian.' },
+    '食神': { icon:'🍀', label:'Shi Shen (Dewa Makanan)', daily:'Bakat tersembunyi dalam bidang seni, kuliner, kreativitas, dan ekspresi diri. Anda memiliki kemampuan alami untuk menikmati hidup dan membuat orang lain merasa nyaman. Cocok untuk profesi di bidang hiburan, makanan, desain, atau pengajaran. Ekspresikan kreativitas — ini adalah aset terbesar Anda.' },
+    '伤官': { icon:'💬', label:'Shang Guan (Melukai Pejabat)', daily:'Kecerdasan kritis dan tidak suka dibatasi aturan. Anda memiliki pemikiran unik yang sering berbeda dari arus utama. Bisa menyebabkan gesekan dengan atasan atau figur otoritas. Salurkan energi ini ke entrepreneurship, penelitian independen, atau seni avant-garde. Hindari konfrontasi langsung dengan orang berkuasa.' },
+    '偏财': { icon:'💰', label:'Pian Cai (Kekayaan Tak Terduga)', daily:'Bakat tersembunyi dalam mendapatkan rezeki dari jalur tidak terduga — investasi, warisan, bisnis sampingan, atau peluang tak terduga. Cocok untuk trading, spekulasi terukur, dan bisnis yang berubah cepat. Namun hati-hati dengan pemborosan — uang yang datang mudah bisa pergi sama mudahnya.' },
+    '正财': { icon:'🏦', label:'Zheng Cai (Kekayaan Stabil)', daily:'Kemampuan tersembunyi membangun kekayaan melalui kerja keras dan ketekunan. Anda secara alami tertarik pada stabilitas finansial, tabungan, dan aset nyata seperti properti. Karir di bidang keuangan, akuntansi, atau bisnis tradisional akan berjalan lancar. Kembangkan disiplin finansial — ini adalah kunci utama keberhasilan Anda.' },
+    '七杀': { icon:'⚡', label:'Qi Sha (Tujuh Pembunuh)', daily:'Kekuatan tersembunyi yang besar — kepemimpinan tegas, keberanian menghadapi krisis, dan kemampuan mengambil keputusan sulit. Cocok untuk militer, kepolisian, hukum, bedah, atau kepemimpinan di situasi tekanan tinggi. Tanpa kendali, bisa menimbulkan konflik keras. Salurkan ke disiplin fisik dan tanggung jawab yang jelas.' },
+    '正官': { icon:'👔', label:'Zheng Guan (Pejabat Resmi)', daily:'Karakter tersembunyi yang bertanggung jawab, terstruktur, dan menghormati aturan. Anda secara alami cocok untuk peran kepemimpinan formal — manajemen, pemerintahan, atau birokrasi. Orang melihat Anda sebagai dapat dipercaya dan stabil. Kembangkan kemampuan komunikasi formal dan tingkatkan kredensial akademik.' },
+    '偏印': { icon:'🔮', label:'Pian Yin (Stempel Tidak Langsung)', daily:'Intuisi kuat dan kemampuan belajar mandiri yang tersembunyi. Anda bisa menguasai skill unik dan tidak konvensional. Tertarik pada spiritualitas, mistik, atau pengetahuan alternatif. Cocok untuk penelitian, psikologi, spiritual, atau bidang yang membutuhkan pemikiran lintas disiplin. Jaga agar tidak terlalu menyendiri atau overthinking.' },
+    '正印': { icon:'📚', label:'Zheng Yin (Stempel Resmi)', daily:'Kecerdasan tersembunyi, kemampuan akademik, dan belas kasih yang mendalam. Anda secara alami menyukai belajar, mengajar, dan membantu orang lain berkembang. Sangat cocok untuk pendidikan, penelitian, konseling, atau bidang kemanusiaan. Orang lain secara intuitif merasa aman dan dipercayai oleh Anda.' }
+  };
+
+  // Kumpulkan semua Ten God dari hidden stems
+  const allTenGods = new Set();
+  Object.values(hs).forEach(pd => {
+    const stems = Array.isArray(pd) ? pd : (pd.stems || []);
+    stems.forEach(s => { if (s.tenGod) allTenGods.add(s.tenGod); });
+  });
+
+  if (allTenGods.size > 0) {
+    html += `<div style="margin-top:16px">
+      <h4 style="color:var(--gold2);font-size:13px;margin-bottom:10px">🌙 Makna Tersembunyi dalam Kehidupan Sehari-hari</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">
+        Batang Tersembunyi (藏干) adalah energi yang tidak terlihat di permukaan chart Anda — seperti lapisan bawah sadar yang memengaruhi cara Anda berpikir, bereaksi, dan berkembang. Berbeda dengan batang luar (天干) yang terlihat jelas oleh orang lain, energi tersembunyi ini bekerja dari dalam diri Anda.
+      </p>`;
+    allTenGods.forEach(tg => {
+      const info = TEN_GOD_DAILY[tg];
+      if (!info) return;
+      html += `<div style="background:var(--surface);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px">
+        <div style="font-weight:700;font-size:12px;color:var(--gold2);margin-bottom:5px">${info.icon} ${info.label}</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.7">${info.daily}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
   document.getElementById('sec-3b').innerHTML = html;
 }
 
@@ -1332,21 +1371,61 @@ function render3F(b) {
   // shenSha is an object: {tianYi:{active,name,description,advice,presentIn,...}, ...}
   const items = Array.isArray(ss) ? ss : Object.values(ss);
   if (items.length === 0) { document.getElementById('sec-3f').innerHTML = '<div style="color:var(--muted)">Tidak ada data Shen Sha</div>'; return; }
+  // Panduan aktivasi per Shen Sha
+  const SHENSHA_ACTIVATE = {
+    '天乙贵人': 'Aktifkan dengan: bersikap jujur dan rendah hati — bantuan datang dari orang berpengaruh ketika Anda tidak memaksa. Perluas jaringan di komunitas sosial atau keagamaan.',
+    '文昌贵人': 'Aktifkan dengan: tekuni belajar, ikuti kursus atau sertifikasi, sering menulis. Bintang ini merespons usaha intelektual yang konsisten — tidak bisa dipaksakan, harus diundang.',
+    '禄神':     'Aktifkan dengan: kerja keras yang konsisten di jalur karir utama Anda. Pastikan pekerjaan Anda sesuai dengan Day Master element — ini kunci mengalirnya rezeki.',
+    '羊刃':     'Kendalikan dengan: olahraga fisik keras (gym, bela diri, lari), disiplin yang ketat, dan hindari konflik verbal. Energi ini berbahaya jika tidak disalurkan secara fisik.',
+    '驿马':     'Aktifkan dengan: perjalanan, mobilitas, dan tidak menetap terlalu lama. Peluang terbaik Anda datang dari jauh — tempat baru, orang baru, pasar baru.',
+    '桃花':     'Aktifkan dengan: memperbaiki penampilan, meningkatkan keahlian sosial, dan aktif bersosialisasi. Perhatikan bahwa Peach Blossom aktif bisa menarik banyak perhatian — gunakan dengan bijak.',
+    '华盖':     'Aktifkan dengan: mendalami seni, spiritualitas, atau pengetahuan esoterik. Bintang ini memperkuat keunikan — cocok untuk seniman, peneliti, atau praktisi spiritual.',
+    '将星':     'Aktifkan dengan: ambil tanggung jawab kepemimpinan, latih kemampuan mengambil keputusan, dan percaya diri tampil di depan. Potensi pemimpin ini perlu dilatih, bukan hanya dimiliki.',
+    '魁罡':     'Kendalikan dengan: disiplin ketat, kejujuran absolut, dan fokus pada satu tujuan besar. Energi ini kuat tapi mudah berlebihan — perlu saluran yang jelas dan terarah.',
+  };
+
+  const SHENSHA_INACTIVE_DESC = {
+    '天乙贵人': 'Bantuan dari orang berpengaruh belum aktif — belum waktunya, atau cara Anda mendekati orang lain perlu diperbaiki.',
+    '文昌贵人': 'Bintang akademik dan intelektual belum aktif — potensi belajar Anda belum dimaksimalkan.',
+    '禄神':     'Aliran rezeki dari jalur karir utama belum optimal — mungkin karir Anda belum sesuai dengan element Day Master.',
+    '羊刃':     'Energi kompetitif belum tersalur — ini bisa menumpuk dan meledak tidak terduga. Temukan outlet fisik yang sehat.',
+    '驿马':     'Energi mobilitas belum aktif — Anda mungkin terlalu stagnan di satu tempat atau rutinitas yang sama.',
+    '桃花':     'Daya tarik interpersonal belum optimal — perlu perbaikan dalam penampilan, kepercayaan diri, atau keterampilan sosial.',
+    '华盖':     'Keunikan dan bakat seni/spiritual belum tersalur — cobalah eksplorasi hobi kreatif atau spiritual.',
+    '将星':     'Potensi kepemimpinan belum teraktivasi — Anda belum mengambil peran yang cukup besar untuk menunjukkan kemampuan ini.',
+    '魁罡':     'Kekuatan batin yang kuat ini belum tersalur dengan baik — perlu tujuan hidup yang jelas dan komitmen penuh.',
+  };
+
   let html = '<div class="shensha-grid">';
   items.forEach(s => {
     const info = s.info || s; // support nested or flat structure
+    const starName = s.name || info.name_id || '';
+    const activateTip = SHENSHA_ACTIVATE[starName] || '';
+    const inactiveDesc = SHENSHA_INACTIVE_DESC[starName] || '';
     html += `<div class="shensha-item ${s.active?'active':''}">
-      <div class="ss-name">${esc(s.name||info.name_id||'')}</div>
+      <div class="ss-name">${esc(starName)}</div>
       <div class="ss-status">${s.active?'✅ Aktif':'○ Tidak Aktif'}</div>
       ${s.active && s.presentIn && s.presentIn.length ? `<div style="font-size:10px; color:var(--muted)">Ada di: ${esc(s.presentIn.join(', '))}</div>` : ''}
       <div style="font-size:11px; color:var(--text); margin-top:4px">${esc(info.description||s.description||'')}</div>
-      ${s.active ? `<div style="font-size:11px; color:var(--gold2); margin-top:4px; font-style:italic">${esc(info.advice||s.advice||'')}</div>` : ''}
+      ${s.active
+        ? `<div style="font-size:11px; color:var(--gold2); margin-top:4px; font-style:italic">${esc(info.advice||s.advice||'')}</div>
+           ${activateTip ? `<div style="font-size:10px; color:var(--green); margin-top:4px; border-top:1px solid var(--border); padding-top:4px">💡 ${esc(activateTip)}</div>` : ''}`
+        : `<div style="font-size:10px; color:var(--muted); margin-top:4px; font-style:italic">${inactiveDesc ? esc(inactiveDesc) : 'Bintang ini belum aktif dalam chart Anda.'}</div>
+           ${activateTip ? `<div style="font-size:10px; color:var(--blue); margin-top:4px; border-top:1px solid var(--border); padding-top:4px">🔓 Cara mengaktifkan: ${esc(activateTip)}</div>` : ''}`
+      }
     </div>`;
   });
   html += '</div>';
   if (b.interpretation?.shenSha) {
     html += `<div class="summary-box"><strong>Ringkasan Shen Sha:</strong> ${esc(b.interpretation.shenSha)}</div>`;
   }
+  // Legenda status
+  html += `<div style="margin-top:12px; padding:10px 14px; background:var(--surface); border-radius:8px; font-size:11px; color:var(--muted); line-height:1.8">
+    <strong style="color:var(--text)">ℹ️ Apa perbedaan Aktif vs Tidak Aktif?</strong><br>
+    <span style="color:var(--green)">✅ Aktif</span> — Batang atau Cabang dari bintang ini ada di keempat pilar BaZi Anda. Energinya bekerja langsung dan nyata dalam kehidupan sehari-hari.<br>
+    <span style="color:var(--muted)">○ Tidak Aktif</span> — Bintang ini secara potensial ada dalam sistem BaZi, tapi tidak muncul di pilar Anda saat ini. Energinya bisa diaktifkan melalui usaha sadar, lingkungan, atau periode Da Yun tertentu.<br>
+    Bintang yang tidak aktif bukanlah hal buruk — ini justru peluang yang bisa Anda "aktifkan" secara sengaja dengan langkah-langkah yang tepat.
+  </div>`;
   document.getElementById('sec-3f').innerHTML = html;
 }
 
@@ -1466,6 +1545,45 @@ function render4B(z) {
     </tr>`;
   });
   html += '</table>';
+
+  // Penjelasan Transformasi per jenis dalam kehidupan sehari-hari
+  const MUTAGEN_DAILY = {
+    '禄':  { icon:'💰', color:'var(--green)', title:'化禄 — Pintu Rezeki Terbuka', daily:'Istana yang menerima 化禄 adalah area di mana rezeki Anda paling mudah mengalir. Dalam kehidupan sehari-hari, ini adalah bidang kehidupan yang perlu Anda prioritaskan — di sinilah usaha Anda akan menghasilkan hasil paling konkret. Jangan abaikan peluang yang datang dari arah istana ini.' },
+    '化禄':{ icon:'💰', color:'var(--green)', title:'化禄 — Pintu Rezeki Terbuka', daily:'Istana yang menerima 化禄 adalah area di mana rezeki Anda paling mudah mengalir. Dalam kehidupan sehari-hari, ini adalah bidang kehidupan yang perlu Anda prioritaskan — di sinilah usaha Anda akan menghasilkan hasil paling konkret. Jangan abaikan peluang yang datang dari arah istana ini.' },
+    '权':  { icon:'👑', color:'var(--gold)', title:'化权 — Otoritas dan Kendali', daily:'Istana yang menerima 化权 adalah area di mana Anda memiliki kekuatan alami untuk memimpin dan mengendalikan. Dalam kehidupan sehari-hari, ini berarti Anda akan secara alami mengambil kendali di bidang ini. Gunakan otoritas ini dengan bijak — kepemimpinan yang terlalu keras bisa menimbulkan resistensi.' },
+    '化权':{ icon:'👑', color:'var(--gold)', title:'化权 — Otoritas dan Kendali', daily:'Istana yang menerima 化权 adalah area di mana Anda memiliki kekuatan alami untuk memimpin dan mengendalikan. Dalam kehidupan sehari-hari, ini berarti Anda akan secara alami mengambil kendali di bidang ini. Gunakan otoritas ini dengan bijak — kepemimpinan yang terlalu keras bisa menimbulkan resistensi.' },
+    '科':  { icon:'🏅', color:'var(--blue)', title:'化科 — Reputasi dan Pengakuan', daily:'Istana yang menerima 化科 adalah area di mana nama baik dan reputasi Anda paling mudah dibangun. Dalam kehidupan sehari-hari, fokus pada kualitas dan integritas di bidang ini — pengakuan publik akan datang secara alami. Juga mengindikasikan kemampuan akademik dan bakat komunikasi yang kuat.' },
+    '化科':{ icon:'🏅', color:'var(--blue)', title:'化科 — Reputasi dan Pengakuan', daily:'Istana yang menerima 化科 adalah area di mana nama baik dan reputasi Anda paling mudah dibangun. Dalam kehidupan sehari-hari, fokus pada kualitas dan integritas di bidang ini — pengakuan publik akan datang secara alami. Juga mengindikasikan kemampuan akademik dan bakat komunikasi yang kuat.' },
+    '忌':  { icon:'⚠️', color:'var(--red)', title:'化忌 — Area Kehati-hatian', daily:'Istana yang menerima 化忌 adalah area yang memerlukan perhatian dan kehati-hatian ekstra seumur hidup Anda. Ini bukan kutukan — melainkan alarm peringatan permanen. Dalam kehidupan sehari-hari, jangan abaikan sinyal masalah dari bidang ini. Atasi masalah lebih awal sebelum membesar. 化忌 juga sering menunjukkan di mana Anda terlalu banyak bekerja keras atau terlalu perfeksionis.' },
+    '化忌':{ icon:'⚠️', color:'var(--red)', title:'化忌 — Area Kehati-hatian', daily:'Istana yang menerima 化忌 adalah area yang memerlukan perhatian dan kehati-hatian ekstra seumur hidup Anda. Ini bukan kutukan — melainkan alarm peringatan permanen. Dalam kehidupan sehari-hari, jangan abaikan sinyal masalah dari bidang ini. Atasi masalah lebih awal sebelum membesar. 化忌 juga sering menunjukkan di mana Anda terlalu banyak bekerja keras atau terlalu perfeksionis.' },
+  };
+
+  const seenTypes = new Set();
+  items.forEach(v => {
+    const typeKey = v.type || '';
+    if (!seenTypes.has(typeKey) && MUTAGEN_DAILY[typeKey]) {
+      seenTypes.add(typeKey);
+      const info = MUTAGEN_DAILY[typeKey];
+      html += `<div style="border-left:3px solid ${info.color}; background:var(--surface); border-radius:0 8px 8px 0; padding:10px 14px; margin-top:10px">
+        <div style="font-weight:700; font-size:12px; color:${info.color}; margin-bottom:5px">${info.icon} ${info.title}</div>
+        <div style="font-size:12px; color:var(--text); line-height:1.7">${info.daily}</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:6px">
+          Istana yang terpengaruh: <strong>${items.filter(i=>(i.type||'')===typeKey).map(i=>transZwdsPalace(i.palace||i.palaceName||'—')).join(', ')}</strong>
+        </div>
+      </div>`;
+    }
+  });
+
+  html += `<div class="summary-box" style="margin-top:14px">
+    <strong>💡 Cara Menggunakan 四化 dalam Kehidupan Nyata:</strong><br>
+    <span style="font-size:12px; line-height:1.8">
+      1. Prioritaskan energi Anda pada istana 化禄 — area ini paling produktif.<br>
+      2. Gunakan kekuatan istana 化权 untuk memimpin dan mengambil keputusan besar.<br>
+      3. Bangun reputasi di istana 化科 melalui kualitas kerja dan kejujuran.<br>
+      4. Pantau dan rawat istana 化忌 secara proaktif — jangan biarkan masalah di area ini berlarut-larut.
+    </span>
+  </div>`;
+
   document.getElementById('sec-4b').innerHTML = html;
 }
 
@@ -1552,26 +1670,37 @@ function _4d_label(score) {
   if (score >= -2) return { label:'Tantangan', color:'#f97316', icon:'🟡' };
   return { label:'Berat', color:'#ef4444', icon:'🔴' };
 }
-function _4d_advice(score) {
+function _4d_advice(score, stemEl, branchEl) {
+  // Element-specific action hints
+  const SE_HINT = {
+    '木': { do:'Mulai proyek baru, tanam benih bisnis jangka panjang', avoid:'Eksploitasi berlebihan tanpa merawat fondasi' },
+    '火': { do:'Sosialisasi, presentasi, perkuat citra publik', avoid:'Drama emosional dan keputusan terburu-buru' },
+    '土': { do:'Kelola properti/aset, perkuat hubungan bisnis yang ada', avoid:'Bergerak terlalu cepat tanpa fondasi solid' },
+    '金': { do:'Negosiasi kontrak, urus dokumen legal dan keuangan', avoid:'Sikap terlalu kaku atau konfrontasi keras' },
+    '水': { do:'Riset, perencanaan, perkuat intuisi dan analisis', avoid:'Penyebaran energi ke terlalu banyak arah sekaligus' },
+  };
+  const stemHint  = SE_HINT[stemEl]   || { do:'Ikuti intuisi dan rencana yang ada', avoid:'Keputusan terburu-buru tanpa data' };
+  const branchHint= SE_HINT[branchEl] || { do:'Pertahankan momentum yang sudah berjalan', avoid:'Perubahan besar tanpa persiapan matang' };
+
   if (score >= 3) return {
-    lakukan: ['Mulai proyek atau investasi besar','Negosiasi & tanda tangani kontrak penting','Lamar pekerjaan atau promosi jabatan','Pernikahan, perjalanan bisnis, acara penting','Belajar skill baru atau ambil kursus strategis'],
-    hindari: ['Keputusan tanpa perencanaan matang','Boros dan tidak terencana secara keuangan']
+    lakukan: ['Mulai proyek atau investasi besar','Negosiasi & tanda tangani kontrak penting','Lamar pekerjaan atau promosi jabatan', stemHint.do, 'Ekspansi jaringan dan relasi strategis'],
+    hindari: ['Keputusan tanpa perencanaan matang', branchHint.avoid]
   };
   if (score >= 1) return {
-    lakukan: ['Kerja keras dan konsisten','Perluas jaringan dan relasi bisnis','Selesaikan proyek yang tertunda','Belajar dan tingkatkan kompetensi'],
-    hindari: ['Konflik dan debat yang tidak perlu','Investasi spekulatif besar tanpa riset']
+    lakukan: ['Kerja keras dan konsisten','Perluas jaringan dan relasi bisnis', stemHint.do, 'Selesaikan proyek yang tertunda'],
+    hindari: ['Konflik dan debat yang tidak perlu', branchHint.avoid]
   };
   if (score === 0) return {
-    lakukan: ['Lanjutkan rutinitas dan rencana yang ada','Evaluasi kemajuan dan koreksi arah','Perkuat hubungan yang sudah ada'],
-    hindari: ['Ambil risiko besar atau tidak terukur','Perubahan drastis dan impulsif']
+    lakukan: ['Lanjutkan rutinitas dan rencana yang ada', stemHint.do, 'Evaluasi kemajuan dan koreksi arah'],
+    hindari: ['Ambil risiko besar atau tidak terukur', branchHint.avoid]
   };
   if (score >= -2) return {
-    lakukan: ['Jaga kesehatan fisik dan mental','Hemat dan kelola keuangan konservatif','Minta bantuan mentor atau konsultan','Fokus pada hal yang bisa dikontrol'],
-    hindari: ['Investasi atau pengeluaran besar','Konfrontasi langsung atau litigasi','Keputusan karir atau bisnis besar']
+    lakukan: ['Jaga kesehatan fisik dan mental','Hemat dan kelola keuangan konservatif', stemHint.do],
+    hindari: ['Investasi atau pengeluaran besar', branchHint.avoid, 'Keputusan karir atau bisnis besar']
   };
   return {
-    lakukan: ['Istirahat cukup dan pulihkan energi','Introspeksi dan refleksi mendalam','Perkuat fondasi: kesehatan, keluarga, tabungan','Selesaikan kewajiban dan utang yang ada'],
-    hindari: ['Semua tindakan berisiko tinggi','Pinjaman atau utang baru','Perubahan besar: pindah, kawin, bisnis baru','Konfrontasi atau perseteruan hukum']
+    lakukan: ['Istirahat cukup dan pulihkan energi','Introspeksi dan refleksi mendalam','Perkuat fondasi: kesehatan, keluarga, tabungan'],
+    hindari: ['Semua tindakan berisiko tinggi', stemHint.avoid, 'Perubahan besar: pindah, kawin, bisnis baru']
   };
 }
 
@@ -1592,6 +1721,8 @@ function render4D(z) {
   const MONTH_ID  = ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
   const SHIO      = ['Tikus','Sapi','Macan','Kelinci','Naga','Ular','Kuda','Kambing','Monyet','Ayam','Anjing','Babi'];
   const EL_ID     = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+  const SE        = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+  const BE        = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
 
   let html = '';
 
@@ -1699,7 +1830,7 @@ function render4D(z) {
       <div id="${uid}" style="display:${isOpen?'block':'none'}; padding:12px">`;
 
     // Year recommendation box
-    const yAdv = _4d_advice(dyS);
+    const yAdv = _4d_advice(dyS, SE[yGz.stem], BE[yGz.branch]);
     html += `<div style="background:var(--surface); border-left:3px solid ${yLbl.color}; border-radius:0 6px 6px 0; padding:10px 14px; margin-bottom:12px">
       <div style="font-weight:700; font-size:12px; margin-bottom:4px">
         ${yLbl.icon} Kualitas ${y}: <span style="color:${yLbl.color}">${dy?.quality?.rating||'Netral'}</span>
@@ -1721,14 +1852,21 @@ function render4D(z) {
     html += `<div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px">`;
     for (let m = 1; m <= 12; m++) {
       const mGz   = _4d_monthGanzhi(y, m);
+      const SE_MAP = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+      const BE_MAP = {'子':'水','丑':'土','寅':'木','卯':'木','辰':'土','巳':'火','午':'火','未':'土','申':'金','酉':'金','戌':'土','亥':'水'};
       const score = _4d_evalMonth(mGz.stem, mGz.branch, yongShen);
       const lbl   = _4d_label(score);
-      const adv   = _4d_advice(score);
+      const adv   = _4d_advice(score, SE_MAP[mGz.stem], BE_MAP[mGz.branch]);
       const isCurM = (y === curYear && m === curMonth);
+      const mStemEl = SE_MAP[mGz.stem] || '';
+      const mBrEl   = BE_MAP[mGz.branch] || '';
       html += `<div style="background:var(--surface); border:1px solid ${isCurM?'#e8b86d':lbl.color+'55'}; border-radius:6px; padding:9px; font-size:11px">
         <div style="display:flex; justify-content:space-between; margin-bottom:5px">
           <strong style="color:${lbl.color}">${MONTH_ID[m]} · ${mGz.ganzhi}${isCurM?' 🔹':''}</strong>
           <span style="font-size:10px; background:${lbl.color}22; color:${lbl.color}; border-radius:4px; padding:1px 5px">${lbl.icon} ${lbl.label}</span>
+        </div>
+        <div style="font-size:10px; color:var(--muted); margin-bottom:4px">
+          Elemen: <span style="color:var(--gold)">${EL_ID[mStemEl]||mStemEl}</span> · <span style="color:var(--gold)">${EL_ID[mBrEl]||mBrEl}</span>
         </div>
         <div style="color:#22c55e; font-size:10px; line-height:1.7">
           ✅ ${adv.lakukan.slice(0,3).join(' · ')}
@@ -2448,6 +2586,13 @@ function renderQmdjDeepNarasi(q, type) {
           • Pelajari sifat bintang <strong>${topStar}</strong> — kualitas ini adalah modal utama yang perlu Anda kembangkan sepanjang hidup.<br>
           • Hindari membuat komitmen besar di arah ${botDir} tanpa persiapan yang matang.</p>
 
+          <p><strong style="color:var(--gold2)">📋 Langkah Konkret Minggu Ini:</strong><br>
+          1. <strong>Ruang kerja:</strong> Atur meja atau tempat belajar menghadap arah <strong>${fuDir}</strong>. Ini cukup dilakukan sekali.<br>
+          2. <strong>Sebelum rapat/negosiasi penting:</strong> Duduk atau berdiri sebentar menghadap <strong>${topDir}</strong> selama 1-2 menit sambil fokuskan pikiran Anda.<br>
+          3. <strong>Hindari komitmen finansial besar</strong> di arah yang jatuh ke 空亡 (kosong) — cek daftar arah kosong di atas.<br>
+          4. <strong>Rencana perjalanan:</strong> Jika Anda akan melakukan perjalanan bisnis, pilih tujuan yang berada di arah <strong>${topDir}</strong> dari lokasi Anda saat ini.<br>
+          5. <strong>Evaluasi karir tahunan:</strong> Apakah peran atau bisnis Anda saat ini selaras dengan jenis energi ${topStar}? Jika tidak, pertimbangkan penyesuaian pelan-pelan.</p>
+
         </div>
       </div>`;
   } else if (isRijia) {
@@ -2490,6 +2635,13 @@ function renderQmdjDeepNarasi(q, type) {
           • Mulai hari dengan orientasi ke arah <strong>${fuDir}</strong> — bahkan hanya 5 menit meditasi atau refleksi bisa mengaktifkan energi terbaik Anda.<br>
           • Jadwalkan pertemuan dan keputusan penting di jam-jam di mana Anda secara alami paling waspada (biasanya pagi hari untuk tipe dinamis, siang-sore untuk tipe reflektif).<br>
           • Gunakan Natal Hari ini sebagai "panduan ritme" pribadi — bukan untuk membatasi, tapi untuk mengoptimalkan.</p>
+
+          <p><strong style="color:var(--blue)">📋 Langkah Konkret Hari Ini:</strong><br>
+          1. <strong>Pagi hari:</strong> Saat bangun, hadapi arah <strong>${fuDir}</strong> selama beberapa detik dan tetapkan 1 niat utama untuk hari ini.<br>
+          2. <strong>Jadwalkan tugas berat di waktu optimal:</strong> Tugas yang membutuhkan konsentrasi penuh → pagi; Pertemuan sosial → siang; Review dan perencanaan → sore.<br>
+          3. <strong>Evaluasi akhir hari:</strong> Apakah hari ini Anda lebih banyak mengikuti ritme alami Anda, atau melawan arus? Catat pola ini selama seminggu.<br>
+          4. <strong>Workspace harian:</strong> Jika memungkinkan, atur posisi kerja menghadap <strong>${topDir}</strong> untuk memaksimalkan produktivitas.<br>
+          5. <strong>Komunikasi:</strong> Sifat ${fuStar} adalah tanda tangan cara Anda berkomunikasi — kenali gaya alami Anda dan gunakan secara konsisten, bukan melawannya.</p>
 
         </div>
       </div>`;

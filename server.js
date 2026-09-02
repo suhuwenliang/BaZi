@@ -240,7 +240,7 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
   const sortedDaYuns = [...nearDaYuns].sort((a,b) => (b.quality?.score||0) - (a.quality?.score||0));
   const bestScore  = sortedDaYuns[0]?.quality?.score ?? 0;
   const worstScore = sortedDaYuns[sortedDaYuns.length-1]?.quality?.score ?? 0;
-  // Lucky = score>=1 ATAU merupakan Da Yun terbaik (tidak wajib score tinggi)
+  // Lucky = score>=1 ATAU merupakan Da Yun terbaik (selalu ada minimal 1 periode lucky)
   // Warn  = score<=-1 ATAU merupakan Da Yun terburuk (hanya jika lebih buruk dari yang terbaik)
   nearDaYuns.forEach(dy => {
     const score = dy.quality?.score ?? 0;
@@ -248,12 +248,19 @@ function buildComprehensiveAnalysis(bazi, zwds, inputData) {
     const isWorst = score === worstScore && worstScore < bestScore;
     const startY  = Math.max(dy.yearStart, currentYear);
     const endY    = Math.min(dy.yearEnd, currentYear + 10);
-    if (score >= 1 || (isBest && score >= 0)) {
+    if (score >= 1 || isBest) {
       for (let y = startY; y <= endY; y++) luckyYears.push(y);
     } else if (score <= -1 || isWorst) {
       for (let y = startY; y <= endY; y++) warnYears.push(y);
     }
   });
+  // Jika luckyYears masih kosong (tidak ada Da Yun dalam range), ambil 3 tahun terbaik dari semua Da Yun
+  if (luckyYears.length === 0 && sortedDaYuns.length > 0) {
+    const bestDy = sortedDaYuns[0];
+    const startY = Math.max(bestDy.yearStart, currentYear);
+    const endY   = Math.min(bestDy.yearEnd, currentYear + 10);
+    for (let y = startY; y <= endY; y++) luckyYears.push(y);
+  }
 
   // Pasangan ideal dari ZWDS 夫妻宫
   const fuqiPalace = zwds?.palaces?.[2];
