@@ -986,12 +986,18 @@ function renderName(na, input) {
           <div style="font-size:36px; color:var(--gold); font-family:serif">${esc(c.char)}</div>
           <div style="font-size:11px; color:var(--muted)">${pinyinDisplay} · ${c.strokes||'?'} goresan</div>
           <div style="font-size:12px; margin:4px 0">${esc(c.meaning||'—')}</div>
-          <div style="font-size:11px; color:${colorForElement(c.element||'')}">Unsur: ${esc(c.element||'?')}</div>
-          ${(c.radical && c.radical !== '(tidak tersedia)') ? `<div style="font-size:10px; color:var(--muted)">Radikal: ${esc(c.radical)}</div>` : ''}
+          <div style="font-size:11px; color:${colorForElement(c.element||'')}">Unsur: ${esc(c.element||'?')} <span style="color:var(--muted); font-size:10px">(${{'木':'Kayu—pertumbuhan','火':'Api—semangat','土':'Tanah—stabilitas','金':'Logam—ketegasan','水':'Air—fleksibilitas'}[c.element]||''})</span></div>
+          ${(c.radical && c.radical !== '(tidak tersedia)') ? `<div style="font-size:10px; color:var(--muted)">Radikal: ${esc(c.radical)} <span style="font-size:9px">(komponen dasar karakter)</span></div>` : ''}
           ${notInDb ? `<div style="font-size:10px; color:#f59e0b; margin-top:4px">⚠ Data estimasi</div>` : ''}
         </div>`;
       });
       html += '</div>';
+      // Penjelasan UNSUR dan RADIKAL
+      html += `<div style="background:var(--surface2); border-radius:8px; padding:12px; margin-bottom:14px; font-size:12px; line-height:1.8">
+        <strong style="color:var(--gold2)">ℹ️ Memahami UNSUR dan RADIKAL dalam Nama Mandarin:</strong><br>
+        <span style="color:var(--text)"><strong style="color:var(--gold)">Unsur (五行)</strong> dari sebuah karakter ditentukan dari jumlah goresannya. Setiap jumlah goresan terakhir (satuan) mewakili satu elemen: 1-2 = Kayu, 3-4 = Api, 5-0 = Tanah, 6-7 = Logam, 8-9 = Air. Dalam kehidupan sehari-hari, unsur nama Anda harus selaras dengan Yong Shen BaZi untuk mendukung nasib — nama dengan unsur yang "membantu" Day Master Anda akan memperkuat energi positif secara tidak langsung.</span><br>
+        <span style="color:var(--text)"><strong style="color:var(--gold)">Radikal (部首)</strong> adalah komponen visual dasar yang membangun sebuah karakter Mandarin — seperti akar kata dalam bahasa lain. Radikal sering mengandung makna simbolis: radikal air (氵) berkaitan dengan kelancaran dan kecerdasan, radikal kayu (木) dengan pertumbuhan, radikal hati (心) dengan perasaan dan intuisi. Radikal nama Anda mencerminkan nuansa makna yang lebih dalam dari karakter tersebut.</span>
+      </div>`;
     }
     // 五格 — field is 'grids', not 'wuge'
     const grids = cn.grids || cn.wuge;
@@ -1022,13 +1028,20 @@ function renderName(na, input) {
       }
       html += `<h5 style="color:var(--muted); font-size:11px; text-transform:uppercase; margin-bottom:6px">五格剖象法 (Five Grid Numerology)</h5>`;
       const GRID_MEANING = {
-        tian: 'Nasib bawaan dari leluhur dan garis keturunan',
-        ren:  'Inti kepribadian, jalur karir, dan daya juang',
-        di:   'Fondasi keluarga, kehidupan rumah tangga, masa muda',
-        wai:  'Relasi sosial, pergaulan, dan pengaruh lingkungan',
-        zong: 'Nasib keseluruhan dan tujuan hidup jangka panjang',
+        tian: { short:'Nasib bawaan dari leluhur', daily:'Pengaruh keturunan dan warisan keluarga pada nasib Anda. Angka ini mencerminkan energi yang Anda bawa sejak lahir dari garis leluhur — termasuk kecenderungan bakat alami dan hambatan turun-temurun. Tidak bisa diubah, tapi bisa dipahami untuk menerima kekuatan dan keterbatasan bawaan.' },
+        ren:  { short:'Inti kepribadian & karir', daily:'Ini adalah angka terpenting dalam numerologi nama Tionghoa — mencerminkan kekuatan batin, cara Anda menghadapi tantangan, dan jalur karir alami. Angka yang kuat di sini mendukung daya juang dan ketangguhan. Orang dengan angka 人格 baik cenderung lebih mudah bangkit dari kegagalan.' },
+        di:   { short:'Fondasi keluarga & masa muda', daily:'Mencerminkan kondisi kehidupan rumah tangga, hubungan dengan keluarga asal, dan energi masa kecil hingga remaja (0–25 tahun). Angka ini memengaruhi rasa aman emosional dan stabilitas psikologis dasar Anda.' },
+        wai:  { short:'Relasi sosial & lingkungan', daily:'Mencerminkan bagaimana orang lain melihat Anda dan seberapa mudah Anda bersosialisasi. Angka yang baik di sini mendukung popularitas, kemudahan membangun jaringan, dan kesan pertama yang positif. Sangat penting bagi Anda yang bergerak di bidang yang membutuhkan hubungan publik.' },
+        zong: { short:'Nasib keseluruhan jangka panjang', daily:'Angka paling komprehensif yang mencerminkan kualitas nasib Anda secara keseluruhan — karir, keuangan, keluarga, dan tujuan hidup. Ini adalah "angka takdir" yang paling sering dirujuk ketika seseorang ingin mengevaluasi apakah nama mereka perlu dipertimbangkan ulang.' },
       };
-      html += `<table style="margin-bottom:12px"><tr><th>格 / Grid</th><th>Stroke</th><th>Kualitas</th><th>Unsur</th><th>Area Kehidupan</th></tr>`;
+      const WU_XING_DAILY = {
+        '木': 'Unsur Kayu — Energi pertumbuhan, kreativitas, dan kemajuan. Orang dengan unsur ini cenderung punya jiwa kepemimpinan alami, suka berkembang, dan cocok di bidang pendidikan, startup, atau industri kreatif.',
+        '火': 'Unsur Api — Energi semangat, ekspresi, dan sosialisasi. Orang dengan unsur ini energik, karismatik, dan cocok di bidang komunikasi, seni, pemasaran, atau hiburan.',
+        '土': 'Unsur Tanah — Energi stabilitas, kepercayaan, dan ketahanan. Orang dengan unsur ini dapat diandalkan, sabar, dan cocok di bidang properti, keuangan, pertanian, atau manajemen.',
+        '金': 'Unsur Logam — Energi ketegasan, struktur, dan presisi. Orang dengan unsur ini berpikir logis, terstruktur, dan cocok di bidang hukum, teknik, keuangan, atau kesehatan.',
+        '水': 'Unsur Air — Energi fleksibilitas, intuisi, dan kebijaksanaan. Orang dengan unsur ini adaptif, analitis, dan cocok di bidang penelitian, investasi, spiritual, atau teknologi.',
+      };
+      html += `<table style="margin-bottom:12px"><tr><th>格 / Grid</th><th>Stroke</th><th>Kualitas</th><th>Unsur & Maknanya</th><th>Area Kehidupan</th></tr>`;
       const gridOrder = ['tian','ren','di','wai','zong'];
       gridOrder.forEach(key => {
         const g = grids[key];
@@ -1037,6 +1050,7 @@ function renderName(na, input) {
         const el = g.element || elementFromStrokeNum(typeof val==='number'?val:0);
         const name = g.name || key+'格';
         const sq = strokeQuality(typeof val==='number'?val:parseInt(val)||0);
+        const gm = GRID_MEANING[key] || { short:'—', daily:'—' };
         html += `<tr>
           <td style="color:var(--gold); font-size:13px"><strong>${esc(name)}</strong></td>
           <td style="text-align:center; font-size:16px; font-weight:700; color:var(--gold2)">${esc(String(val))}</td>
@@ -1044,8 +1058,14 @@ function renderName(na, input) {
             <span style="font-weight:700; color:${sq.color}">${sq.icon} ${sq.label}</span>
             <div style="font-size:10px; color:var(--muted); margin-top:2px">${esc(sq.note)}</div>
           </td>
-          <td style="color:${colorForElement(el)}; font-weight:600">${esc(el)}<br><span style="font-size:10px; color:var(--muted)">${esc(wu_xing_meaning(el))}</span></td>
-          <td style="font-size:12px; color:var(--text)">${esc(GRID_MEANING[key]||'—')}</td>
+          <td style="color:${colorForElement(el)}; font-weight:600; max-width:160px">
+            ${esc(el)} — ${esc(wu_xing_meaning(el))}
+            <div style="font-size:10px; color:var(--muted); font-weight:400; margin-top:3px">${esc(WU_XING_DAILY[el]||'')}</div>
+          </td>
+          <td style="font-size:11px; color:var(--text); max-width:180px">
+            <strong style="color:var(--gold2)">${esc(gm.short)}</strong>
+            <div style="font-size:10px; color:var(--muted); margin-top:3px">${esc(gm.daily)}</div>
+          </td>
         </tr>`;
       });
       html += '</table>';
@@ -1064,6 +1084,14 @@ function renderName(na, input) {
           <div style="width:${pct}%; height:100%; background:${pct>=70?'var(--green)':pct>=40?'var(--gold)':'var(--red)'}; border-radius:8px"></div>
         </div>
         ${harm.notes ? `<div style="font-size:11px; color:var(--muted); margin-top:4px">${harm.notes.map(n=>`• ${esc(n)}`).join('<br>')}</div>` : ''}
+        <div style="font-size:11px; color:var(--text); margin-top:8px; padding:8px 10px; background:var(--surface); border-radius:6px; line-height:1.7">
+          ${pct>=70
+            ? '✅ <strong>Nama ini selaras baik dengan BaZi Anda.</strong> Nama ini secara energetik mendukung Yong Shen (unsur pelindung) Anda, artinya setiap kali nama ini dipanggil atau ditulis, energinya memperkuat keseimbangan chart Anda secara positif dalam jangka panjang.'
+            : pct>=40
+            ? '🟡 <strong>Keselarasan sedang.</strong> Nama ini tidak menghalangi, tapi juga tidak secara aktif memperkuat Yong Shen Anda. Dalam kehidupan sehari-hari, dampaknya netral. Jika ingin memaksimalkan energi nama, pertimbangkan nama yang unsurnya lebih selaras dengan BaZi.'
+            : '⚠️ <strong>Keselarasan masih perlu diperkuat.</strong> Nama ini kurang selaras dengan Yong Shen BaZi. Ini tidak berarti nama harus segera diubah — namun bisa diperkuat dengan nama panggilan atau tambahan nama yang unsurnya lebih mendukung. Fokus pada cara lain memperkuat Yong Shen melalui warna, aktivitas, dan lingkungan.'
+          }
+        </div>
       </div>`;
     }
     if (cn.summary) {
@@ -1423,8 +1451,11 @@ function render3F(b) {
   html += `<div style="margin-top:12px; padding:10px 14px; background:var(--surface); border-radius:8px; font-size:11px; color:var(--muted); line-height:1.8">
     <strong style="color:var(--text)">ℹ️ Apa perbedaan Aktif vs Tidak Aktif?</strong><br>
     <span style="color:var(--green)">✅ Aktif</span> — Batang atau Cabang dari bintang ini ada di keempat pilar BaZi Anda. Energinya bekerja langsung dan nyata dalam kehidupan sehari-hari.<br>
-    <span style="color:var(--muted)">○ Tidak Aktif</span> — Bintang ini secara potensial ada dalam sistem BaZi, tapi tidak muncul di pilar Anda saat ini. Energinya bisa diaktifkan melalui usaha sadar, lingkungan, atau periode Da Yun tertentu.<br>
-    Bintang yang tidak aktif bukanlah hal buruk — ini justru peluang yang bisa Anda "aktifkan" secara sengaja dengan langkah-langkah yang tepat.
+    <span style="color:var(--muted)">○ Tidak Aktif</span> — Bintang ini secara potensial ada dalam sistem BaZi, tapi tidak muncul di pilar Anda. Ada <strong>tiga cara mengaktifkannya:</strong><br>
+    <span style="margin-left:10px">1. <strong>Usaha sadar</strong> — lakukan secara sengaja aktivitas yang berkaitan dengan energi bintang tersebut (lihat tips "Cara mengaktifkan" di atas).</span><br>
+    <span style="margin-left:10px">2. <strong>Lingkungan</strong> — ubah lingkungan fisik, sosial, atau profesional Anda agar selaras dengan energi bintang. Misalnya bintang 驿马 (mobilitas) aktif ketika Anda pindah kota atau ganti industri.</span><br>
+    <span style="margin-left:10px">3. <strong>Periode Da Yun tertentu</strong> — setiap Da Yun membawa elemen baru. Jika elemen Da Yun mendatang mendukung Shen Sha ini, bintang yang tadinya tidak aktif bisa "terbangun" secara alami. Lihat 4C · Da Xian untuk periode mendatang Anda.</span><br>
+    Bintang yang tidak aktif bukanlah hal buruk — ini justru peluang yang bisa Anda "aktifkan" secara sengaja.
   </div>`;
   document.getElementById('sec-3f').innerHTML = html;
 }
@@ -1593,36 +1624,71 @@ function render4B(z) {
 function render4C(z) {
   const dx = z.daXian;
   if (!dx || !dx.periods) { document.getElementById('sec-4c').innerHTML = '<div class="error-box">Data tidak tersedia</div>'; return; }
-  // actual: period.palace.name (not period.palaceName), period.palace.majorStars (not period.stars)
+
+  // Per-palace daily life guidance
+  const PALACE_DAILY = {
+    '命宫':'Istana Kehidupan (命宫 — Mìng Gōng) — Periode ini berpusat pada identitas dan arah hidup Anda. Pertanyaan "Siapa saya dan ke mana saya akan pergi?" menjadi sangat penting. Cocok untuk introspeksi mendalam, menemukan kembali tujuan hidup, dan memperkuat karakter diri.',
+    '兄弟宫':'Istana Saudara (兄弟宫 — Xiōngdì Gōng) — Periode ini menonjolkan peran saudara kandung, rekan kerja, dan komunitas dekat. Kolaborasi menjadi kunci sukses. Perkuat jaringan kepercayaan dan waspadai persaingan tidak sehat di lingkaran dekat.',
+    '夫妻宫':'Istana Pasangan (夫妻宫 — Fūqī Gōng) — Periode ini sangat berpengaruh pada kehidupan cinta dan pernikahan. Hubungan romantis atau bisnis kemitraan menjadi fokus utama. Baik untuk menikah, memperdalam komitmen, atau menyelesaikan konflik hubungan lama.',
+    '子女宫':'Istana Anak (子女宫 — Zǐnǚ Gōng) — Periode ini terkait kreativitas, ekspresi diri, dan hubungan dengan generasi lebih muda. Cocok untuk memulai proyek kreatif, mendidik anak, atau mengembangkan bakat yang selama ini tersembunyi.',
+    '财帛宫':'Istana Keuangan (财帛宫 — Cáibó Gōng) — Periode emas untuk mengembangkan kekayaan dan rezeki. Fokus pada investasi, pengelolaan aset, dan peluang finansial. Perhatikan juga pengeluaran — kemudahan rezeki kadang diimbangi dengan godaan boros.',
+    '疾厄宫':'Istana Kesehatan (疾厄宫 — Jí È Gōng) — Periode ini membutuhkan perhatian ekstra pada kesehatan fisik dan mental. Lakukan pemeriksaan rutin, adopsi gaya hidup lebih sehat, dan kurangi stres berlebihan. Bisa juga berarti pekerjaan di bidang medis atau healing.',
+    '迁移宫':'Istana Perjalanan (迁移宫 — Qiānyí Gōng) — Periode penuh peluang dari mobilitas dan perubahan lingkungan. Perjalanan, pindah tempat, atau ekspansi ke pasar baru sangat menguntungkan. Energi terbaik datang dari keluar zona nyaman.',
+    '仆役宫':'Istana Sahabat (仆役宫 — Púyì Gōng) — Periode ini menonjolkan peran orang-orang yang membantu Anda — karyawan, mitra, mentor. Perkuat tim dan sistem pendukung Anda. Delegasi yang tepat adalah kunci keberhasilan periode ini.',
+    '官禄宫':'Istana Karir (官禄宫 — Guānlù Gōng) — Periode paling produktif untuk karir dan pencapaian profesional. Promosi, pengakuan publik, dan peluang bisnis besar sangat mungkin terjadi. Ambil peran kepemimpinan dan jangan ragu tampil di depan.',
+    '田宅宫':'Istana Properti (田宅宫 — Tiánzhái Gōng) — Periode fokus pada properti, aset fisik, dan lingkungan tempat tinggal. Cocok untuk membeli rumah, renovasi, atau memperluas bisnis dengan aset nyata. Stabilitas jangka panjang adalah tema utama.',
+    '福德宫':'Istana Kebahagiaan (福德宫 — Fúdé Gōng) — Periode untuk kebahagiaan batin, spiritual, dan kualitas hidup. Fokus pada apa yang benar-benar membuat Anda bahagia — bukan hanya pencapaian materi. Meditasi, hobi, dan kegiatan spiritual sangat dianjurkan.',
+    '父母宫':'Istana Orang Tua (父母宫 — Fùmǔ Gōng) — Periode terkait hubungan dengan orang tua, mentor, dan figur otoritas. Bisa berarti merawat orang tua, belajar dari mentor berpengalaman, atau mendapatkan dukungan dari senior.',
+  };
+
   let html = '<div class="daxian-list">';
   dx.periods.forEach(period => {
     const isCurrent = period.isCurrent;
     const palaceName = period.palace?.name || period.palaceName || '?';
     const stars = period.palace?.majorStars || period.stars || [];
     const mutagenItems = period.palace?.mutagens || [];
-    const mutagenDesc = mutagenItems.map(m=>`${m.type||''}${m.star||''}`).join(' ');
+    // Translate mutagen items
+    const mutagenDesc = mutagenItems.map(m=>`${transMutagen(m.type||'')} ${transZwdsStar(m.star||'')}`).join('  ');
     html += `<div class="daxian-item ${isCurrent?'current':''}">
       ${isCurrent?'<div style="font-size:10px; color:var(--purple)">▶ SEKARANG</div>':''}
       <div class="dx-palace">${esc(transZwdsPalace(palaceName))}</div>
       <div class="dx-age">Usia ${period.ageStart||'?'}–${period.ageEnd||'?'}<br/>${period.yearStart||'?'}–${period.yearEnd||'?'}</div>
       ${stars.length>0 ? `<div style="font-size:10px; color:var(--gold2); margin-top:3px">${stars.map(s=>esc(transZwdsStar(s.name))).join(' · ')}</div>` : ''}
-      ${mutagenDesc ? `<div style="font-size:10px; color:var(--purple); margin-top:2px">${esc(mutagenDesc)}</div>` : ''}
+      ${mutagenDesc.trim() ? `<div style="font-size:10px; color:var(--purple); margin-top:2px">${esc(mutagenDesc)}</div>` : ''}
       ${period.meaning ? `<div class="dx-meaning">${esc(period.meaning)}</div>` : ''}
     </div>`;
   });
   html += '</div>';
 
-  // Current Da Xian detail
-  const current = dx.current || dx.periods.find(p=>p.isCurrent);
-  if (current) {
-    const curPalaceName = current.palace?.name || current.palaceName || '';
-    const curStars = (current.palace?.majorStars || []).map(s=>transZwdsStar(s.name)).join('、');
-    html += `<div class="summary-box" style="margin-top:14px">
-      <strong>Da Xian Saat Ini: ${esc(transZwdsPalace(curPalaceName))}</strong> (${esc(String(current.yearStart||''))}-${esc(String(current.yearEnd||''))})
-      ${curStars ? `<br/>Bintang utama: ${esc(curStars)}` : ''}
-      ${current.advice ? `<br/><em>${esc(current.advice)}</em>` : ''}
+  // Current + Upcoming Da Xian detail cards
+  const now = new Date().getFullYear();
+  const upcoming = dx.periods.filter(p => (p.yearEnd || 0) >= now).slice(0, 4);
+  html += `<h4 style="color:var(--gold2); font-size:13px; margin:16px 0 10px">📖 Detail Periode Besar — Saat Ini & Mendatang</h4>`;
+  upcoming.forEach((period, idx) => {
+    const isCurrent = period.isCurrent || (period.yearStart <= now && period.yearEnd >= now);
+    const palaceName = period.palace?.name || period.palaceName || '';
+    const curStars = (period.palace?.majorStars || []).map(s=>transZwdsStar(s.name)).join('、');
+    const mutagenItems2 = period.palace?.mutagens || [];
+    const mutagenTrans = mutagenItems2.map(m=>`${transMutagen(m.type||'')} → ${transZwdsStar(m.star||'')}`).join('  |  ');
+    const dailyGuide = PALACE_DAILY[palaceName] || '';
+    html += `<div style="background:var(--surface); border:1px solid ${isCurrent?'var(--gold)':'var(--border)'}; border-radius:8px; padding:14px; margin-bottom:12px">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px">
+        <div>
+          ${isCurrent ? '<span style="font-size:10px; background:var(--purple); color:#fff; border-radius:4px; padding:1px 6px; margin-right:6px">▶ SEKARANG</span>' : `<span style="font-size:10px; color:var(--muted)">Periode ${idx + 1}</span>`}
+          <strong style="font-size:14px; color:var(--gold)">${esc(transZwdsPalace(palaceName))}</strong>
+        </div>
+        <div style="text-align:right; font-size:12px; color:var(--muted)">
+          Usia ${period.ageStart||'?'}–${period.ageEnd||'?'}<br/>
+          ${period.yearStart||'?'}–${period.yearEnd||'?'}
+        </div>
+      </div>
+      ${curStars ? `<div style="font-size:12px; color:var(--gold2); margin-bottom:6px">⭐ Bintang Utama: ${esc(curStars)}</div>` : ''}
+      ${mutagenTrans ? `<div style="font-size:11px; color:var(--purple); margin-bottom:8px">四化: ${esc(mutagenTrans)}</div>` : ''}
+      ${period.advice ? `<div style="font-size:12px; color:var(--text); margin-bottom:8px; font-style:italic">💬 ${esc(period.advice)}</div>` : ''}
+      ${dailyGuide ? `<div style="font-size:12px; color:var(--text); line-height:1.7; background:var(--surface2); border-radius:6px; padding:10px">🌱 ${esc(dailyGuide)}</div>` : ''}
     </div>`;
-  }
+  });
+
   document.getElementById('sec-4c').innerHTML = html;
 }
 
@@ -2117,6 +2183,84 @@ function render6(comp) {
     </div>`;
   });
 
+  // ── Analisis Fase Per Periode ─────────────────────────────────
+  const bazi = _result?.bazi;
+  const zwds = _result?.zwds;
+  if (bazi && zwds) {
+    const curDaYun = bazi.daYun?.current || (bazi.daYun?.periods||[]).find(p=>p.isCurrent);
+    const curDaXian = zwds.daXian?.current || (zwds.daXian?.periods||[]).find(p=>p.isCurrent);
+    const nextDaXian = zwds.daXian?.periods?.find(p => p.yearStart > new Date().getFullYear());
+
+    if (curDaYun || curDaXian) {
+      html += `<div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border)">
+        <h4 style="color:var(--gold2); font-size:13px; margin-bottom:12px">⏳ Analisis Fase Kehidupan Saat Ini — Perpaduan Tiga Sistem</h4>`;
+
+      if (curDaYun) {
+        const dyGanzhi = curDaYun.ganzhi || '';
+        const dyYears = `${curDaYun.yearStart||'?'}–${curDaYun.yearEnd||'?'}`;
+        const dyAge = `Usia ${curDaYun.ageStart||'?'}–${curDaYun.ageEnd||'?'}`;
+        const dyQuality = curDaYun.quality?.rating || '';
+        const dyDesc = curDaYun.quality?.desc || '';
+        const dyStars = (curDaYun.majorStars||[]).join('、') || '';
+        html += `<div style="background:var(--surface2); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; padding:12px 14px; margin-bottom:10px">
+          <div style="font-weight:700; color:var(--gold); font-size:13px; margin-bottom:6px">
+            🀄 BaZi — Da Yun ${esc(dyGanzhi)} (${dyYears}, ${dyAge})
+          </div>
+          <div style="font-size:12px; color:var(--text); line-height:1.8">
+            Kualitas periode: <strong style="color:${dyQuality.includes('Baik')?'#22c55e':'#ef4444'}">${esc(dyQuality)}</strong>
+            ${dyDesc ? ` — ${esc(dyDesc)}` : ''}<br>
+            ${dyStars ? `Bintang aktif: ${esc(dyStars)}<br>` : ''}
+            <strong>Implikasi kehidupan:</strong> ${dyQuality.includes('Baik') || dyQuality.includes('baik')
+              ? 'Ini adalah periode aliran positif dalam BaZi Anda. Energi mendukung pertumbuhan, peluang karir, dan ekspansi finansial. Ambil langkah berani — peluang yang muncul di periode ini lebih mudah berbuah.'
+              : dyQuality.includes('Netral') || dyQuality.includes('netral')
+              ? 'Periode BaZi yang stabil tapi tidak terlalu mendorong. Fokus pada konsolidasi — perkuat yang sudah ada, selesaikan proyek lama, dan persiapkan diri untuk periode berikutnya.'
+              : 'Periode yang lebih menantang dalam BaZi. Ini saatnya berhati-hati dengan keputusan besar, memperkuat fondasi, dan belajar dari pengalaman. Jangan terburu-buru membuat perubahan besar.'
+            }
+          </div>
+        </div>`;
+      }
+
+      if (curDaXian) {
+        const dxPalace = transZwdsPalace(curDaXian.palace?.name || curDaXian.palaceName || '');
+        const dxYears = `${curDaXian.yearStart||'?'}–${curDaXian.yearEnd||'?'}`;
+        const dxAge = `Usia ${curDaXian.ageStart||'?'}–${curDaXian.ageEnd||'?'}`;
+        const dxStars = (curDaXian.palace?.majorStars||[]).map(s=>transZwdsStar(s.name)).join('、') || '';
+        const dxAdvice = curDaXian.advice || '';
+        html += `<div style="background:var(--surface2); border-left:3px solid var(--purple); border-radius:0 8px 8px 0; padding:12px 14px; margin-bottom:10px">
+          <div style="font-weight:700; color:var(--purple); font-size:13px; margin-bottom:6px">
+            ⭐ Zi Wei — Da Xian ${esc(dxPalace)} (${dxYears}, ${dxAge})
+          </div>
+          <div style="font-size:12px; color:var(--text); line-height:1.8">
+            ${dxStars ? `Bintang dominan: <strong>${esc(dxStars)}</strong><br>` : ''}
+            ${dxAdvice ? `<em>${esc(dxAdvice)}</em><br>` : ''}
+            <strong>Tema fase ini:</strong> ${dxPalace.includes('Karir') ? 'Periode Zi Wei paling produktif untuk ambisi profesional. Karir dan pengakuan publik berada di puncak. Ambil peran kepemimpinan.' : dxPalace.includes('Keuangan') ? 'Periode emas Zi Wei untuk finansial. Investasi dan pengelolaan aset sangat dianjurkan. Jaga agar tidak boros.' : dxPalace.includes('Kebahagiaan') ? 'Periode Zi Wei untuk kualitas hidup dan kebahagiaan batin. Jangan hanya kejar materi — investasikan pada wellbeing, hobi, dan spiritualitas.' : dxPalace.includes('Perjalanan') ? 'Periode Zi Wei penuh mobilitas. Peluang datang dari luar zona nyaman — perjalanan, ekspansi, dan perubahan lingkungan.' : dxPalace.includes('Pasangan') ? 'Periode Zi Wei yang berpengaruh besar pada hubungan. Pertimbangkan komitmen serius atau selesaikan konflik hubungan yang belum tuntas.' : `Periode ${esc(dxPalace)} dalam Zi Wei mengarahkan energi ke tema tersebut. Selaraskan aktivitas utama dengan energi istana ini untuk hasil terbaik.`}
+          </div>
+        </div>`;
+      }
+
+      if (curDaYun && curDaXian) {
+        html += `<div style="background:var(--surface); border:1px solid rgba(232,184,109,0.3); border-radius:8px; padding:12px 14px; margin-bottom:10px">
+          <div style="font-weight:700; color:var(--gold2); font-size:12px; margin-bottom:6px">🔗 Konvergensi Kedua Sistem</div>
+          <div style="font-size:12px; color:var(--text); line-height:1.8">
+            BaZi dan Zi Wei Dou Shu sering menunjuk ke tema yang sama dari sudut berbeda. Ketika keduanya berbicara tentang hal yang sama, itu adalah sinyal terkuat yang bisa Anda percayai.<br>
+            <strong>Apa yang perlu Anda lakukan sekarang:</strong> Identifikasi tema yang muncul <em>di kedua sistem</em> — itulah area di mana energi Anda paling terkonsentrasi dan di mana usaha Anda akan paling efektif.
+          </div>
+        </div>`;
+      }
+
+      if (nextDaXian) {
+        const nxPalace = transZwdsPalace(nextDaXian.palace?.name || nextDaXian.palaceName || '');
+        const nxYears = `${nextDaXian.yearStart||'?'}–${nextDaXian.yearEnd||'?'}`;
+        html += `<div style="background:var(--surface); border:1px dashed var(--border); border-radius:8px; padding:10px 14px">
+          <div style="font-size:11px; color:var(--muted); margin-bottom:4px">🔭 Fase Zi Wei Berikutnya:</div>
+          <div style="font-size:12px; color:var(--text)"><strong>${esc(nxPalace)}</strong> (${nxYears}) — Mulai persiapkan diri untuk tema istana ini. Transisi antar Da Xian adalah momen penting yang perlu diantisipasi 1-2 tahun sebelumnya.</div>
+        </div>`;
+      }
+
+      html += `</div>`;
+    }
+  }
+
   // ── QMDJ Perspektif ──────────────────────────────────────────
   // Pull from cached nianjia (年家) data which is most relevant for life overview
   const qmdjKey = Object.keys(_qmdjData)[0]; // use whichever chart type was loaded first
@@ -2586,12 +2730,12 @@ function renderQmdjDeepNarasi(q, type) {
           • Pelajari sifat bintang <strong>${topStar}</strong> — kualitas ini adalah modal utama yang perlu Anda kembangkan sepanjang hidup.<br>
           • Hindari membuat komitmen besar di arah ${botDir} tanpa persiapan yang matang.</p>
 
-          <p><strong style="color:var(--gold2)">📋 Langkah Konkret Minggu Ini:</strong><br>
-          1. <strong>Ruang kerja:</strong> Atur meja atau tempat belajar menghadap arah <strong>${fuDir}</strong>. Ini cukup dilakukan sekali.<br>
-          2. <strong>Sebelum rapat/negosiasi penting:</strong> Duduk atau berdiri sebentar menghadap <strong>${topDir}</strong> selama 1-2 menit sambil fokuskan pikiran Anda.<br>
-          3. <strong>Hindari komitmen finansial besar</strong> di arah yang jatuh ke 空亡 (kosong) — cek daftar arah kosong di atas.<br>
-          4. <strong>Rencana perjalanan:</strong> Jika Anda akan melakukan perjalanan bisnis, pilih tujuan yang berada di arah <strong>${topDir}</strong> dari lokasi Anda saat ini.<br>
-          5. <strong>Evaluasi karir tahunan:</strong> Apakah peran atau bisnis Anda saat ini selaras dengan jenis energi ${topStar}? Jika tidak, pertimbangkan penyesuaian pelan-pelan.</p>
+          <p><strong style="color:var(--gold2)">📋 Panduan Praktis Permanen (berlaku seumur hidup, bukan hanya minggu ini):</strong><br>
+          1. <strong>Ruang kerja (lakukan sekali, berlaku permanen):</strong> Atur meja atau tempat belajar menghadap arah <strong>${fuDir}</strong> — ini sesuai dengan arah Bintang Pemimpin natal Anda dan cocok dipertahankan jangka panjang. Lihat juga arah terbaik di bagian Feng Shui Personal (八宅 Kua Number) Anda, dan pilih arah yang didukung kedua sistem.<br>
+          2. <strong>Sebelum setiap rapat/negosiasi penting:</strong> Posisikan diri menghadap <strong>${topDir}</strong> selama 1-2 menit untuk memfokuskan pikiran. Ini berlaku setiap saat, bukan hanya sekali.<br>
+          3. <strong>Keputusan finansial besar:</strong> Hindari komitmen di arah yang jatuh ke 空亡 (Kosong) — energinya cenderung tidak membuahkan hasil. Cek daftar arah kosong di atas.<br>
+          4. <strong>Perjalanan bisnis (setiap kali):</strong> Pilih tujuan yang berada di arah <strong>${topDir}</strong> dari lokasi Anda — ini akan memberikan momentum lebih baik secara energetik.<br>
+          5. <strong>Evaluasi karir tahunan:</strong> Apakah peran atau bisnis Anda saat ini selaras dengan kualitas ${topStar}? Semakin selaras, semakin mudah Anda berkembang.</p>
 
         </div>
       </div>`;
@@ -2636,12 +2780,12 @@ function renderQmdjDeepNarasi(q, type) {
           • Jadwalkan pertemuan dan keputusan penting di jam-jam di mana Anda secara alami paling waspada (biasanya pagi hari untuk tipe dinamis, siang-sore untuk tipe reflektif).<br>
           • Gunakan Natal Hari ini sebagai "panduan ritme" pribadi — bukan untuk membatasi, tapi untuk mengoptimalkan.</p>
 
-          <p><strong style="color:var(--blue)">📋 Langkah Konkret Hari Ini:</strong><br>
-          1. <strong>Pagi hari:</strong> Saat bangun, hadapi arah <strong>${fuDir}</strong> selama beberapa detik dan tetapkan 1 niat utama untuk hari ini.<br>
-          2. <strong>Jadwalkan tugas berat di waktu optimal:</strong> Tugas yang membutuhkan konsentrasi penuh → pagi; Pertemuan sosial → siang; Review dan perencanaan → sore.<br>
-          3. <strong>Evaluasi akhir hari:</strong> Apakah hari ini Anda lebih banyak mengikuti ritme alami Anda, atau melawan arus? Catat pola ini selama seminggu.<br>
-          4. <strong>Workspace harian:</strong> Jika memungkinkan, atur posisi kerja menghadap <strong>${topDir}</strong> untuk memaksimalkan produktivitas.<br>
-          5. <strong>Komunikasi:</strong> Sifat ${fuStar} adalah tanda tangan cara Anda berkomunikasi — kenali gaya alami Anda dan gunakan secara konsisten, bukan melawannya.</p>
+          <p><strong style="color:var(--blue)">📋 Panduan Ritme Harian Permanen (berlaku setiap hari, bukan hanya hari ini):</strong><br>
+          1. <strong>Setiap pagi:</strong> Saat bangun, hadapi arah <strong>${fuDir}</strong> dan tetapkan 1 niat utama hari ini — kebiasaan ini memperkuat fokus secara kumulatif dari waktu ke waktu.<br>
+          2. <strong>Setiap hari — jadwalkan tugas sesuai ritme alami:</strong> Tugas konsentrasi penuh → pagi; Pertemuan dan interaksi sosial → siang; Review dan perencanaan → sore.<br>
+          3. <strong>Evaluasi mingguan:</strong> Setiap akhir pekan, tanyakan: Apakah minggu ini saya lebih banyak mengikuti ritme alami atau melawan arus? Sesuaikan pola minggu berikutnya.<br>
+          4. <strong>Workspace permanen:</strong> Atur posisi kerja menghadap <strong>${topDir}</strong> — ini adalah optimasi jangka panjang, bukan setup sementara.<br>
+          5. <strong>Gaya komunikasi:</strong> Sifat ${fuStar} adalah tanda tangan cara terbaik Anda berkomunikasi — kenali pola ini dan gunakan konsisten dalam setiap interaksi.</p>
 
         </div>
       </div>`;
