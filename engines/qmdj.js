@@ -1140,10 +1140,124 @@ function buildChartInterpretation(chart) {
 }
 
 // ═══════════════════════════════════════════════════
-//  I. PUBLIC API
+//  I. BEN MING PAN (本命盤) — Qi Men Destiny Chart
 // ═══════════════════════════════════════════════════
 
-function calculateQmdj({ type, birthYear, birthMonth, birthDay }) {
+/**
+ * Qi Men Destiny Chart (本命盤 / benmingpan)
+ * Uses birth hour (时柱) to create a personal natal QMDJ energy map.
+ * Method: Apply Shijia engine to the exact birth moment.
+ */
+function generateBenMingPan(year, month, day, hour) {
+  const h = parseInt(hour) || 0;
+  const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), h, 0, 0);
+  const chart = generateShiJia(birthDate);
+  chart.type = 'benmingpan';
+  chart.label = `奇門本命盤 · Qi Men Destiny Chart · Lahir ${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')} Jam ${String(h).padStart(2,'0')}.00`;
+  return chart;
+}
+
+// ─── Deity (值符星) personality descriptions ───────────────────────────────
+const ZHIFU_STAR_DESC = {
+  '天蓬': { id:'Tiān Péng', trait:'Karismatik & Strategis', detail:'Anda memiliki daya tarik alami, kemampuan membaca situasi, dan naluri kepemimpinan. Motivasi bawah sadar Anda adalah menguasai lingkungan dan menginspirasi orang lain. Energi Anda kuat tetapi perlu diarahkan agar tidak menjadi dominasi berlebihan.', career:'Pemimpin, politisi, pengusaha, diplomat, militer.' },
+  '天任': { id:'Tiān Rén', trait:'Andal & Penuh Kasih', detail:'Anda adalah pilar yang bisa diandalkan. Motivasi bawah sadar Anda adalah menjaga dan mendukung orang-orang di sekitar Anda. Anda bekerja terbaik ketika ada yang perlu dilindungi atau dirawat.', career:'Koordinator, perawat, manajer proyek, konselor, pengasuh.' },
+  '天冲': { id:'Tiān Chōng', trait:'Energik & Pionir', detail:'Anda penuh dorongan untuk bertindak dan memulai. Motivasi bawah sadar Anda adalah terus bergerak maju dan menaklukkan tantangan. Energi ini cocok untuk membuka jalur baru yang belum ada sebelumnya.', career:'Atlet, tentara, pengusaha startup, insinyur lapangan, explorer.' },
+  '天辅': { id:'Tiān Fǔ', trait:'Cendekia & Penasehat', detail:'Anda memiliki kedalaman intelektual dan keinginan tulus untuk membantu orang berkembang. Motivasi bawah sadar Anda adalah berbagi ilmu dan membimbing orang lain mencapai potensi mereka.', career:'Pendidik, konsultan, penulis, akademisi, mentor.' },
+  '天禽': { id:'Tiān Qín', trait:'Seimbang & Adaptif', detail:'Anda adalah titik keseimbangan di antara orang-orang di sekitar Anda. Motivasi bawah sadar Anda adalah menciptakan harmoni dan menemukan jalan tengah. Anda bisa beradaptasi di berbagai situasi dengan luwes.', career:'Mediator, diplomat, manajer HR, event organizer, terapis.' },
+  '天心': { id:'Tiān Xīn', trait:'Penyembuh & Strategis', detail:'Anda memiliki kemampuan intuitif untuk memahami akar masalah dan menemukan solusinya. Motivasi bawah sadar Anda adalah menyembuhkan, memperbaiki, dan mengoptimalkan sistem yang rusak.', career:'Dokter, analis, ahli strategi, detektif, teknisi senior.' },
+  '天柱': { id:'Tiān Zhù', trait:'Mandiri & Teliti', detail:'Anda bekerja terbaik secara independen dengan standar tinggi. Motivasi bawah sadar Anda adalah mencapai kesempurnaan dan tidak bergantung pada penilaian orang lain. Keras kepala Anda adalah bentuk integritas.', career:'Peneliti, spesialis teknis, arsitek, programmer, auditor.' },
+  '天英': { id:'Tiān Yīng', trait:'Bersinar & Ekspresif', detail:'Anda memiliki kemampuan alami untuk menarik perhatian dan mengekspresikan diri. Motivasi bawah sadar Anda adalah diakui, bersinar, dan meninggalkan jejak yang berarti di dunia.', career:'Seniman, presenter, aktor, influencer, juru bicara, PR.' },
+  '天芮': { id:'Tiān Ruì', trait:'Transformatif & Mendalam', detail:'Anda memiliki kemampuan untuk melihat apa yang tidak terlihat orang lain. Motivasi bawah sadar Anda adalah transformasi — baik diri sendiri maupun sistem yang ada di sekitar Anda.', career:'Analis keuangan, manajer aset, psikolog, investigator, bankir.' },
+};
+
+// ─── Door (值使门) career & activity descriptions ──────────────────────────
+const ZHISHI_DOOR_DESC = {
+  '休门': { id:'Xiū Mén', name:'Pintu Istirahat', action:'Administrasi, perencanaan, pemulihan, dan pelayanan publik', daily:'Anda bertindak paling efektif melalui perencanaan matang, pendekatan yang tenang, dan jalur resmi/pemerintahan. Dunia merespons baik ketika Anda tidak terburu-buru.', career:'PNS, administrator, tenaga kesehatan, perencana strategis, industri air.' },
+  '生门': { id:'Shēng Mén', name:'Pintu Kehidupan', action:'Bisnis, keuangan, investasi, dan penciptaan nilai baru', daily:'Anda bertindak paling efektif melalui transaksi, negosiasi, dan penciptaan peluang. Dunia merespons dengan membukakan pintu rezeki ketika Anda berani memulai.', career:'Pengusaha, investor, trader, sales, banker, petani, agribisnis.' },
+  '伤门': { id:'Shāng Mén', name:'Pintu Gerak', action:'Kompetisi, teknik, olahraga, dan penegakan', daily:'Anda bertindak paling efektif melalui tindakan langsung, kompetisi, dan keberanian fisik. Dunia merespons ketika Anda tampil sebagai pelaksana yang berani bergerak.', career:'Militer, polisi, atlet, insinyur lapangan, mekanik, kontraktor.' },
+  '杜门': { id:'Dù Mén', name:'Pintu Tersembunyi', action:'Riset, penyembunyian, alam, dan pekerjaan rahasia', daily:'Anda bertindak paling efektif melalui ketenangan, kerahasiaan, dan kedalaman. Dunia merespons baik ketika Anda bekerja di balik layar atau meneliti hal-hal yang tidak tampak.', career:'Peneliti, detektif, seniman tersembunyi, forester, arkeolog, agen rahasia.' },
+  '景门': { id:'Jǐng Mén', name:'Pintu Pemandangan', action:'Komunikasi, publikasi, hiburan, dan seni', daily:'Anda bertindak paling efektif melalui kata-kata, gambar, dan ekspresi kreatif. Dunia merespons ketika Anda berbicara, menulis, atau menampilkan karya Anda.', career:'Jurnalis, penulis, seniman, YouTuber, desainer, PR, media sosial.' },
+  '死门': { id:'Sǐ Mén', name:'Pintu Tanah', action:'Properti, konstruksi, pertanian, dan transformasi material', daily:'Anda bertindak paling efektif melalui pengelolaan aset fisik dan transformasi material. Dunia merespons ketika Anda mengubah sesuatu yang tidak terlihat menjadi bernilai.', career:'Developer properti, arsitek, petani, manajer aset, kontraktor bangunan.' },
+  '惊门': { id:'Jīng Mén', name:'Pintu Kejutan', action:'Hukum, negosiasi, advokasi, dan kejutan strategis', daily:'Anda bertindak paling efektif melalui kejutan, argumen yang kuat, atau jalur hukum. Dunia merespons ketika Anda berani menantang status quo dan membela hak.', career:'Pengacara, hakim, negosiator, aktivis, penulis drama, konsultan krisis.' },
+  '开门': { id:'Kāi Mén', name:'Pintu Terbuka', action:'Kepemimpinan, pemerintahan, dan peluang baru', daily:'Anda bertindak paling efektif melalui inisiatif besar, otoritas, dan membuka jalur baru. Dunia merespons dengan memberi Anda posisi dan kepercayaan ketika Anda berani mengambil pimpinan.', career:'Eksekutif, pejabat pemerintah, founder, pemimpin komunitas, politisi.' },
+};
+
+// ─── Combined Deity × Door synthesis ──────────────────────────────────────
+function buildDeityDoorSynthesis(zhiFuStar, zhiShiDoor) {
+  const deity = ZHIFU_STAR_DESC[zhiFuStar] || { trait:'', detail:'', career:'' };
+  const door  = ZHISHI_DOOR_DESC[zhiShiDoor] || { name:'', action:'', daily:'', career:'' };
+
+  const starEl = STAR_ELEM[zhiFuStar] || '';
+  const doorEl = DOOR_ELEM[zhiShiDoor] || '';
+
+  let harmony = '';
+  // Simple element interaction
+  const PRODUCES = { '木':'火','火':'土','土':'金','金':'水','水':'木' };
+  const CONTROLS = { '木':'土','火':'金','土':'水','金':'木','水':'火' };
+  if (starEl === doorEl) harmony = '✅ Energi Deity dan Door selaras (unsur sama) — tindakan Anda mengalir alami dari motivasi batin.';
+  else if (PRODUCES[starEl] === doorEl) harmony = '✅ Deity mendukung Door (Sheng) — motivasi batin Anda memberi bahan bakar sempurna untuk tindakan nyata.';
+  else if (PRODUCES[doorEl] === starEl) harmony = '🔄 Door menguatkan Deity (balik Sheng) — semakin Anda bertindak, semakin kuat motivasi batin Anda.';
+  else if (CONTROLS[starEl] === doorEl) harmony = '⚠️ Deity mengontrol Door (Ke) — motivasi batin Anda terkadang menahan tindakan. Perlu keberanian untuk mulai bergerak.';
+  else if (CONTROLS[doorEl] === starEl) harmony = '⚠️ Door mengontrol Deity (balik Ke) — tindakan dunia luar bisa membebani motivasi batin. Jaga keseimbangan inner–outer.';
+  else harmony = '🔁 Deity dan Door berbeda — keduanya bekerja secara paralel. Pelajari kapan mengandalkan intuisi vs. tindakan langsung.';
+
+  return {
+    zhiFuStar, zhiShiDoor,
+    deity, door,
+    harmony,
+    synthesis: `Anda memiliki motivasi batin seorang ${deity.trait} (${zhiFuStar}) yang diterjemahkan melalui ${door.name} (${zhiShiDoor}). ${harmony} Kombinasi ini paling cocok untuk: ${deity.career} yang berkaitan dengan ${door.action}.`
+  };
+}
+
+// ─── 8 Door characteristics with career domains ────────────────────────────
+const EIGHT_DOOR_CHARS = [
+  { door:'休门', name:'Pintu Istirahat', element:'水 (Air)', palace:'坎宫 (Utara)', icon:'🌊', color:'#4aa8d8',
+    nature:'Tenang, mengalir, fleksibel, restoratif',
+    goodFor:['Rapat perencanaan & strategi','Kunjungan medis & kesehatan','Urusan pemerintah & administrasi','Meditasi, istirahat, recharge energi','Memulai terapi atau rehabilitasi'],
+    avoid:['Kompetisi agresif & konfrontasi','Pengambilan keputusan tergesa-gesa','Acara olahraga berisiko tinggi'],
+    career:'PNS, administrator, tenaga medis, perencana kota, industri air & minuman' },
+  { door:'生门', name:'Pintu Kehidupan', element:'土 (Tanah)', palace:'艮宫 (Timur Laut)', icon:'🌱', color:'#5cb85c',
+    nature:'Produktif, subur, penuh energi positif',
+    goodFor:['Negosiasi bisnis & kontrak','Investasi & pembelian aset','Membuka usaha baru','Meminta kenaikan gaji atau promosi','Networking & perkenalan bisnis'],
+    avoid:['Urusan hukum & sengketa','Melawat orang sakit atau pemakaman','Aktivitas diam & pasif'],
+    career:'Pengusaha, investor, banker, sales, agribisnis, developer' },
+  { door:'伤门', name:'Pintu Gerak', element:'木 (Kayu)', palace:'震宫 (Timur)', icon:'⚡', color:'#e8a838',
+    nature:'Dinamis, berani, kompetitif, kuat',
+    goodFor:['Olahraga & latihan fisik','Pekerjaan teknis & lapangan','Memburu peluang & bersaing','Operasi militer & keamanan','Pekerjaan yang butuh kecepatan'],
+    avoid:['Negosiasi damai & mediasi','Aktivitas seni & sastra','Urusan kesehatan yang butuh ketenangan'],
+    career:'Militer, polisi, atlet, insinyur, mekanik, kontraktor lapangan' },
+  { door:'杜门', name:'Pintu Tersembunyi', element:'木 (Kayu)', palace:'巽宫 (Tenggara)', icon:'🌿', color:'#4caf50',
+    nature:'Misterius, analitis, tenang, mendalami hal tersembunyi',
+    goodFor:['Riset mendalam & investigasi','Menyimpan rencana rahasia','Pekerjaan di balik layar','Meditasi di alam terbuka','Mempelajari ilmu esoterik'],
+    avoid:['Acara publik & presentasi besar','Bisnis yang butuh visibilitas tinggi','Pengumuman resmi'],
+    career:'Peneliti, detektif, forester, arkeolog, ilmuwan, agen intelijen' },
+  { door:'景门', name:'Pintu Pemandangan', element:'火 (Api)', palace:'离宫 (Selatan)', icon:'🎨', color:'#e83838',
+    nature:'Ekspresif, komunikatif, kreatif, penuh warna',
+    goodFor:['Presentasi, pidato & pertunjukan','Menulis, desain & kreasi konten','Promosi & kampanye marketing','Wawancara & negosiasi verbal','Meluncurkan produk ke publik'],
+    avoid:['Urusan properti & konstruksi','Pekerjaan fisik berat','Keputusan keuangan besar yang perlu ketenangan'],
+    career:'Jurnalis, penulis, desainer, seniman, YouTuber, PR, event organizer' },
+  { door:'死门', name:'Pintu Tanah', element:'土 (Tanah)', palace:'坤宫 (Barat Daya)', icon:'🏔️', color:'#8d6e63',
+    nature:'Berat, material, transformatif, berurusan dengan akhir dan permulaan',
+    goodFor:['Urusan properti & real estate','Renovasi & konstruksi','Pemanenan & akhir siklus','Pemakaman & perpisahan','Pengelolaan warisan & aset tanah'],
+    avoid:['Perjalanan jauh','Bisnis baru & permulaan segar','Acara perayaan & kelahiran'],
+    career:'Developer properti, kontraktor, petani, manajer aset fisik, pengelola warisan' },
+  { door:'惊门', name:'Pintu Kejutan', element:'金 (Logam)', palace:'兑宫 (Barat)', icon:'⚖️', color:'#9c27b0',
+    nature:'Tajam, kritis, mengejutkan, berani menantang',
+    goodFor:['Urusan hukum & pengadilan','Negosiasi keras & konfrontasi','Debat & advokasi','Mengungkap kebenaran tersembunyi','Kampanye & aksi sosial'],
+    avoid:['Perjalanan perdagangan','Operasi medis non-darurat','Memulai usaha baru'],
+    career:'Pengacara, hakim, negosiator, aktivis, jurnalis investigasi, konsultan krisis' },
+  { door:'开门', name:'Pintu Terbuka', element:'金 (Logam)', palace:'乾宫 (Barat Laut)', icon:'🚀', color:'#ffc107',
+    nature:'Terbuka, otoritatif, penuh peluang, pemimpin alami',
+    goodFor:['Peluncuran proyek & usaha baru','Pengajuan ke pejabat & otoritas','Memulai perjalanan bisnis','Interview kerja & promosi','Memimpin tim & rapat penting'],
+    avoid:['Aktivitas sembunyi-sembunyi','Pertengkaran & konflik'],
+    career:'Eksekutif, pejabat pemerintah, founder, pemimpin komunitas, politisi, direktur' },
+];
+
+// ═══════════════════════════════════════════════════
+//  J. PUBLIC API
+// ═══════════════════════════════════════════════════
+
+function calculateQmdj({ type, birthYear, birthMonth, birthDay, birthHour }) {
   let chart;
   if (type === 'nianjia') {
     chart = generateNianJia(parseInt(birthYear));
@@ -1151,10 +1265,18 @@ function calculateQmdj({ type, birthYear, birthMonth, birthDay }) {
     chart = generateRiJia(parseInt(birthYear), parseInt(birthMonth), parseInt(birthDay));
   } else if (type === 'shijia') {
     chart = generateShiJia(new Date());
+  } else if (type === 'benmingpan') {
+    chart = generateBenMingPan(parseInt(birthYear), parseInt(birthMonth), parseInt(birthDay), parseInt(birthHour || 0));
   } else {
-    throw new Error('Invalid QMDJ type. Use: nianjia, rijia, or shijia');
+    throw new Error('Invalid QMDJ type. Use: nianjia, rijia, shijia, atau benmingpan');
   }
-  return buildChartInterpretation(chart);
+  const result = buildChartInterpretation(chart);
+  // Attach benmingpan extras
+  if (type === 'benmingpan') {
+    result.deityDoor = buildDeityDoorSynthesis(result.zhiFuStar, result.zhiShiDoor);
+    result.eightDoorChars = EIGHT_DOOR_CHARS;
+  }
+  return result;
 }
 
-module.exports = { calculateQmdj, generateNianJia, generateRiJia, generateShiJia, buildChartInterpretation };
+module.exports = { calculateQmdj, generateNianJia, generateRiJia, generateShiJia, generateBenMingPan, buildChartInterpretation, EIGHT_DOOR_CHARS };

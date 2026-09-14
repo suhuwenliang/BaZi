@@ -4,10 +4,10 @@ const express = require('express');
 const path = require('path');
 const { validateInput } = require('./utils/validators');
 const { calculateBazi } = require('./engines/bazi');
-const { calculateZwds } = require('./engines/zwds');
+const { calculateZwds, getLiuNianGanzhi, getLiuNianMutagens } = require('./engines/zwds');
 const { analyzeChineseName, analyzeLatinName } = require('./engines/name-analysis');
 const { getGmtOffsetList } = require('./utils/timezone');
-const { calculateQmdj } = require('./engines/qmdj');
+const { calculateQmdj, generateRiJia, buildChartInterpretation } = require('./engines/qmdj');
 const { analyzeCompatibility } = require('./engines/compatibility');
 
 const app = express();
@@ -91,6 +91,36 @@ app.post('/api/calculate', (req, res) => {
     result.zwds = { error: `Zi Wei calculation error: ${e.message}`, stack: e.stack };
   }
 
+  // 3b. ZWDS Liu Nian — 10 tahun ke depan
+  if (result.zwds && !result.zwds.error) {
+    try {
+      const palaces = result.zwds.palaces || [];
+      const birthYearNum = parseInt(data.birthYear);
+      const curYear = new Date().getFullYear();
+      const next10 = [];
+      for (let y = curYear; y <= curYear + 9; y++) {
+        const age = y - birthYearNum;
+        const palaceIdx = ((age % 12) + 12) % 12;
+        const palace = palaces[palaceIdx] || {};
+        const gz = getLiuNianGanzhi(y);
+        const mutagens = getLiuNianMutagens(y);
+        next10.push({
+          year: y, age,
+          ganzhi: gz,
+          xiaoxianPalace: {
+            index: palaceIdx,
+            name: palace.name || '',
+            stars: (palace.majorStars || []).map(s => ({ name: s.name, brightness: s.brightness }))
+          },
+          mutagens
+        });
+      }
+      result.zwds.liuNianNext10 = next10;
+    } catch(e) {
+      result.zwds.liuNianNext10 = [];
+    }
+  }
+
   // 4. Analisis Menyeluruh (BaZi + ZWDS gabungan)
   try {
     result.comprehensive = buildComprehensiveAnalysis(result.bazi, result.zwds, data);
@@ -106,9 +136,10 @@ app.post('/api/calculate', (req, res) => {
 // ============================================================
 app.post('/api/qmdj', (req, res) => {
   try {
-    const { type, birthYear, birthMonth, birthDay } = req.body;
-    if (!type || !['nianjia', 'rijia', 'shijia'].includes(type)) {
-      return res.status(400).json({ success: false, error: 'type harus: nianjia, rijia, atau shijia' });
+    const { type, birthYear, birthMonth, birthDay, birthHour } = req.body;
+    const validTypes = ['nianjia', 'rijia', 'shijia', 'benmingpan'];
+    if (!type || !validTypes.includes(type)) {
+      return res.status(400).json({ success: false, error: 'type harus: nianjia, rijia, shijia, atau benmingpan' });
     }
     if (type === 'nianjia' && !birthYear) {
       return res.status(400).json({ success: false, error: 'nianjia membutuhkan birthYear' });
@@ -116,8 +147,42 @@ app.post('/api/qmdj', (req, res) => {
     if (type === 'rijia' && (!birthYear || !birthMonth || !birthDay)) {
       return res.status(400).json({ success: false, error: 'rijia membutuhkan birthYear, birthMonth, birthDay' });
     }
-    const result = calculateQmdj({ type, birthYear, birthMonth, birthDay });
+    if (type === 'benmingpan' && (!birthYear || !birthMonth || !birthDay)) {
+      return res.status(400).json({ success: false, error: 'benmingpan membutuhkan birthYear, birthMonth, birthDay (dan birthHour opsional)' });
+    }
+    const result = calculateQmdj({ type, birthYear, birthMonth, birthDay, birthHour: birthHour || 0 });
     res.json({ success: true, qmdj: result });
+  } catch(e) {
+    res.status(500).json({ success: false, error: e.message, stack: e.stack });
+  }
+});
+
+// ============================================================
+// API: QMDJ KALENDER 30 HARI (kegiatan harian)
+// ============================================================
+app.post('/api/qmdj-calendar', (req, res) => {
+  try {
+    const { startDate } = req.body;
+    const start = startDate ? new Date(startDate) : new Date();
+    start.setHours(0, 0, 0, 0);
+
+    const calendar = [];
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      try {
+        const chart = generateRiJia(y, m, day);
+        const interp = buildChartInterpretation(chart);
+        calendar.push({ date: dateStr, ...interp });
+      } catch(e) {
+        calendar.push({ date: dateStr, error: e.message });
+      }
+    }
+    res.json({ success: true, calendar });
   } catch(e) {
     res.status(500).json({ success: false, error: e.message, stack: e.stack });
   }

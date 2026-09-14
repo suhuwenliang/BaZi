@@ -606,7 +606,15 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
     <div class="qmdj-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn btn-secondary qmdj-tab active" onclick="switchQmdjTab('nianjia',this)">📅 年家 · Natal Tahun</button>
       <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('rijia',this)">🗓 日家 · Natal Hari</button>
+      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('benmingpan',this)" style="border-color:var(--blue);color:var(--blue)">🔮 本命盤 · Destiny Chart</button>
+      <button class="btn btn-secondary" onclick="showQmdjCalendar()" style="border-color:#22c55e;color:#22c55e;margin-left:auto">📆 QMDJ 30 Hari</button>
     </div>
+
+    <!-- Destiny Chart panel -->
+    <div id="qmdj-destiny-panel" style="display:none; margin-bottom:20px"></div>
+
+    <!-- 30-day Calendar panel -->
+    <div id="qmdj-calendar-panel" style="display:none; margin-bottom:20px"></div>
 
     <!-- Loading indicator -->
     <div id="qmdj-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Menghitung Qi Men Dun Jia...</div>
@@ -1830,8 +1838,50 @@ function render4D(z) {
     return;
   }
 
+  // ── BAGIAN 1B: ZWDS Liu Nian 10 Tahun ────────────────────
+  const lnNext10 = _result?.zwds?.liuNianNext10 || [];
+  if (lnNext10.length > 0) {
+    const PALACE_ID = {'命宫':'Ming Gong (Diri)','兄弟宫':'Xiong Di (Saudara)','夫妻宫':'Fu Qi (Pasangan)','子女宫':'Zi Nü (Anak)','财帛宫':'Cai Bo (Keuangan)','疾厄宫':'Ji E (Kesehatan)','迁移宫':'Qian Yi (Perjalanan)','奴仆宫':'Nu Pu (Relasi)','官禄宫':'Guan Lu (Karir)','田宅宫':'Tian Zhai (Properti)','福德宫':'Fu De (Kebahagiaan)','父母宫':'Fu Mu (Orang Tua)'};
+    const PALACE_THEME = {'命宫':'Identitas, tujuan hidup, kepribadian','兄弟宫':'Hubungan saudara, kolaborasi','夫妻宫':'Cinta, pernikahan, pasangan hidup','子女宫':'Kreativitas, anak, investasi masa depan','财帛宫':'Keuangan, arus kas, rezeki','疾厄宫':'Kesehatan, ketahanan fisik','迁移宫':'Perjalanan, pindah, karir di luar negeri','奴仆宫':'Tim, relasi kerja, bawahan','官禄宫':'Karir, prestasi, nama baik','田宅宫':'Properti, rumah, aset fisik','福德宫':'Kebahagiaan, spiritualitas, hobi','父母宫':'Orang tua, mentor, pendidikan'};
+    html += `<h4 style="color:var(--blue); font-size:13px; margin:20px 0 8px">🌙 Proyeksi ZWDS Liu Nian 10 Tahun (Xiao Xian & 四化)</h4>`;
+    html += `<div style="font-size:11px; color:var(--muted); margin-bottom:10px">Setiap tahun, Xiao Xian (小限) bergerak ke istana berikutnya — menentukan fokus energi ZWDS tahun tersebut.</div>`;
+    html += `<div style="overflow-x:auto; margin-bottom:20px"><table style="width:100%; border-collapse:collapse; font-size:11px">
+      <thead><tr style="background:var(--surface2); color:var(--muted)">
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Tahun</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Ganzhi</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Usia</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Xiao Xian (小限)</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">四化 Tahun</th>
+        <th style="padding:6px 8px; text-align:left; border-bottom:1px solid var(--border)">Fokus Energi</th>
+      </tr></thead><tbody>`;
+    lnNext10.forEach(ln => {
+      const isCur = ln.year === curYear;
+      const palName = transZwdsPalace(ln.xiaoxianPalace?.name || '');
+      const palId = PALACE_ID[ln.xiaoxianPalace?.name] || ln.xiaoxianPalace?.name || '—';
+      const theme = PALACE_THEME[ln.xiaoxianPalace?.name] || '—';
+      const muts = (ln.mutagens||[]).map(m=>{
+        const icon = m.type==='禄'?'💰':m.type==='权'?'👑':m.type==='科'?'🏅':'⚠️';
+        return `${icon}${transMutagen(m.type)}→${transZwdsStar(m.star)}`;
+      }).join(' ');
+      const stars = (ln.xiaoxianPalace?.stars||[]).map(s=>transZwdsStar(s.name)).join('、');
+      html += `<tr style="background:${isCur?'rgba(100,180,255,0.07)':'transparent'}; border-bottom:1px solid var(--border)">
+        <td style="padding:6px 8px; font-weight:${isCur?700:400}; color:${isCur?'var(--blue)':'var(--text)'}">${ln.year}${isCur?' ◀':''}</td>
+        <td style="padding:6px 8px; font-family:serif">${ln.ganzhi}</td>
+        <td style="padding:6px 8px; color:var(--muted)">${ln.age}</td>
+        <td style="padding:6px 8px">
+          <span style="color:var(--gold); font-weight:600">${palName}</span>
+          <div style="font-size:10px; color:var(--muted)">${palId}</div>
+          ${stars ? `<div style="font-size:10px; color:var(--blue)">${stars}</div>` : ''}
+        </td>
+        <td style="padding:6px 8px; font-size:10px; line-height:1.7">${muts || '—'}</td>
+        <td style="padding:6px 8px; font-size:10px; color:var(--muted)">${theme}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
   // ── BAGIAN 2: Tabel Ringkasan 10 Tahun ────────────────────
-  html += `<h4 style="color:var(--gold2); font-size:13px; margin:20px 0 6px">📅 Proyeksi 10 Tahun ke Depan (${curYear}–${curYear+10})</h4>`;
+  html += `<h4 style="color:var(--gold2); font-size:13px; margin:20px 0 6px">📅 Proyeksi BaZi 10 Tahun ke Depan (${curYear}–${curYear+10})</h4>`;
   html += `<div style="font-size:11px; color:var(--muted); margin-bottom:10px">
     Unsur Pelindung (Yong Shen): <strong style="color:var(--gold)">${yongShen} — ${EL_ID[yongShen]||''}</strong> &nbsp;·&nbsp; Day Master: <strong>${dmStem}</strong>
   </div>`;
@@ -2392,7 +2442,23 @@ function switchQmdjTab(type, btn) {
   _qmdjType = type;
   document.querySelectorAll('.qmdj-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // If we already have data for this type, show it; otherwise reload
+  // Hide all special panels
+  document.getElementById('qmdj-destiny-panel').style.display = 'none';
+  document.getElementById('qmdj-calendar-panel').style.display = 'none';
+
+  if (type === 'benmingpan') {
+    // Hide normal chart content, show destiny panel
+    document.getElementById('qmdj-loading').style.display = 'none';
+    document.getElementById('qmdj-content').style.display = 'none';
+    if (_qmdjData['benmingpan']) {
+      renderQmdjDestinyChart(_qmdjData['benmingpan']);
+    } else if (_result) {
+      loadQmdj('benmingpan');
+    }
+    return;
+  }
+
+  // Normal tabs — restore content visibility
   if (_qmdjData[type]) {
     renderQmdj(_qmdjData[type]);
   } else if (_result) {
@@ -2420,6 +2486,7 @@ async function loadQmdj(type) {
         payload.birthYear  = _lastInput.birthYear;
         payload.birthMonth = _lastInput.birthMonth;
         payload.birthDay   = _lastInput.birthDay;
+        if (type === 'benmingpan') payload.birthHour = _lastInput.birthHour || 0;
       }
     }
 
@@ -2432,7 +2499,11 @@ async function loadQmdj(type) {
     if (!data.success) throw new Error(data.error || 'Unknown error');
 
     _qmdjData[type] = data.qmdj;
-    renderQmdj(data.qmdj);
+    if (type === 'benmingpan') {
+      renderQmdjDestinyChart(data.qmdj);
+    } else {
+      renderQmdj(data.qmdj);
+    }
   } catch(e) {
     loading.style.display = 'none';
     content.style.display = 'none';
@@ -3182,6 +3253,248 @@ function resetForm() {
   if (triggers) triggers.style.display = 'none';
   // Scroll ke atas form
   document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// QMDJ DESTINY CHART (本命盤) RENDERER
+// ============================================================
+function renderQmdjDestinyChart(q) {
+  const panel = document.getElementById('qmdj-destiny-panel');
+  if (!panel) return;
+
+  const dd = q.deityDoor;
+  const doors8 = q.eightDoorChars || [];
+
+  let html = `<div style="border:2px solid var(--blue); border-radius:12px; padding:20px; background:rgba(30,60,120,0.05)">`;
+  html += `<h3 style="color:var(--blue); font-size:14px; margin-bottom:4px">🔮 奇門本命盤 — Qi Men Destiny Chart</h3>`;
+  html += `<div style="font-size:11px; color:var(--muted); margin-bottom:16px">${esc(q.label||'')}</div>`;
+
+  // ── DEITY + DOOR SYNTHESIS ──────────────────────────────────
+  if (dd) {
+    html += `<div style="background:var(--surface2); border-radius:10px; padding:16px; margin-bottom:20px">`;
+    html += `<h4 style="color:var(--gold2); font-size:13px; margin-bottom:12px">⚡ Interaksi Deity (神) × Door (門) — Motivasi Batin & Tindakan Nyata</h4>`;
+    html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px">`;
+
+    // Deity card
+    const deity = dd.deity || {};
+    html += `<div style="background:rgba(232,184,109,0.07); border:1px solid rgba(232,184,109,0.3); border-radius:8px; padding:14px">`;
+    html += `<div style="font-size:11px; color:var(--muted); margin-bottom:4px">値符星 (Zhifu Star) — MENGAPA & BAGAIMANA</div>`;
+    html += `<div style="font-size:16px; font-weight:700; color:var(--gold); margin-bottom:2px">${esc(dd.zhiFuStar)} <span style="font-size:11px; color:var(--muted)">${esc(deity.id||'')}</span></div>`;
+    html += `<div style="font-size:12px; font-weight:600; color:var(--gold2); margin-bottom:6px">${esc(deity.trait||'')}</div>`;
+    html += `<div style="font-size:11px; color:var(--text); line-height:1.7">${esc(deity.detail||'')}</div>`;
+    html += `<div style="font-size:10px; color:var(--muted); margin-top:6px">💼 ${esc(deity.career||'')}</div>`;
+    html += `</div>`;
+
+    // Door card
+    const door = dd.door || {};
+    html += `<div style="background:rgba(100,180,255,0.06); border:1px solid rgba(100,180,255,0.3); border-radius:8px; padding:14px">`;
+    html += `<div style="font-size:11px; color:var(--muted); margin-bottom:4px">値使門 (Zhishi Door) — APA & EKSEKUSI</div>`;
+    html += `<div style="font-size:16px; font-weight:700; color:var(--blue); margin-bottom:2px">${esc(dd.zhiShiDoor)} <span style="font-size:11px; color:var(--muted)">${esc(door.id||'')}</span></div>`;
+    html += `<div style="font-size:12px; font-weight:600; color:var(--blue); margin-bottom:6px">${esc(door.name||'')}</div>`;
+    html += `<div style="font-size:11px; color:var(--text); line-height:1.7">${esc(door.daily||'')}</div>`;
+    html += `<div style="font-size:10px; color:var(--muted); margin-top:6px">💼 ${esc(door.career||'')}</div>`;
+    html += `</div>`;
+    html += `</div>`;
+
+    // Harmony + synthesis
+    html += `<div style="background:var(--surface); border-radius:8px; padding:12px; font-size:12px; line-height:1.8">`;
+    html += `<div style="margin-bottom:6px">${esc(dd.harmony||'')}</div>`;
+    html += `<div style="color:var(--gold2)">${esc(dd.synthesis||'')}</div>`;
+    html += `</div>`;
+    html += `</div>`;
+  }
+
+  // ── CHART GRID (same as normal QMDJ) ──────────────────────
+  if (q.palaces) {
+    html += `<h4 style="color:var(--gold2); font-size:13px; margin:20px 0 10px">🗺️ Peta Energi Natal (9 Istana)</h4>`;
+    html += `<div style="font-size:11px; color:var(--muted); margin-bottom:10px">Kualitas chart: <strong style="color:${q.overallQuality==='吉'?'#22c55e':q.overallQuality==='小吉'?'#e8b86d':'#ef4444'}">${esc(q.overallQuality||'—')} — ${esc(q.typeText||'')} ${esc(q.dunText||'')}</strong></div>`;
+
+    const ORDER = [4,9,2,3,5,7,8,1,6];
+    html += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:580px;margin:0 auto 20px">`;
+    ORDER.forEach(num => {
+      const p = (q.palaces||[]).find(x=>x.palaceNumber===num) || {};
+      const isCenter = num === 5;
+      const PDIR = {1:'北',2:'西南',3:'东',4:'东南',5:'中',6:'西北',7:'西',8:'东北',9:'南'};
+      const PNAME = {1:'坎',2:'坤',3:'震',4:'巽',5:'中',6:'乾',7:'兑',8:'艮',9:'离'};
+      const bg = p.interp?.quality === '大吉' || p.interp?.quality === '吉' ? 'rgba(34,197,94,0.07)' : p.interp?.quality === '凶' ? 'rgba(239,68,68,0.07)' : 'var(--surface2)';
+      html += `<div style="background:${bg};border:1px solid var(--border);border-radius:6px;padding:8px;font-size:11px;text-align:center;min-height:90px">`;
+      html += `<div style="font-size:9px;color:var(--muted)">${PNAME[num]||''} ${num} · ${PDIR[num]||''}</div>`;
+      html += `<div style="font-weight:700;color:var(--blue);margin:3px 0">${esc(p.star||'—')}</div>`;
+      html += `<div style="color:var(--gold)">${esc(p.door||'—')}</div>`;
+      html += `<div style="font-size:9px;color:var(--muted)">${esc(p.god||'')} · ${esc(p.stem||'')}</div>`;
+      if (!isCenter) html += `<div style="font-size:9px;margin-top:3px;color:${p.interp?.quality==='吉'||p.interp?.quality==='大吉'?'#22c55e':p.interp?.quality==='凶'?'#ef4444':'var(--muted)'}">${esc(p.interp?.quality||'')}</div>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── 8 DOOR CHARACTERISTICS ─────────────────────────────────
+  html += `<h4 style="color:var(--gold2); font-size:13px; margin:20px 0 10px">🚪 Karakteristik 8 Pintu (八門) & Bidang Pekerjaan</h4>`;
+  html += `<div style="font-size:11px; color:var(--muted); margin-bottom:12px">Setiap Pintu (門) dalam QMDJ merepresentasikan jenis tindakan nyata dan domain karir tertentu. Cari tahu mana yang paling cocok dengan jalur hidup Anda.</div>`;
+
+  doors8.forEach(d => {
+    const isActive = q.zhiShiDoor === d.door;
+    html += `<div style="border:${isActive?'2px solid '+d.color:'1px solid var(--border)'}; border-radius:10px; padding:14px; margin-bottom:10px; background:${isActive?'rgba('+hexToRgb(d.color)+',0.05)':'var(--surface2)'}">`;
+    html += `<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px">`;
+    html += `<span style="font-size:20px">${d.icon}</span>`;
+    html += `<div>`;
+    html += `<span style="font-size:13px; font-weight:700; color:${d.color}">${d.door}</span>`;
+    html += `<span style="font-size:11px; color:var(--text); margin-left:6px">${d.name}</span>`;
+    if (isActive) html += `<span style="font-size:10px; background:${d.color}; color:#fff; border-radius:4px; padding:1px 6px; margin-left:6px">⭐ Pintu Anda</span>`;
+    html += `</div>`;
+    html += `<div style="margin-left:auto; font-size:10px; color:var(--muted)">${d.element} · ${d.palace}</div>`;
+    html += `</div>`;
+    html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:11px">`;
+    html += `<div>`;
+    html += `<div style="color:var(--muted); font-size:10px; margin-bottom:3px">Sifat: ${d.nature}</div>`;
+    html += `<div style="color:#22c55e; font-size:10px; margin-bottom:2px">✅ Baik untuk:</div>`;
+    d.goodFor.forEach(g => { html += `<div style="font-size:10px; color:var(--text); line-height:1.6">· ${g}</div>`; });
+    html += `</div>`;
+    html += `<div>`;
+    html += `<div style="color:#ef4444; font-size:10px; margin-bottom:2px">⚠️ Hindari:</div>`;
+    d.avoid.forEach(a => { html += `<div style="font-size:10px; color:var(--text); line-height:1.6">· ${a}</div>`; });
+    html += `<div style="margin-top:8px; font-size:10px; color:var(--muted)">💼 ${d.career}</div>`;
+    html += `</div>`;
+    html += `</div></div>`;
+  });
+
+  html += `</div>`; // close main container
+  panel.innerHTML = html;
+  panel.style.display = 'block';
+  document.getElementById('qmdj-loading').style.display = 'none';
+}
+
+// helper: hex to rgb for rgba()
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+// ============================================================
+// QMDJ CALENDAR 30 HARI RENDERER
+// ============================================================
+async function showQmdjCalendar() {
+  const panel = document.getElementById('qmdj-calendar-panel');
+  if (!panel) return;
+  // Hide other panels and content
+  document.getElementById('qmdj-content').style.display = 'none';
+  document.getElementById('qmdj-destiny-panel').style.display = 'none';
+  document.getElementById('qmdj-loading').style.display = 'block';
+  document.querySelectorAll('.qmdj-tab').forEach(b => b.classList.remove('active'));
+
+  try {
+    const resp = await fetch('/api/qmdj-calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || 'Unknown error');
+    renderQmdjCalendar(data.calendar);
+  } catch(e) {
+    document.getElementById('qmdj-loading').style.display = 'none';
+    panel.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
+    panel.style.display = 'block';
+  }
+}
+
+function renderQmdjCalendar(calendar) {
+  const panel = document.getElementById('qmdj-calendar-panel');
+  document.getElementById('qmdj-loading').style.display = 'none';
+
+  const DOOR_GOOD = {
+    '休门': ['Rapat perencanaan','Kunjungan dokter/kesehatan','Urusan pemerintah','Meditasi & refleksi','Memulai terapi'],
+    '生门': ['Negosiasi bisnis','Investasi & pembelian aset','Buka usaha baru','Networking bisnis','Ajukan kenaikan gaji'],
+    '伤门': ['Olahraga intensif','Pekerjaan teknis lapangan','Kompetisi & bersaing','Aktivitas fisik berat','Operasi keamanan'],
+    '杜门': ['Riset mendalam','Kerja mandiri konsentrasi','Perencanaan rahasia','Studi & belajar','Meditasi alam'],
+    '景门': ['Presentasi & pidato','Menulis & konten kreatif','Promosi & marketing','Wawancara media','Peluncuran produk publik'],
+    '死门': ['Urusan properti','Renovasi bangunan','Pengelolaan aset fisik','Pekerjaan pertanian','Penyelesaian siklus lama'],
+    '惊门': ['Konsultasi hukum','Negosiasi keras','Advokasi & debat','Mengungkap kebenaran','Kampanye & aksi sosial'],
+    '开门': ['Mulai proyek besar','Pengajuan ke otoritas','Perjalanan bisnis','Interview & promosi','Memimpin tim & rapat penting'],
+  };
+  const DOOR_AVOID = {
+    '休门': ['Kompetisi agresif','Konfrontasi langsung','Pengambilan keputusan tergesa'],
+    '生门': ['Sengketa hukum','Melawat orang sakit','Aktivitas diam & pasif'],
+    '伤门': ['Mediasi & negosiasi damai','Aktivitas seni & sastra','Operasi medis non-darurat'],
+    '杜门': ['Acara publik besar','Bisnis yang butuh visibilitas','Pengumuman resmi'],
+    '景门': ['Keputusan keuangan besar','Pekerjaan fisik berat','Urusan properti & konstruksi'],
+    '死门': ['Perjalanan jauh','Memulai bisnis baru','Acara perayaan & kelahiran'],
+    '惊门': ['Perjalanan perdagangan','Operasi medis','Memulai usaha baru'],
+    '开门': ['Pekerjaan sembunyi-sembunyi','Pertengkaran & konflik','Aktivitas yang butuh privasi'],
+  };
+  const QUALITY_LABEL = { '大吉':'🟢 Sangat Baik','吉':'🟢 Baik','小吉':'🟡 Cukup Baik','中':'⚪ Netral','小凶':'🟠 Waspadai','凶':'🔴 Perlu Hati-hati','大凶':'🔴 Sangat Perlu Hati-hati' };
+  const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const DAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+  const today = new Date().toISOString().slice(0,10);
+
+  let html = `<div style="border:2px solid #22c55e; border-radius:12px; padding:20px; background:rgba(34,197,94,0.02)">`;
+  html += `<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px">`;
+  html += `<h3 style="color:#22c55e; font-size:14px; margin:0">📆 QMDJ 30 Hari — Panduan Kegiatan Harian</h3>`;
+  html += `<button onclick="document.getElementById('qmdj-calendar-panel').style.display='none';document.getElementById('qmdj-content').style.display='block'" style="font-size:11px; background:none; border:1px solid var(--border); border-radius:6px; padding:4px 10px; cursor:pointer; color:var(--muted)">✕ Tutup</button>`;
+  html += `</div>`;
+  html += `<div style="font-size:11px; color:var(--muted); margin-bottom:16px">Berdasarkan Qi Men Dun Jia 日家 (Rijia) — energi harian. Setiap hari memiliki 值使门 (Zhishi Door) yang menentukan jenis tindakan terbaik dan yang sebaiknya dihindari.</div>`;
+
+  calendar.forEach(day => {
+    if (day.error) return;
+    const dateObj = new Date(day.date + 'T00:00:00');
+    const dayOfWeek = DAYS[dateObj.getDay()];
+    const dateDisplay = `${dateObj.getDate()} ${MONTHS[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+    const isToday = day.date === today;
+    const door = day.zhiShiDoor || '—';
+    const star = day.zhiFuStar || '—';
+    const quality = day.overallQuality || '中';
+    const qlabel = QUALITY_LABEL[quality] || quality;
+    const gz = day.ganzhi ? `${day.ganzhi.stem||''}${day.ganzhi.branch||''}` : '';
+    const goodList = DOOR_GOOD[door] || [];
+    const avoidList = DOOR_AVOID[door] || [];
+    const bestDir = day.bestDirection;
+
+    html += `<div style="border:${isToday?'2px solid #22c55e':'1px solid var(--border)'}; border-radius:10px; margin-bottom:8px; overflow:hidden">`;
+
+    // Header row (always visible)
+    html += `<div onclick="var b=this.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none'"
+      style="padding:10px 14px; background:${isToday?'rgba(34,197,94,0.08)':'var(--surface2)'}; cursor:pointer; display:flex; align-items:center; gap:10px; user-select:none">`;
+    html += `<div style="min-width:90px">`;
+    html += `<div style="font-size:12px; font-weight:700; color:${isToday?'#22c55e':'var(--text)'}">${dayOfWeek}, ${dateDisplay}${isToday?' ◀ Hari Ini':''}</div>`;
+    html += `<div style="font-size:10px; color:var(--muted); font-family:serif">${gz}</div>`;
+    html += `</div>`;
+    html += `<div style="font-size:11px; color:var(--blue); font-weight:600">${esc(door)}</div>`;
+    html += `<div style="font-size:10px; color:var(--muted)">${esc(star)}</div>`;
+    html += `<div style="margin-left:auto; font-size:11px">${qlabel}</div>`;
+    html += `<div style="font-size:10px; color:var(--muted)">▼</div>`;
+    html += `</div>`;
+
+    // Detail (collapsed by default, expanded for today)
+    html += `<div style="display:${isToday?'block':'none'}; padding:12px 14px; background:var(--surface)">`;
+    html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px">`;
+
+    html += `<div style="background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.2); border-radius:8px; padding:10px">`;
+    html += `<div style="font-size:11px; font-weight:700; color:#22c55e; margin-bottom:6px">✅ Kegiatan yang Baik Dilakukan</div>`;
+    goodList.forEach(g => { html += `<div style="font-size:11px; line-height:1.8; color:var(--text)">· ${g}</div>`; });
+    html += `</div>`;
+
+    html += `<div style="background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:8px; padding:10px">`;
+    html += `<div style="font-size:11px; font-weight:700; color:#ef4444; margin-bottom:6px">⚠️ Kegiatan yang Sebaiknya Dihindari</div>`;
+    avoidList.forEach(a => { html += `<div style="font-size:11px; line-height:1.8; color:var(--text)">· ${a}</div>`; });
+    html += `</div>`;
+    html += `</div>`;
+
+    // Best direction + patterns
+    if (bestDir) {
+      html += `<div style="font-size:11px; color:var(--muted)">🧭 Arah Terbaik: <strong style="color:var(--gold)">${esc(bestDir.direction)} (${esc(bestDir.palaceName)})</strong> · Alasan: ${esc(bestDir.reason||'')}</div>`;
+    }
+    const ji = (day.patterns?.ji || []).slice(0,2);
+    if (ji.length > 0) {
+      html += `<div style="font-size:10px; color:#22c55e; margin-top:4px">吉格: ${ji.map(p=>esc(p.name)).join(' · ')}</div>`;
+    }
+    html += `</div>`; // close detail
+    html += `</div>`; // close card
+  });
+
+  html += `</div>`;
+  panel.innerHTML = html;
+  panel.style.display = 'block';
 }
 
 // ============================================================
