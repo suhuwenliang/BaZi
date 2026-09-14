@@ -260,6 +260,9 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .pillar-card .ganzhi { color: #5a3a00 !important; }
   .pillar-card .ganzhi-detail { color: #555 !important; }
   .bar-track { background: #e8e0d0 !important; }
+  /* ── QMDJ 30 Hari standalone card: expand body and day details for print ── */
+  #qmdj-calendar-card-body { display: block !important; }
+  .qmdj-day-detail { display: block !important; }
 }
 /* Responsive — mobile (screen only — does NOT apply to print) */
 @media screen and (max-width: 768px) {
@@ -483,6 +486,26 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 <!-- ===== ERROR BOX ===== -->
 <div id="error-box" class="error-box hidden"></div>
 
+<!-- ===== STANDALONE: QMDJ 30 HARI ===== -->
+<div class="card" id="qmdj-calendar-card" style="margin-bottom:16px">
+  <div class="card-header" style="cursor:pointer" onclick="toggleQmdjCalendarCard()">
+    <div class="section-num" style="background:#22c55e;color:#fff">📆</div>
+    <h2 style="color:#22c55e">Panduan Kegiatan QMDJ 30 Hari</h2>
+    <span id="qmdj-cal-arrow" style="margin-left:auto;color:var(--muted);font-size:12px">▼ Klik untuk buka</span>
+  </div>
+  <div class="card-body" id="qmdj-calendar-card-body" style="display:none">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+      Kegiatan terbaik dan yang sebaiknya dihindari untuk 30 hari ke depan, berdasarkan <strong>Qi Men Dun Jia Rijia (日家)</strong>. Dapat digunakan tanpa memasukkan data kelahiran.
+    </p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-primary" onclick="loadQmdjCalendar()" id="btn-qmdj-cal" style="background:#22c55e;border-color:#22c55e">📆 Tampilkan 30 Hari</button>
+      <button class="btn btn-secondary no-print" onclick="printQmdjCalendar()" id="btn-qmdj-cal-print" style="display:none">🖨️ Print / PDF</button>
+    </div>
+    <div id="qmdj-calendar-standalone-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Memuat kalender QMDJ...</div>
+    <div id="qmdj-calendar-standalone-content"></div>
+  </div>
+</div>
+
 <!-- ===== RESULTS ===== -->
 <div id="results" class="hidden">
 
@@ -594,11 +617,11 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   <div class="card-body" id="sec-7"></div>
 </div>
 
-<!-- ===== SECTION 8: QI MEN DUN JIA ===== -->
+<!-- ===== SECTION 8: QI MEN DUN JIA (Natal) ===== -->
 <div class="card" id="qmdj-section" style="display:none">
   <div class="card-header">
     <div class="section-num">8</div>
-    <h2>奇門遁甲 — Qi Men Dun Jia</h2>
+    <h2>奇門遁甲 — Qi Men Dun Jia · Natal</h2>
   </div>
   <div class="card-body">
 
@@ -606,15 +629,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
     <div class="qmdj-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
       <button class="btn btn-secondary qmdj-tab active" onclick="switchQmdjTab('nianjia',this)">📅 年家 · Natal Tahun</button>
       <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('rijia',this)">🗓 日家 · Natal Hari</button>
-      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('benmingpan',this)" style="border-color:var(--blue);color:var(--blue)">🔮 本命盤 · Destiny Chart</button>
-      <button class="btn btn-secondary" onclick="showQmdjCalendar()" style="border-color:#22c55e;color:#22c55e;margin-left:auto">📆 QMDJ 30 Hari</button>
     </div>
-
-    <!-- Destiny Chart panel -->
-    <div id="qmdj-destiny-panel" style="display:none; margin-bottom:20px"></div>
-
-    <!-- 30-day Calendar panel -->
-    <div id="qmdj-calendar-panel" style="display:none; margin-bottom:20px"></div>
 
     <!-- Loading indicator -->
     <div id="qmdj-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Menghitung Qi Men Dun Jia...</div>
@@ -651,6 +666,18 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
       <div id="qmdj-comparisons" style="margin-top:20px"></div>
 
     </div>
+  </div>
+</div>
+
+<!-- ===== SECTION 8B: QI MEN DESTINY CHART ===== -->
+<div class="card" id="qmdj-destiny-section" style="display:none">
+  <div class="card-header">
+    <div class="section-num" style="background:var(--blue);color:#fff;font-size:9px">8B</div>
+    <h2>🔮 本命盤 — Qi Men Destiny Chart</h2>
+  </div>
+  <div class="card-body">
+    <div id="qmdj-destiny-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Menghitung Destiny Chart...</div>
+    <div id="qmdj-destiny-panel"></div>
   </div>
 </div>
 
@@ -906,10 +933,12 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
     _result = json;
     _lastInput = data;
     renderAll(json, data);
-    // Load QMDJ section
+    // Load QMDJ sections
     document.getElementById('qmdj-section').style.display = '';
+    document.getElementById('qmdj-destiny-section').style.display = '';
     _qmdjData = {};
     loadQmdj('nianjia');
+    loadQmdjDestiny();
     document.getElementById('results').classList.remove('hidden');
     document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
     showCompatTriggers();
@@ -2442,27 +2471,35 @@ function switchQmdjTab(type, btn) {
   _qmdjType = type;
   document.querySelectorAll('.qmdj-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Hide all special panels
-  document.getElementById('qmdj-destiny-panel').style.display = 'none';
-  document.getElementById('qmdj-calendar-panel').style.display = 'none';
-
-  if (type === 'benmingpan') {
-    // Hide normal chart content, show destiny panel
-    document.getElementById('qmdj-loading').style.display = 'none';
-    document.getElementById('qmdj-content').style.display = 'none';
-    if (_qmdjData['benmingpan']) {
-      renderQmdjDestinyChart(_qmdjData['benmingpan']);
-    } else if (_result) {
-      loadQmdj('benmingpan');
-    }
-    return;
-  }
-
-  // Normal tabs — restore content visibility
   if (_qmdjData[type]) {
     renderQmdj(_qmdjData[type]);
   } else if (_result) {
     loadQmdj(type);
+  }
+}
+
+// Load + render Section 8B Destiny Chart
+async function loadQmdjDestiny() {
+  if (!_lastInput) return;
+  document.getElementById('qmdj-destiny-loading').style.display = 'block';
+  document.getElementById('qmdj-destiny-panel').innerHTML = '';
+  try {
+    const resp = await fetch('/api/qmdj', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'benmingpan',
+        birthYear: _lastInput.birthYear, birthMonth: _lastInput.birthMonth,
+        birthDay: _lastInput.birthDay, birthHour: _lastInput.birthHour || 0
+      })
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || 'Unknown error');
+    _qmdjData['benmingpan'] = data.qmdj;
+    renderQmdjDestinyChart(data.qmdj);
+  } catch(e) {
+    document.getElementById('qmdj-destiny-loading').style.display = 'none';
+    document.getElementById('qmdj-destiny-panel').innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
   }
 }
 
@@ -3244,6 +3281,8 @@ function resetForm() {
   _qmdjData = {};
   document.getElementById('qmdj-section').style.display = 'none';
   document.getElementById('qmdj-content').style.display = 'none';
+  document.getElementById('qmdj-destiny-section').style.display = 'none';
+  document.getElementById('qmdj-destiny-panel').innerHTML = '';
   // Hide compat sections & triggers
   ['spouse','family','friend'].forEach(t => {
     const s = document.getElementById(`section-compat-${t}`);
@@ -3361,7 +3400,8 @@ function renderQmdjDestinyChart(q) {
   html += `</div>`; // close main container
   panel.innerHTML = html;
   panel.style.display = 'block';
-  document.getElementById('qmdj-loading').style.display = 'none';
+  const ld = document.getElementById('qmdj-destiny-loading');
+  if (ld) ld.style.display = 'none';
 }
 
 // helper: hex to rgb for rgba()
@@ -3371,17 +3411,23 @@ function hexToRgb(hex) {
 }
 
 // ============================================================
-// QMDJ CALENDAR 30 HARI RENDERER
+// QMDJ CALENDAR 30 HARI — STANDALONE
 // ============================================================
-async function showQmdjCalendar() {
-  const panel = document.getElementById('qmdj-calendar-panel');
-  if (!panel) return;
-  // Hide other panels and content
-  document.getElementById('qmdj-content').style.display = 'none';
-  document.getElementById('qmdj-destiny-panel').style.display = 'none';
-  document.getElementById('qmdj-loading').style.display = 'block';
-  document.querySelectorAll('.qmdj-tab').forEach(b => b.classList.remove('active'));
+function toggleQmdjCalendarCard() {
+  const body = document.getElementById('qmdj-calendar-card-body');
+  const arrow = document.getElementById('qmdj-cal-arrow');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  arrow.textContent = open ? '▼ Klik untuk buka' : '▲ Klik untuk tutup';
+}
 
+async function loadQmdjCalendar() {
+  const loading = document.getElementById('qmdj-calendar-standalone-loading');
+  const content = document.getElementById('qmdj-calendar-standalone-content');
+  const btnPrint = document.getElementById('btn-qmdj-cal-print');
+  loading.style.display = 'block';
+  content.innerHTML = '';
+  if (btnPrint) btnPrint.style.display = 'none';
   try {
     const resp = await fetch('/api/qmdj-calendar', {
       method: 'POST',
@@ -3390,17 +3436,25 @@ async function showQmdjCalendar() {
     });
     const data = await resp.json();
     if (!data.success) throw new Error(data.error || 'Unknown error');
-    renderQmdjCalendar(data.calendar);
+    loading.style.display = 'none';
+    renderQmdjCalendar(data.calendar, 'qmdj-calendar-standalone-content');
+    if (btnPrint) btnPrint.style.display = 'inline-flex';
   } catch(e) {
-    document.getElementById('qmdj-loading').style.display = 'none';
-    panel.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
-    panel.style.display = 'block';
+    loading.style.display = 'none';
+    content.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
   }
 }
 
-function renderQmdjCalendar(calendar) {
-  const panel = document.getElementById('qmdj-calendar-panel');
-  document.getElementById('qmdj-loading').style.display = 'none';
+function printQmdjCalendar() {
+  // Expand all day details before printing
+  document.querySelectorAll('#qmdj-calendar-standalone-content .qmdj-day-detail').forEach(el => {
+    el.style.display = 'block';
+  });
+  window.print();
+}
+
+function renderQmdjCalendar(calendar, containerId) {
+  const panel = document.getElementById(containerId || 'qmdj-calendar-standalone-content');
 
   const DOOR_GOOD = {
     '休门': ['Rapat perencanaan','Kunjungan dokter/kesehatan','Urusan pemerintah','Meditasi & refleksi','Memulai terapi'],
@@ -3466,7 +3520,7 @@ function renderQmdjCalendar(calendar) {
     html += `</div>`;
 
     // Detail (collapsed by default, expanded for today)
-    html += `<div style="display:${isToday?'block':'none'}; padding:12px 14px; background:var(--surface)">`;
+    html += `<div class="qmdj-day-detail" style="display:${isToday?'block':'none'}; padding:12px 14px; background:var(--surface)">`;
     html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px">`;
 
     html += `<div style="background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.2); border-radius:8px; padding:10px">`;
