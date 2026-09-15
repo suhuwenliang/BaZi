@@ -269,6 +269,18 @@ const SHEN_SHA = {
     description: 'Bintang yang melambangkan tantangan dari orang lain — penipuan, pengkhianatan, atau kerugian yang datang dari orang-orang sekitar. Namun juga bisa menjadi energi untuk waspada dan strategis.',
     effect: 'Rentan terhadap penipuan atau pengkhianatan orang terdekat, kerugian finansial dari mitra, perlu selalu waspada dalam partnership',
     advice: 'Selalu lakukan due diligence sebelum bermitra atau meminjamkan uang. Percayai insting Anda — jika merasa ada yang tidak beres, biasanya memang ada'
+  },
+  '将星': {
+    name_id: 'Jiang Xing (Bintang Jenderal)',
+    description: 'Bintang otoritas dan kepemimpinan. Melambangkan kemampuan memimpin, karisma komando, dan kecenderungan untuk berada di posisi puncak — baik dalam militer, bisnis, maupun organisasi.',
+    effect: 'Jiwa kepemimpinan alami, mudah mendapat kepercayaan untuk memimpin tim atau organisasi, berwibawa dan dihormati orang-orang di sekitarnya',
+    advice: 'Jangan ragu mengambil posisi kepemimpinan — ini adalah energi terkuat Anda. Latih kemampuan delegasi dan bangun tim yang solid untuk memaksimalkan potensi ini'
+  },
+  '红艳煞': {
+    name_id: 'Hong Yan Sha (Bintang Pesona Merah)',
+    description: 'Bintang karisma dan daya tarik personal yang kuat. Melambangkan kecantikan atau ketampanan yang menonjol, kemampuan memikat hati orang lain, dan kehidupan percintaan yang penuh warna.',
+    effect: 'Daya tarik fisik dan personal yang tinggi, mudah disukai lawan jenis, kehidupan asmara yang aktif dan berwarna, karisma yang memikat dalam interaksi sosial',
+    advice: 'Daya tarik ini adalah anugerah — gunakan dengan bijak untuk membangun relasi yang bermakna, bukan sekadar permukaan. Waspadai godaan percintaan yang bisa mengalihkan fokus dari tujuan utama hidup Anda'
   }
 };
 

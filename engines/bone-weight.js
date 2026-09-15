@@ -114,24 +114,25 @@ const BONE_WEIGHT_FORTUNE = [
 
 /**
  * Hitung berat tulang berdasarkan pilar BaZi
- * @param {object} bazi - hasil kalkulasi BaZi yang mengandung info lunar
- * @param {string} yearStem - Heavenly Stem tahun (甲乙丙...)
- * @param {string} yearBranch - Earthly Branch tahun (子丑寅...)
+ * Metode klasik: hanya menggunakan Year Branch (地支), bukan Year Stem.
+ * Teks asli 袁天罡称骨歌 menggunakan Branch tahun (shio/zodiak) untuk komponen tahun.
+ *
+ * @param {string} yearStem   - Heavenly Stem tahun (甲乙丙...) — dipakai untuk display saja
+ * @param {string} yearBranch - Earthly Branch tahun (子丑寅...) — dipakai untuk bobot
  * @param {number} lunarMonth - bulan lunar (1-12)
  * @param {number} lunarDay   - hari lunar (1-30)
  * @param {string} hourBranch - Earthly Branch jam (子丑寅...)
  * @returns {object} hasil lengkap
  */
 function calculateBoneWeight(yearStem, yearBranch, lunarMonth, lunarDay, hourBranch) {
-  const yearStemW  = YEAR_STEM_WEIGHT[yearStem]   || { liang: 0, qian: 6 };
-  const yearBranchW= YEAR_BRANCH_WEIGHT[yearBranch]|| { liang: 0, qian: 6 };
-  const monthW     = MONTH_WEIGHT[lunarMonth]      || { liang: 0, qian: 8 };
-  const dayW       = DAY_WEIGHT[lunarDay]          || { liang: 1, qian: 0 };
-  const hourW      = HOUR_WEIGHT[hourBranch]       || { liang: 0, qian: 8 };
+  const yearBranchW = YEAR_BRANCH_WEIGHT[yearBranch] || { liang: 0, qian: 6 };
+  const monthW      = MONTH_WEIGHT[lunarMonth]       || { liang: 0, qian: 8 };
+  const dayW        = DAY_WEIGHT[lunarDay]           || { liang: 1, qian: 0 };
+  const hourW       = HOUR_WEIGHT[hourBranch]        || { liang: 0, qian: 8 };
 
   // Total dalam qian (1 liang = 10 qian)
+  // Komponen tahun: Year Branch saja (metode klasik 袁天罡称骨歌)
   const totalQian =
-    (yearStemW.liang * 10 + yearStemW.qian) +
     (yearBranchW.liang * 10 + yearBranchW.qian) +
     (monthW.liang * 10 + monthW.qian) +
     (dayW.liang * 10 + dayW.qian) +
@@ -146,8 +147,7 @@ function calculateBoneWeight(yearStem, yearBranch, lunarMonth, lunarDay, hourBra
 
   return {
     breakdown: {
-      year_stem:   { char: yearStem,   ...yearStemW },
-      year_branch: { char: yearBranch, ...yearBranchW },
+      year_branch: { char: yearBranch, stem: yearStem, ...yearBranchW, note: 'Tahun (地支) — metode klasik menggunakan Branch saja' },
       month:       { number: lunarMonth, ...monthW },
       day:         { number: lunarDay,   ...dayW },
       hour:        { branch: hourBranch, ...hourW, time: HOUR_WEIGHT[hourBranch]?.time }

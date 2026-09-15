@@ -117,6 +117,22 @@ function getJieSha(branch) {
   return null;
 }
 
+// Jiang Xing (将星) — berdasarkan Year/Day Branch group
+const JIANG_XING = { '申子辰': '子', '寅午戌': '午', '亥卯未': '卯', '巳酉丑': '酉' };
+function getJiangXing(branch) {
+  for (const [group, jx] of Object.entries(JIANG_XING)) {
+    if (group.includes(branch)) return jx;
+  }
+  return null;
+}
+
+// Hong Yan Sha (红艳煞) — berdasarkan Day Stem
+const HONG_YAN = {
+  '甲': '午', '乙': '午', '丙': '寅', '丁': '未',
+  '戊': '辰', '己': '辰', '庚': '戌', '辛': '酉',
+  '壬': '子', '癸': '申'
+};
+
 // ============================================================
 // FUNGSI KALKULASI UTAMA
 // ============================================================
@@ -256,16 +272,20 @@ function calculateBazi(params) {
   const dominantElement = sorted[0][0];
   const weakestElement  = sorted[sorted.length - 1][0];
   // Yong Shen = unsur yang paling dibutuhkan untuk menyeimbangkan
-  // Rule sederhana: jika Day Master kuat (banyak dukungan), Yong Shen = yang melemahkan DM
-  //                 jika Day Master lemah, Yong Shen = yang menguatkan DM
+  // Rule: DM kuat → butuh unsur yang menguras/mengontrol DM (食伤 = apa yang DM hasilkan)
+  //       DM lemah → butuh unsur yang mendukung DM (印星 = apa yang menghasilkan DM)
   // (Analisis penuh memerlukan konteks lengkap; ini aproksimasi)
   const ELEMENT_PRODUCES = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
   const ELEMENT_CONTROLS = { '木': '土', '火': '金', '土': '水', '金': '木', '水': '火' };
+  // ELEMENT_FEEDS: unsur yang MENGHASILKAN dm (印星) — kebalikan dari ELEMENT_PRODUCES
+  const ELEMENT_FEEDS = { '木': '水', '火': '木', '土': '火', '金': '土', '水': '金' };
   const dmElement = STEM_ELEMENT[dayMasterStem];
   const dmScore = wuXingDistribution[dmElement]?.score || 0;
   const avgScore = totalScore / 5;
   const isDMStrong = dmScore > avgScore * 1.2;
-  const yongShen = isDMStrong ? ELEMENT_CONTROLS[dmElement] : ELEMENT_PRODUCES[ELEMENT_CONTROLS[dmElement]];
+  // DM kuat: Yong Shen = 食伤 (apa yang DM hasilkan) — menguras energi berlebih DM
+  // DM lemah: Yong Shen = 印星 (apa yang menghasilkan DM) — mendukung DM yang lemah
+  const yongShen = isDMStrong ? ELEMENT_PRODUCES[dmElement] : ELEMENT_FEEDS[dmElement];
 
   // ---- TEN GODS (十神) ----
   const tenGods = {
@@ -527,17 +547,42 @@ function computeTenGod(dayMaster, targetStem) {
 
 /**
  * Evaluasi kualitas Da Yun terhadap Day Master & Yong Shen
+ * Mempertimbangkan baik Gan (stem) maupun Zhi (branch) Da Yun
  */
 function evaluateDaYunQuality(dyGan, dyZhi, dayMaster, yongShen) {
-  const dyEl = STEM_ELEMENT[dyGan];
   const PRODUCES = { '木':'火','火':'土','土':'金','金':'水','水':'木' };
   const CONTROLS = { '木':'土','火':'金','土':'水','金':'木','水':'火' };
 
-  if (dyEl === yongShen) return { rating: 'Sangat Baik', score: 3, desc: `Unsur Da Yun (${dyEl}) = Yong Shen — periode sangat mendukung` };
-  if (PRODUCES[dyEl] === yongShen) return { rating: 'Baik', score: 2, desc: `Da Yun menghasilkan Yong Shen — periode mendukung` };
-  if (dyEl === STEM_ELEMENT[dayMaster]) return { rating: 'Netral-Baik', score: 1, desc: `Da Yun memperkuat Day Master` };
-  if (CONTROLS[dyEl] === yongShen) return { rating: 'Menantang', score: -1, desc: `Da Yun melemahkan Yong Shen — periode perlu strategi` };
-  return { rating: 'Netral', score: 0, desc: 'Periode netral' };
+  const ganEl = STEM_ELEMENT[dyGan];
+  // Ambil unsur dominan dari hidden stems Zhi Da Yun (pakai hidden stem pertama/本气)
+  const zhiEl = BRANCH_ELEMENT[dyZhi];
+  const zhiHidden = HIDDEN_STEMS[dyZhi]?.[0];
+  const zhiDomEl = zhiHidden ? STEM_ELEMENT[zhiHidden.stem] : zhiEl;
+
+  // Scoring: Gan bobot 60%, Zhi (hidden stem dominan) bobot 40%
+  let score = 0;
+  let ganDesc = '', zhiDesc = '';
+
+  // Evaluasi Gan
+  if (ganEl === yongShen)              { score += 3; ganDesc = `Gan ${dyGan}(${ganEl})=Yong Shen`; }
+  else if (PRODUCES[ganEl] === yongShen) { score += 2; ganDesc = `Gan ${dyGan}(${ganEl}) menghasilkan Yong Shen`; }
+  else if (ganEl === STEM_ELEMENT[dayMaster]) { score += 1; ganDesc = `Gan ${dyGan}(${ganEl}) memperkuat DM`; }
+  else if (CONTROLS[ganEl] === yongShen) { score -= 2; ganDesc = `Gan ${dyGan}(${ganEl}) menekan Yong Shen`; }
+  else { ganDesc = `Gan ${dyGan}(${ganEl}) netral`; }
+
+  // Evaluasi Zhi (hidden stem dominan)
+  if (zhiDomEl === yongShen)              { score += 2; zhiDesc = `Zhi ${dyZhi}(${zhiDomEl})=Yong Shen`; }
+  else if (PRODUCES[zhiDomEl] === yongShen) { score += 1; zhiDesc = `Zhi ${dyZhi}(${zhiDomEl}) menghasilkan Yong Shen`; }
+  else if (zhiDomEl === STEM_ELEMENT[dayMaster]) { score += 1; zhiDesc = `Zhi ${dyZhi} memperkuat DM`; }
+  else if (CONTROLS[zhiDomEl] === yongShen) { score -= 1; zhiDesc = `Zhi ${dyZhi}(${zhiDomEl}) menekan Yong Shen`; }
+  else { zhiDesc = `Zhi ${dyZhi} netral`; }
+
+  const desc = `${ganDesc}; ${zhiDesc}`;
+  if (score >= 4) return { rating: 'Sangat Baik', score, desc };
+  if (score >= 2) return { rating: 'Baik', score, desc };
+  if (score >= 1) return { rating: 'Netral-Baik', score, desc };
+  if (score <= -2) return { rating: 'Menantang', score, desc };
+  return { rating: 'Netral', score, desc };
 }
 
 /**
@@ -545,51 +590,76 @@ function evaluateDaYunQuality(dyGan, dyZhi, dayMaster, yongShen) {
  */
 function computeShenSha(dayMasterStem, yearBranch, dayBranch, allBranches) {
   const tianYiBranches = TIAN_YI[dayMasterStem] || [];
-  const yiMaBranch = getYiMa(yearBranch);
-  const taoHuaBranch = getTaoHua(yearBranch);
+
+  // Yi Ma & Tao Hua: cek dari Year Branch DAN Day Branch (ambil unik)
+  const yiMaFromYear  = getYiMa(yearBranch);
+  const yiMaFromDay   = getYiMa(dayBranch);
+  const yiMaBranches  = [...new Set([yiMaFromYear, yiMaFromDay].filter(Boolean))];
+
+  const taoHuaFromYear  = getTaoHua(yearBranch);
+  const taoHuaFromDay   = getTaoHua(dayBranch);
+  const taoHuaBranches  = [...new Set([taoHuaFromYear, taoHuaFromDay].filter(Boolean))];
+
+  // Jie Sha: berdasarkan Year Branch
+  const jieShaBranch = getJieSha(yearBranch);
+
+  // Jiang Xing: berdasarkan Year Branch
+  const jiangXingBranch = getJiangXing(yearBranch);
+
+  // Hong Yan Sha: berdasarkan Day Stem
+  const hongYanBranch = HONG_YAN[dayMasterStem] || null;
+
+  // Yang Ren: berdasarkan Day Stem
   const yangRenBranch = YANG_REN[dayMasterStem];
-  const jieSha = getJieSha(yearBranch);
+
+  // Wen Chang & Wen Qu: berdasarkan Day Stem
+  const WEN_CHANG_MAP = { '甲':'巳','乙':'午','丙':'申','丁':'酉','戊':'申','己':'酉','庚':'亥','辛':'子','壬':'寅','癸':'卯' };
+  const WEN_QU_MAP    = { '甲':'亥','乙':'子','丙':'寅','丁':'卯','戊':'寅','己':'卯','庚':'巳','辛':'午','壬':'申','癸':'酉' };
+  const wenChangBranch = WEN_CHANG_MAP[dayMasterStem] || null;
+  const wenQuBranch    = WEN_QU_MAP[dayMasterStem] || null;
 
   const findInPillars = (branch) => {
     const names = ['年柱','月柱','日柱','时柱'];
     return allBranches.map((b, i) => b === branch ? names[i] : null).filter(Boolean);
   };
+  const findMultiInPillars = (branches) => branches.flatMap(findInPillars);
 
   return {
     tianYi: {
       name: '天乙贵人 (Tian Yi Gui Ren)',
       branches: tianYiBranches,
-      presentIn: tianYiBranches.flatMap(findInPillars),
+      presentIn: findMultiInPillars(tianYiBranches),
       active: tianYiBranches.some(b => allBranches.includes(b)),
       info: SHEN_SHA['天乙贵人']
     },
     wenChang: {
       name: '文昌 (Wen Chang)',
-      // 文昌 berdasarkan Year Stem: 甲→巳, 乙→午, 丙→申, 丁→酉, 戊→申, 己→酉, 庚→亥, 辛→子, 壬→寅, 癸→卯
-      branches: [{ '甲':'巳','乙':'午','丙':'申','丁':'酉','戊':'申','己':'酉','庚':'亥','辛':'子','壬':'寅','癸':'卯' }[dayMasterStem]].filter(Boolean),
-      presentIn: [],
-      active: false,
+      // 文昌 berdasarkan Day Stem: 甲→巳, 乙→午, 丙→申, 丁→酉, 戊→申, 己→酉, 庚→亥, 辛→子, 壬→寅, 癸→卯
+      branches: wenChangBranch ? [wenChangBranch] : [],
+      presentIn: wenChangBranch ? findInPillars(wenChangBranch) : [],
+      active: wenChangBranch ? allBranches.includes(wenChangBranch) : false,
       info: SHEN_SHA['文昌']
     },
     wenQu: {
       name: '文曲 (Wen Qu)',
-      branches: [{ '甲':'亥','乙':'子','丙':'寅','丁':'卯','戊':'寅','己':'卯','庚':'巳','辛':'午','壬':'申','癸':'酉' }[dayMasterStem]].filter(Boolean),
-      presentIn: [],
-      active: false,
+      // 文曲 berdasarkan Day Stem: 甲→亥, 乙→子, 丙→寅, 丁→卯, 戊→寅, 己→卯, 庚→巳, 辛→午, 壬→申, 癸→酉
+      branches: wenQuBranch ? [wenQuBranch] : [],
+      presentIn: wenQuBranch ? findInPillars(wenQuBranch) : [],
+      active: wenQuBranch ? allBranches.includes(wenQuBranch) : false,
       info: SHEN_SHA['文曲']
     },
     yiMa: {
       name: '驿马 (Yi Ma)',
-      branches: yiMaBranch ? [yiMaBranch] : [],
-      presentIn: yiMaBranch ? findInPillars(yiMaBranch) : [],
-      active: yiMaBranch ? allBranches.includes(yiMaBranch) : false,
+      branches: yiMaBranches,
+      presentIn: findMultiInPillars(yiMaBranches),
+      active: yiMaBranches.some(b => allBranches.includes(b)),
       info: SHEN_SHA['驿马']
     },
     taoHua: {
       name: '桃花 (Tao Hua)',
-      branches: taoHuaBranch ? [taoHuaBranch] : [],
-      presentIn: taoHuaBranch ? findInPillars(taoHuaBranch) : [],
-      active: taoHuaBranch ? allBranches.includes(taoHuaBranch) : false,
+      branches: taoHuaBranches,
+      presentIn: findMultiInPillars(taoHuaBranches),
+      active: taoHuaBranches.some(b => allBranches.includes(b)),
       info: SHEN_SHA['桃花']
     },
     yangRen: {
@@ -601,10 +671,24 @@ function computeShenSha(dayMasterStem, yearBranch, dayBranch, allBranches) {
     },
     jieSha: {
       name: '劫煞 (Jie Sha)',
-      branches: jieSha ? [jieSha] : [],
-      presentIn: jieSha ? findInPillars(jieSha) : [],
-      active: jieSha ? allBranches.includes(jieSha) : false,
+      branches: jieShaBranch ? [jieShaBranch] : [],
+      presentIn: jieShaBranch ? findInPillars(jieShaBranch) : [],
+      active: jieShaBranch ? allBranches.includes(jieShaBranch) : false,
       info: SHEN_SHA['劫煞']
+    },
+    jiangXing: {
+      name: '将星 (Jiang Xing)',
+      branches: jiangXingBranch ? [jiangXingBranch] : [],
+      presentIn: jiangXingBranch ? findInPillars(jiangXingBranch) : [],
+      active: jiangXingBranch ? allBranches.includes(jiangXingBranch) : false,
+      info: SHEN_SHA['将星']
+    },
+    hongYan: {
+      name: '红艳煞 (Hong Yan Sha)',
+      branches: hongYanBranch ? [hongYanBranch] : [],
+      presentIn: hongYanBranch ? findInPillars(hongYanBranch) : [],
+      active: hongYanBranch ? allBranches.includes(hongYanBranch) : false,
+      info: SHEN_SHA['红艳煞']
     }
   };
 }
