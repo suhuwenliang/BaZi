@@ -149,7 +149,8 @@ function calculateBazi(params) {
     gender, // 'M' atau 'F'
     zone, longitude, latitude,
     midnightSect = 2,  // aliran子时: 1=hari berikutnya, 2=hari sama (default)
-    dayunSect = 2      // aliran Da Yun: 1=kasar, 2=presisi menit (default)
+    dayunSect = 2,     // aliran Da Yun: 1=kasar, 2=presisi menit (default)
+    unknownHour = false
   } = params;
 
   const y = parseInt(birthYear), m = parseInt(birthMonth), d = parseInt(birthDay);
@@ -468,6 +469,7 @@ function calculateBazi(params) {
       inputDate: `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')} ${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`,
       trueSolarTime: `${String(tstHour).padStart(2,'0')}:${String(tstMinute).padStart(2,'0')}`,
       tstDetails,
+      unknownHour,
       lunarDate: `${lunarYear}年 ${Math.abs(lunarMonth)}月${lunarMonth < 0 ? '(闰)' : ''} ${lunarDay}日`,
       gender: gender === 'M' ? 'Pria (男)' : 'Wanita (女)',
       midnightSect: `Aliran ${midnightSect} (子时 = ${midnightSect === 1 ? 'hari berikutnya' : 'hari yang sama'})`,

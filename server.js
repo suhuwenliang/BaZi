@@ -61,7 +61,8 @@ app.post('/api/calculate', (req, res) => {
       longitude: data.longitude,
       latitude: data.latitude,
       midnightSect: parseInt(data.midnightSect) || 2,
-      dayunSect: parseInt(data.dayunSect) || 2
+      dayunSect: parseInt(data.dayunSect) || 2,
+      unknownHour: data.unknownHour || false
     });
     // Update Yong Shen ke analisis nama setelah BaZi diketahui
     if (result.bazi && result.nameAnalysis?.chinese) {

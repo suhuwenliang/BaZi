@@ -6,15 +6,15 @@
 <title>BaZi, Zi Wei Dou Shu & Qi Men Dun Jia</title>
 <style>
 :root {
-  --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #16213e; --surface3: #0f3460;
-  --gold: #e8b86d; --gold2: #f0c987; --red: #c94040; --green: #4caf7d;
-  --blue: #4a90d9; --purple: #8b5cf6; --text: #e0e0e0; --muted: #888;
-  --border: #2a2a4a; --radius: 8px;
+  --bg: #f5f0e8; --surface: #ffffff; --surface2: #f0ebe0; --surface3: #e5dccf;
+  --gold: #8a5f1a; --gold2: #5a3a00; --red: #b52020; --green: #2a7a4a;
+  --blue: #1a5fa8; --purple: #6d3db8; --text: #1a1a1a; --muted: #666;
+  --border: #cfc5b0; --radius: 8px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.6; }
-.app-header { background: linear-gradient(135deg, #0f3460, #1a1a2e); padding: 20px; text-align: center; border-bottom: 1px solid var(--gold); }
-.app-header h1 { color: var(--gold); font-size: 24px; letter-spacing: 2px; }
+.app-header { background: linear-gradient(135deg, #ede5d4, #f8f3ea); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); }
+.app-header h1 { color: var(--gold2); font-size: 24px; letter-spacing: 2px; }
 .app-header .subtitle { color: var(--muted); font-size: 12px; margin-top: 4px; }
 .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; }
@@ -39,7 +39,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', syste
 .loading { text-align: center; padding: 40px; color: var(--muted); }
 .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.error-box { background: #2a0f0f; border: 1px solid var(--red); border-radius: 4px; padding: 12px; color: #ff8080; margin: 12px 0; }
+.error-box { background: #fff0f0; border: 1px solid #e0a0a0; border-radius: 4px; padding: 12px; color: #7a1010; margin: 12px 0; }
 .hidden { display: none !important; }
 /* Pillars */
 .pillars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
@@ -103,7 +103,7 @@ th { background: var(--surface3); color: var(--gold2); padding: 8px 10px; text-a
 td { padding: 8px 10px; border: 1px solid var(--border); font-size: 12px; vertical-align: top; }
 tr:hover td { background: rgba(232,184,109,0.04); }
 /* Summary box */
-.summary-box { background: rgba(74,144,217,0.1); border: 1px solid rgba(74,144,217,0.3); border-radius: 6px; padding: 12px; margin-top: 12px; font-size: 13px; color: #a8c8f0; line-height: 1.7; }
+.summary-box { background: rgba(74,144,217,0.07); border: 1px solid rgba(74,144,217,0.25); border-radius: 6px; padding: 12px; margin-top: 12px; font-size: 13px; color: #1a3a6a; line-height: 1.7; }
 .summary-box strong { color: var(--gold2); }
 /* Section tags */
 .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
@@ -257,6 +257,10 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .tag-purple { background: #f8f0ff !important; color: #4a1a7a !important; }
   .palace-meaning, .palace-purpose, .palace-advice { color: #2a2a2a !important; }
   .dx-meaning, .dx-age { color: #555 !important; }
+  /* Wealth Profiling print */
+  #wealth-profiling-section { display: block !important; }
+  #sec-wealth > div { page-break-inside: avoid; }
+  #sec-profiles, #sec-aspects, #sec-structures, #sec-wealth { display: block !important; }
   .pillar-card .ganzhi { color: #5a3a00 !important; }
   .pillar-card .ganzhi-detail { color: #555 !important; }
   .bar-track { background: #e8e0d0 !important; }
@@ -397,11 +401,21 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
         </div>
         <div class="form-group">
           <label>Jam (0-23)</label>
-          <input type="number" name="birthHour" min="0" max="23" placeholder="8" required>
+          <input type="number" name="birthHour" id="birthHourInput" min="0" max="23" placeholder="8" required>
         </div>
         <div class="form-group">
           <label>Menit (0-59)</label>
           <input type="number" name="birthMinute" min="0" max="59" placeholder="0" value="0">
+        </div>
+        <!-- Unknown birth time toggle -->
+        <div class="form-group" style="grid-column:1/-1">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;margin-bottom:0">
+            <input type="checkbox" id="unknownHourCheck" style="width:15px;height:15px;cursor:pointer;accent-color:var(--gold)">
+            <span style="color:var(--gold2);font-size:13px">Tidak tahu jam lahir (akan pakai 子时 00:00 sebagai estimasi)</span>
+          </label>
+          <div id="unknownHourNote" style="display:none;margin-top:6px;padding:8px 10px;background:rgba(251,146,60,0.1);border-left:3px solid #fb923c;border-radius:3px;font-size:11px;color:#fb923c;line-height:1.5">
+            ⚠️ <strong>Mode Estimasi aktif.</strong> Da Yun (大运) tidak terpengaruh dan tetap akurat. Namun Pilar Jam, distribusi Wu Xing, Berat Tulang, dan Zi Wei Dou Shu akan ditandai sebagai estimasi karena jam lahir tidak diketahui.
+          </div>
         </div>
       </div>
 
@@ -903,6 +917,8 @@ function fillDemo() {
   document.querySelector('[name=birthDay]').value = '27';
   document.querySelector('[name=birthHour]').value = '8';
   document.querySelector('[name=birthMinute]').value = '0';
+  const uc = document.getElementById('unknownHourCheck');
+  if (uc && uc.checked) { uc.checked = false; uc.dispatchEvent(new Event('change')); }
   setCoord(114.1095, 22.3964, 'HKT');
 }
 
@@ -929,11 +945,40 @@ function colorHex(name) { return COLOR_MAP[name] || '#555'; }
 // ============================================================
 // FORM SUBMIT
 // ============================================================
+// Unknown hour checkbox handler
+(function() {
+  function applyUnknownHour(checked) {
+    const hIn = document.getElementById('birthHourInput');
+    const mIn = document.querySelector('[name=birthMinute]');
+    const note = document.getElementById('unknownHourNote');
+    if (checked) {
+      hIn.value = '0'; mIn.value = '0';
+      hIn.setAttribute('readonly',''); mIn.setAttribute('readonly','');
+      hIn.style.opacity='0.35'; mIn.style.opacity='0.35';
+      hIn.removeAttribute('required');
+      if(note) note.style.display='';
+    } else {
+      hIn.removeAttribute('readonly'); mIn.removeAttribute('readonly');
+      hIn.style.opacity=''; mIn.style.opacity='';
+      hIn.setAttribute('required','');
+      if(note) note.style.display='none';
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    const cb = document.getElementById('unknownHourCheck');
+    if (!cb) return;
+    cb.addEventListener('change', function() { applyUnknownHour(this.checked); });
+  });
+})();
+
 document.getElementById('calc-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
   const data = {};
   fd.forEach((v,k) => { data[k] = v; });
+  // Unknown birth hour flag
+  const unknownHourChecked = document.getElementById('unknownHourCheck')?.checked;
+  if (unknownHourChecked) { data.unknownHour = true; data.birthHour = 0; data.birthMinute = 0; }
   // numeric coercion
   ['birthYear','birthMonth','birthDay','birthHour','birthMinute','midnightSect','dayunSect'].forEach(k => {
     if(data[k] !== undefined && data[k] !== '') data[k] = parseInt(data[k]);
@@ -1184,12 +1229,24 @@ function wu_xing_meaning(el) {
 }
 
 // ============================================================
+// HELPER: Unknown Hour Banner
+// ============================================================
+function unknownHourBanner(msg) {
+  const m = msg || 'Jam lahir tidak diketahui — section ini menggunakan 子时 (00:00) sebagai proxy. Hasil bersifat estimasi.';
+  return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.35);border-radius:5px;margin-bottom:12px;font-size:11px;color:#fb923c;line-height:1.5">
+    <span style="font-size:14px;flex-shrink:0">⚠️</span>
+    <span><strong>Jam lahir tidak diketahui</strong> — ${esc(m)}</span>
+  </div>`;
+}
+
+// ============================================================
 // SECTION 3A: FOUR PILLARS
 // ============================================================
 function render3A(b) {
   const p = b.pillars;
   const dm = b.dayMaster;
   let html = '';
+  if (b.meta?.unknownHour) html += unknownHourBanner('Pilar Jam (时柱) di bawah menggunakan 子时 (00:00) sebagai estimasi. Tiga pilar lainnya (Tahun, Bulan, Hari) tetap akurat.');
 
   // Day Master intro
   html += `<div style="background:rgba(232,184,109,0.08); border:1px solid rgba(232,184,109,0.3); border-radius:6px; padding:12px; margin-bottom:14px">
@@ -1353,6 +1410,8 @@ function render3C(b) {
   if (!wx) { document.getElementById('sec-3c').innerHTML = '<div class="error-box">Data tidak tersedia</div>'; return; }
   const WX_ID = {'木':'Kayu (Mù)','火':'Api (Huǒ)','土':'Tanah (Tǔ)','金':'Logam (Jīn)','水':'Air (Shuǐ)'};
   const elements = ['木','火','土','金','水'];
+  // Banner for unknown hour — prepended via wrapper
+  const uhBanner = b.meta?.unknownHour ? unknownHourBanner('Distribusi Wu Xing tidak termasuk Pilar Jam — persentase adalah estimasi berdasarkan 3 pilar.') : '';
   const classes = ['wx-mu','wx-huo','wx-tu','wx-jin','wx-shui'];
   let html = '<div style="max-width:520px">';
   elements.forEach((el, i) => {
@@ -1389,7 +1448,7 @@ function render3C(b) {
       <span style="color:var(--muted); font-size:12px"> — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.</span>
     </div>
   </div>`;
-  document.getElementById('sec-3c').innerHTML = html;
+  document.getElementById('sec-3c').innerHTML = uhBanner + html;
 }
 
 // ============================================================
@@ -1533,6 +1592,7 @@ function render3G(b) {
   const bw = b.boneWeight;
   if (!bw) { document.getElementById('sec-3g').innerHTML = '<div class="error-box">Data tidak tersedia</div>'; return; }
   let html = '';
+  if (b.meta?.unknownHour) html += unknownHourBanner('Berat Tulang (称骨法 · Chēng Gǔ Fǎ) memperhitungkan Pilar Jam — tanpa jam lahir yang tepat, hasilnya bisa bergeser 1 tingkat. Gunakan sebagai perkiraan saja.');
   // actual: bw.total.display = "4两5钱", bw.fortune = string
   const display = bw.total?.display || (bw.totalLiang != null ? `${bw.totalLiang}两${bw.totalQian||0}钱` : '—');
   html += `<div class="bone-total">${esc(display)}</div>`;
@@ -1590,15 +1650,15 @@ function renderStructuresChart(structures, containerId) {
   let rings='';
   [0.2,0.4,0.6,0.8,1].forEach(s=>{
     const pts = angles.map(a=>`${(cx+R*s*Math.cos(a)).toFixed(1)},${(cy+R*s*Math.sin(a)).toFixed(1)}`).join(' ');
-    rings += `<polygon points="${pts}" fill="none" stroke="rgba(212,160,23,0.18)" stroke-width="1"/>`;
+    rings += `<polygon points="${pts}" fill="none" stroke="rgba(160,120,20,0.3)" stroke-width="1"/>`;
     const tx=(cx+R*s*Math.cos(angles[0])+4).toFixed(1), ty=(cy+R*s*Math.sin(angles[0])-5).toFixed(1);
-    rings += `<text x="${tx}" y="${ty}" font-size="9" fill="rgba(212,160,23,0.5)">${Math.round(s*100)}%</text>`;
+    rings += `<text x="${tx}" y="${ty}" font-size="9" fill="rgba(100,70,10,0.65)">${Math.round(s*100)}%</text>`;
   });
 
   // Axis lines
   let axes='';
   angles.forEach(a=>{
-    axes+=`<line x1="${cx}" y1="${cy}" x2="${(cx+R*Math.cos(a)).toFixed(1)}" y2="${(cy+R*Math.sin(a)).toFixed(1)}" stroke="rgba(212,160,23,0.25)" stroke-width="1"/>`;
+    axes+=`<line x1="${cx}" y1="${cy}" x2="${(cx+R*Math.cos(a)).toFixed(1)}" y2="${(cy+R*Math.sin(a)).toFixed(1)}" stroke="rgba(140,100,20,0.3)" stroke-width="1"/>`;
   });
 
   // Data polygon
@@ -1627,15 +1687,15 @@ function renderStructuresChart(structures, containerId) {
   });
 
   const dominant = [...structures].sort((a,b)=>b.pct-a.pct)[0];
-  const svg=`<svg viewBox="0 0 400 410" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:400px">
+  const svg=`<svg viewBox="0 0 400 410" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:400px;background:#fff;border-radius:8px">
     <defs>
       <linearGradient id="wpGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#d4a017" stop-opacity="0.4"/>
-        <stop offset="100%" stop-color="#c56000" stop-opacity="0.15"/>
+        <stop offset="0%" stop-color="#c8870a" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#a05000" stop-opacity="0.12"/>
       </linearGradient>
     </defs>
     ${rings}${axes}
-    <polygon points="${dataPts}" fill="url(#wpGrad)" stroke="#d4a017" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="${dataPts}" fill="url(#wpGrad)" stroke="#a07010" stroke-width="2" stroke-linejoin="round"/>
     ${dots}${labels}
   </svg>`;
 
@@ -1643,7 +1703,7 @@ function renderStructuresChart(structures, containerId) {
   let legend=`<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px">`;
   structures.forEach(s=>{
     const isD=s.key===dominant.key;
-    legend+=`<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:4px;background:${isD?s.color+'22':'rgba(255,255,255,0.04)'};border:1px solid ${isD?s.color:'rgba(255,255,255,0.08)'}">
+    legend+=`<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:4px;background:${isD?s.color+'22':'rgba(0,0,0,0.04)'};border:1px solid ${isD?s.color:'rgba(0,0,0,0.1)'}">
       <div style="width:8px;height:8px;border-radius:50%;background:${esc(s.color)}"></div>
       <span style="font-size:11px;color:${isD?esc(s.color):'var(--text)'}">${esc(s.nameId)}</span>
       <strong style="font-size:11px;color:${isD?esc(s.color):'var(--muted)'}">${s.pct}%</strong>
@@ -1667,29 +1727,50 @@ function renderProfilesChart(profiles, containerId) {
   if (!el || !profiles || !profiles.length) return;
 
   const TG_COLORS = {
-    '比肩':'#22c55e','劫财':'#16a34a','食神':'#f59e0b','伤官':'#d97706',
-    '偏财':'#f97316','正财':'#ea580c','七杀':'#8b5cf6','正官':'#7c3aed',
-    '偏印':'#3b82f6','正印':'#2563eb'
+    '比肩':'#22a855','劫财':'#168a3a','食神':'#d48a00','伤官':'#b06000',
+    '偏财':'#e06010','正财':'#c04000','七杀':'#7040c0','正官':'#5a28a8',
+    '偏印':'#1a60c0','正印':'#0a3ea0'
   };
   const TG_EN = {
-    '比肩':'Bi Jian','劫财':'Jie Cai','食神':'Shi Shen','伤官':'Shang Guan',
-    '偏财':'Pian Cai','正财':'Zheng Cai','七杀':'Qi Sha','正官':'Zheng Guan',
-    '偏印':'Pian Yin','正印':'Zheng Yin'
+    '比肩':'Bǐ Jiān','劫财':'Jié Cái','食神':'Shí Shén','伤官':'Shāng Guān',
+    '偏财':'Piān Cái','正财':'Zhèng Cái','七杀':'Qī Shā','正官':'Zhèng Guān',
+    '偏印':'Piān Yìn','正印':'Zhèng Yìn'
   };
+  // Daily life guide per Ten God
+  const TG_DAILY = {
+    '比肩':{ meaning:'Kemandirian & Persaingan', pctZero:'Perlu membangun jaringan peer lebih aktif; cenderung kurang kompetitif dalam lingkungan bertekanan.', pctLow:'Jaringan sesama perlu diperluas. Usahakan terlibat dalam komunitas atau tim.', pctMid:'Kemandirian seimbang. Mampu bekerja solo maupun tim.', pctHigh:'Wirausaha, freelance, atau posisi mandiri sangat cocok. Waspadai persaingan yang memanas di sekitar Anda.' },
+    '劫财':{ meaning:'Ambisi & Daya Juang', pctZero:'Kurang agresif dalam kompetisi — jadikan ini kekuatan: Anda lebih kooperatif dan mudah dipercaya.', pctLow:'Perlu melatih ketegasan dan keberanian mengambil risiko terukur.', pctMid:'Daya juang ada namun terkontrol — aset berharga dalam negosiasi.', pctHigh:'Energi kompetisi tinggi. Cocok di sales, olahraga, atau bisnis agresif. Waspadai pengeluaran impulsif.' },
+    '食神':{ meaning:'Kreativitas & Kesenangan Hidup', pctZero:'Kreativitas perlu diasah dari luar — coba hobi seni, kuliner, atau aktivitas ekspresif secara rutin.', pctLow:'Bakat kreatif ada tapi tertutup. Beri ruang lebih untuk ekspresi diri.', pctMid:'Kreatif dan menyenangkan. Mampu menghasilkan dari passion.', pctHigh:'Sangat kreatif, ekspresif, dan produktif. Cocok di seni, kuliner, konten, atau pendidikan informal.' },
+    '伤官':{ meaning:'Inovasi & Pemikiran Bebas', pctZero:'Cenderung konvensional dan patuh aturan — nilai besar di lingkungan struktural.', pctLow:'Sesekali perlu keberanian menantang status quo untuk tumbuh.', pctMid:'Inovatif namun terukur. Mampu beradaptasi di berbagai lingkungan.', pctHigh:'Pemikir bebas, inovatif. Hindari konfrontasi langsung dengan otoritas tanpa alasan kuat. Cocok di startup, seni, hukum.' },
+    '偏财':{ meaning:'Peluang & Bisnis Luar Jalur', pctZero:'Penghasilan lebih stabil dari jalur formal. Diversifikasi income perlu dibangun secara sadar.', pctLow:'Peluang bisnis ada tapi perlu lebih aktif mencarinya.', pctMid:'Magnet peluang yang baik. Mampu melihat celah bisnis.', pctHigh:'Wirausahawan alami. Cocok investasi, trading, multi-income. Disiplin keuangan sangat penting.' },
+    '正财':{ meaning:'Akumulasi Stabil & Disiplin', pctZero:'Kemampuan mengelola uang perlu diperkuat secara sadar melalui edukasi keuangan.', pctLow:'Bangun kebiasaan menabung dan investasi jangka panjang.', pctMid:'Pengelolaan keuangan solid. Kekayaan dibangun bertahap dan konsisten.', pctHigh:'Aset dan tabungan adalah kekuatan alami Anda. Cocok di keuangan, akuntansi, atau manajemen aset.' },
+    '七杀':{ meaning:'Kepemimpinan Tegas & Krisis', pctZero:'Cenderung menghindari konflik dan tekanan — nilai di lingkungan harmonis dan kooperatif.', pctLow:'Perlu melatih ketegasan dan kemampuan membuat keputusan sulit.', pctMid:'Kepemimpinan ada saat dibutuhkan. Mampu menghadapi krisis.', pctHigh:'Pemimpin alami dengan tekad baja. Cocok di kepemimpinan, militer, hukum, atau situasi tekanan tinggi.' },
+    '正官':{ meaning:'Karier Formal & Status Sosial', pctZero:'Kurang terikat pada hierarki formal — lebih bebas dan fleksibel, namun perlu aktif membangun reputasi.', pctLow:'Bangun track record dan kredensial secara aktif.', pctMid:'Dipercaya dan terstruktur. Karier formal berjalan baik.', pctHigh:'Status sosial dan karier formal adalah kekuatan utama. Sangat cocok di PNS, korporasi besar, atau profesi berlisensi.' },
+    '偏印':{ meaning:'Intuisi & Belajar Mandiri', pctZero:'Lebih pragmatis dan action-oriented. Kurangi overthinking.', pctLow:'Percayai intuisi lebih banyak; eksplorasi pengetahuan non-konvensional.', pctMid:'Intuitif dan mandiri dalam belajar. Mampu menguasai bidang niche.', pctHigh:'Sangat intuitif. Cocok di penelitian, spiritualitas, psikologi, atau konsultasi alternatif. Jaga agar tidak terlalu menyendiri.' },
+    '正印':{ meaning:'Akademis & Kebijaksanaan', pctZero:'Kemampuan akademis perlu diperkuat dari luar. Cari mentor atau pendidikan formal yang sesuai.', pctLow:'Fondasi pengetahuan ada tapi perlu dikembangkan lebih dalam.', pctMid:'Terpercaya, berpengetahuan, dan disegani. Karier di pendidikan atau penelitian sangat cocok.', pctHigh:'Intelegensia tinggi, sangat dipercaya. Cocok sebagai dosen, peneliti, penulis, atau konsultan senior.' }
+  };
+
+  function getTGLabel(pct) {
+    if (pct === 0) return 'pctZero';
+    if (pct < 10) return 'pctLow';
+    if (pct < 25) return 'pctMid';
+    return 'pctHigh';
+  }
+
   const maxPct = Math.max(...profiles.map(p=>p.pct), 1);
 
-  // Group into two columns: 比劫/食伤/财/官杀/印 pairs
+  // Bars
   let html=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px">`;
   profiles.forEach(p=>{
     const barW=Math.round((p.pct/maxPct)*100);
     const col=TG_COLORS[p.god]||'#888';
     html+=`<div>
       <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-        <span style="font-size:11px;color:var(--text);font-weight:500">${esc(p.god)} <span style="color:var(--muted);font-weight:400">${esc(TG_EN[p.god]||'')}</span></span>
+        <span style="font-size:11px;color:var(--text);font-weight:600">${esc(p.god)} <span style="color:var(--muted);font-weight:400;font-size:10px">${esc(TG_EN[p.god]||'')}</span></span>
         <strong style="font-size:11px;color:${esc(col)}">${p.pct}%</strong>
       </div>
-      <div style="background:rgba(255,255,255,0.06);border-radius:3px;height:14px;overflow:hidden">
-        <div style="width:${barW}%;height:100%;background:${esc(col)};border-radius:3px;opacity:0.85"></div>
+      <div style="background:rgba(0,0,0,0.07);border-radius:3px;height:14px;overflow:hidden">
+        <div style="width:${barW}%;height:100%;background:${esc(col)};border-radius:3px;opacity:0.9"></div>
       </div>
     </div>`;
   });
@@ -1698,18 +1779,49 @@ function renderProfilesChart(profiles, containerId) {
   // Summary: dominant and weakest
   const sorted=[...profiles].sort((a,b)=>b.pct-a.pct);
   const top=sorted[0], bottom=sorted[sorted.length-1];
-  html+=`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-    <div style="flex:1;min-width:140px;padding:8px;background:rgba(255,255,255,0.04);border-radius:5px;border-left:3px solid ${esc(TG_COLORS[top?.god]||'#888')}">
-      <div style="font-size:10px;color:var(--muted)">Ten God Dominan</div>
-      <div style="font-size:13px;font-weight:bold;color:${esc(TG_COLORS[top?.god]||'var(--gold)')}">${esc(top?.god||'—')} (${top?.pct||0}%)</div>
-      <div style="font-size:11px;color:var(--text);margin-top:2px">${esc(top?.info?.meaning||top?.info?.name_id||'')}</div>
+  html+=`<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:140px;padding:8px;background:rgba(0,0,0,0.04);border-radius:5px;border-left:3px solid ${esc(TG_COLORS[top?.god]||'#888')}">
+      <div style="font-size:10px;color:var(--muted)">十神 Dominan (Ten God Terkuat)</div>
+      <div style="font-size:13px;font-weight:bold;color:${esc(TG_COLORS[top?.god]||'var(--gold)')}">${esc(top?.god||'—')} <span style="font-size:11px">(${top?.pct||0}%)</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(TG_DAILY[top?.god]?.meaning||'')}</div>
     </div>
-    <div style="flex:1;min-width:140px;padding:8px;background:rgba(255,255,255,0.04);border-radius:5px;border-left:3px solid rgba(120,120,120,0.5)">
-      <div style="font-size:10px;color:var(--muted)">Ten God Terlemah</div>
-      <div style="font-size:13px;font-weight:bold;color:var(--muted)">${esc(bottom?.god||'—')} (${bottom?.pct||0}%)</div>
-      <div style="font-size:11px;color:var(--text);margin-top:2px">${esc(bottom?.info?.meaning||bottom?.info?.name_id||'')}</div>
+    <div style="flex:1;min-width:140px;padding:8px;background:rgba(0,0,0,0.04);border-radius:5px;border-left:3px solid rgba(120,120,120,0.4)">
+      <div style="font-size:10px;color:var(--muted)">十神 Terlemah (perlu dikembangkan)</div>
+      <div style="font-size:13px;font-weight:bold;color:var(--muted)">${esc(bottom?.god||'—')} <span style="font-size:11px">(${bottom?.pct||0}%)</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(TG_DAILY[bottom?.god]?.meaning||'')}</div>
     </div>
   </div>`;
+
+  // Penjelasan per Ten God
+  html += `<div style="margin-top:16px">
+    <h4 style="font-size:12px;font-weight:700;color:var(--gold2);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--border)">📘 Makna Setiap Ten God (十神) dalam Kehidupan Sehari-hari</h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+  profiles.forEach(p=>{
+    const col=TG_COLORS[p.god]||'#888';
+    const guide=TG_DAILY[p.god];
+    if (!guide) return;
+    const label=getTGLabel(p.pct);
+    const advice=guide[label]||'';
+    html+=`<div style="padding:10px 12px;border-radius:6px;border:1px solid ${esc(col)}30;background:${esc(col)}0a">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+        <strong style="font-size:12px;color:${esc(col)}">${esc(p.god)} <span style="font-size:10px;color:var(--muted);font-weight:400">${esc(TG_EN[p.god]||'')}</span></strong>
+        <span style="font-size:11px;color:${p.pct===0?'var(--muted)':esc(col)};font-weight:600">${p.pct}%</span>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-style:italic">${esc(guide.meaning)}</div>
+      <div style="font-size:11px;color:var(--text);line-height:1.55">${esc(advice)}</div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // Weakest Ten God explanation
+  const bottomGuide = TG_DAILY[bottom?.god];
+  if (bottomGuide && bottom?.pct < 10) {
+    html += `<div style="margin-top:12px;padding:10px 14px;background:rgba(0,0,0,0.04);border-radius:6px;border-left:3px solid rgba(120,120,120,0.5);font-size:12px;color:var(--text)">
+      <strong style="color:var(--gold2)">💡 Ten God Terlemah: ${esc(bottom.god)} (${esc(TG_EN[bottom.god]||'')})</strong><br>
+      <span style="color:var(--muted)">${esc(bottomGuide.meaning)}</span> · ${esc(bottomGuide.pctZero||bottomGuide.pctLow||'')}
+      Area ini bukan kelemahan permanen — melainkan <em>area pertumbuhan</em> yang bisa diperkuat melalui latihan dan pengalaman sadar.
+    </div>`;
+  }
 
   el.innerHTML=html;
 }
@@ -1719,32 +1831,84 @@ function renderAspectsChart(aspects, containerId) {
   const el = document.getElementById(containerId);
   if (!el || !aspects || !aspects.length) return;
 
+  // Concrete daily activities per aspect
+  const ASPECT_ACTIVITIES = {
+    lifePurpose: {
+      strong: ['Jadilah mentor atau coach untuk orang lain','Tulis buku, artikel, atau bagikan keahlian Anda','Ambil proyek yang menantang nilai dan prinsip Anda','Eksplorasi pendidikan lanjut di bidang yang paling Anda cintai'],
+      weak:   ['Journaling harian: tulis 3 hal yang memberi makna hari ini','Ikuti workshop atau retreat tujuan hidup','Berdiskusi dengan tokoh atau mentor yang Anda kagumi','Baca biografi tokoh-tokoh yang menginspirasi Anda']
+    },
+    financial: {
+      strong: ['Investasi aktif: saham, properti, atau bisnis baru','Negosiasi kenaikan gaji atau fee yang lebih tinggi','Buka sumber pendapatan tambahan (side business)','Kelola portfolio investasi secara mandiri dengan target jelas'],
+      weak:   ['Mulai menabung otomatis 10% dari setiap penghasilan','Belajar dasar literasi keuangan: reksa dana, obligasi, properti','Buat anggaran bulanan dan patuhi selama 3 bulan berturut-turut','Konsultasi ke perencana keuangan bersertifikat']
+    },
+    relationship: {
+      strong: ['Perluas jaringan profesional secara aktif (networking events)','Ambil peran kepemimpinan dalam komunitas','Jadilah penghubung antar orang-orang di jaringan Anda','Investasikan waktu berkualitas dengan pasangan atau sahabat dekat'],
+      weak:   ['Bergabung ke komunitas atau klub sesuai minat Anda','Latih kemampuan mendengar aktif dalam setiap percakapan','Jadwalkan quality time rutin (mingguan) dengan orang terkasih','Ikuti kelas komunikasi atau public speaking']
+    },
+    family: {
+      strong: ['Jadikan rumah pusat pertemuan keluarga besar','Inisiasi tradisi keluarga: makan malam mingguan, liburan bersama','Jadilah sandaran emosional bagi anggota keluarga yang membutuhkan','Wariskan nilai-nilai keluarga kepada generasi berikutnya'],
+      weak:   ['Hubungi anggota keluarga jauh minimal satu kali sebulan','Hadiri acara keluarga meski terasa tidak nyaman','Ceritakan kenangan positif masa kecil kepada anak atau keponakan','Buat grup komunikasi keluarga dan aktif berkontribusi']
+    },
+    wellness: {
+      strong: ['Pertahankan rutinitas olahraga dan pola makan sehat Anda','Eksplorasi wellness lanjutan: meditasi, yoga, atau TCM','Bagikan gaya hidup sehat kepada orang-orang terdekat','Jadikan kesehatan sebagai investasi jangka panjang, bukan pengeluaran'],
+      weak:   ['Mulai dengan 15 menit jalan kaki setiap hari tanpa kecuali','Tidur teratur: tidur dan bangun di jam yang sama setiap hari','Kurangi satu kebiasaan buruk per bulan secara bertahap','Jadwalkan pemeriksaan kesehatan rutin minimal setahun sekali']
+    },
+    contribution: {
+      strong: ['Kembangkan produk, karya, atau proyek yang berdampak luas','Ajarkan keahlian Anda kepada generasi lebih muda','Ikuti proyek sosial atau volunteering di bidang keahlian Anda','Publikasikan pemikiran atau karya Anda secara lebih luas'],
+      weak:   ['Temukan satu cara sederhana membantu orang lain setiap minggu','Bergabung ke kegiatan sosial atau komunitas lokal','Coba mengajar atau berbagi pengetahuan di forum kecil','Dokumentasikan keahlian Anda dalam blog, video, atau podcast singkat']
+    }
+  };
+
   let html=`<div style="display:flex;flex-direction:column;gap:10px">`;
   aspects.forEach(a=>{
+    const level = a.pct>=70?'Kuat':a.pct>=40?'Sedang':a.pct>=20?'Cukup':'Rendah';
     html+=`<div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
         <span style="font-size:12px;color:var(--text)">${esc(a.icon)} <strong>${esc(a.labelId)}</strong></span>
-        <div style="display:flex;align-items:center;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:10px;color:var(--muted)">${esc(a.tip||'')}</span>
           <strong style="font-size:12px;color:${esc(a.color)};min-width:32px;text-align:right">${a.pct}%</strong>
         </div>
       </div>
-      <div style="background:rgba(255,255,255,0.06);border-radius:4px;height:16px;overflow:hidden;position:relative">
-        <div style="width:${a.pct}%;height:100%;background:linear-gradient(90deg,${esc(a.color)}cc,${esc(a.color)}66);border-radius:4px;transition:width 0.6s"></div>
-        <div style="position:absolute;top:0;right:6px;height:100%;display:flex;align-items:center;font-size:10px;color:rgba(255,255,255,0.4)">${
-          a.pct>=70?'Kuat':a.pct>=40?'Sedang':a.pct>=20?'Cukup':'Rendah'
-        }</div>
+      <div style="background:rgba(0,0,0,0.07);border-radius:4px;height:16px;overflow:hidden;position:relative">
+        <div style="width:${a.pct}%;height:100%;background:linear-gradient(90deg,${esc(a.color)}cc,${esc(a.color)}55);border-radius:4px;transition:width 0.6s"></div>
+        <div style="position:absolute;top:0;right:6px;height:100%;display:flex;align-items:center;font-size:10px;color:rgba(0,0,0,0.45);font-weight:500">${level}</div>
       </div>
     </div>`;
   });
   html+=`</div>`;
 
-  // Radar summary text
+  // Summary
   const sorted=[...aspects].sort((a,b)=>b.pct-a.pct);
-  html+=`<div style="margin-top:12px;padding:10px;background:rgba(212,160,23,0.06);border-radius:6px;border:1px solid rgba(212,160,23,0.2);font-size:12px;color:var(--text)">
-    <strong style="color:var(--gold2)">Interpretasi:</strong> Aspek terkuat Anda adalah <strong style="color:${esc(sorted[0].color)}">${esc(sorted[0].icon)} ${esc(sorted[0].labelId)} (${sorted[0].pct}%)</strong>${sorted[1]?`, diikuti <strong style="color:${esc(sorted[1].color)}">${esc(sorted[1].icon)} ${esc(sorted[1].labelId)} (${sorted[1].pct}%)</strong>`:''}.
-    Aspek yang paling membutuhkan perhatian: <strong>${esc(sorted[sorted.length-1].icon)} ${esc(sorted[sorted.length-1].labelId)} (${sorted[sorted.length-1].pct}%)</strong>.
+  const strongest=sorted[0], weakest=sorted[sorted.length-1];
+  html+=`<div style="margin-top:12px;padding:10px 12px;background:rgba(160,120,20,0.06);border-radius:6px;border:1px solid rgba(160,120,20,0.2);font-size:12px;color:var(--text);line-height:1.7">
+    <strong style="color:var(--gold2)">Ringkasan Aspek:</strong> Aspek terkuat Anda adalah <strong style="color:${esc(strongest.color)}">${esc(strongest.icon)} ${esc(strongest.labelId)} (${strongest.pct}%)</strong>${sorted[1]?`, diikuti <strong style="color:${esc(sorted[1].color)}">${esc(sorted[1].icon)} ${esc(sorted[1].labelId)} (${sorted[1].pct}%)</strong>`:''}.
+    Aspek yang paling membutuhkan perhatian: <strong style="color:var(--muted)">${esc(weakest.icon)} ${esc(weakest.labelId)} (${weakest.pct}%)</strong>.
   </div>`;
+
+  // Concrete activities for strongest
+  const strongActs = ASPECT_ACTIVITIES[strongest.key]?.strong||[];
+  const weakActs   = ASPECT_ACTIVITIES[weakest.key]?.weak||[];
+  if (strongActs.length || weakActs.length) {
+    html += `<div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">`;
+    if (strongActs.length) {
+      html += `<div style="padding:10px 12px;border-radius:6px;border:1px solid ${esc(strongest.color)}40;background:${esc(strongest.color)}08">
+        <div style="font-size:11px;font-weight:700;color:${esc(strongest.color)};margin-bottom:6px">${esc(strongest.icon)} ${esc(strongest.labelId)} — Manfaatkan Kekuatan Ini</div>`;
+      strongActs.forEach(act => {
+        html += `<div style="font-size:11px;color:var(--text);padding:3px 0;border-bottom:1px solid rgba(0,0,0,0.05);line-height:1.5">▸ ${esc(act)}</div>`;
+      });
+      html += `</div>`;
+    }
+    if (weakActs.length) {
+      html += `<div style="padding:10px 12px;border-radius:6px;border:1px solid rgba(120,120,120,0.25);background:rgba(0,0,0,0.03)">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">${esc(weakest.icon)} ${esc(weakest.labelId)} — Kegiatan untuk Dikembangkan</div>`;
+      weakActs.forEach(act => {
+        html += `<div style="font-size:11px;color:var(--text);padding:3px 0;border-bottom:1px solid rgba(0,0,0,0.05);line-height:1.5">▸ ${esc(act)}</div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
 
   el.innerHTML=html;
 }
@@ -1774,35 +1938,42 @@ function renderWealthNarrative(wa, containerId) {
   const SECTION_KEYS = ['archetype','opening','hidden','luck','risk','strategy'];
   let html='';
 
-  SECTION_KEYS.forEach((key, idx) => {
+  SECTION_KEYS.forEach((key) => {
     const sec = wa.sections[key];
     if (!sec) return;
-    const isFirst = idx===0;
-    html+=`<div style="margin-bottom:12px;border-radius:6px;overflow:hidden;border:1px solid rgba(212,160,23,0.2)">
-      <div style="padding:10px 14px;background:rgba(212,160,23,0.1);cursor:pointer;display:flex;justify-content:space-between;align-items:center"
-           onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.wsa-arr').textContent=this.nextElementSibling.style.display==='none'?'▶':'▼'">
-        <span style="font-size:13px;font-weight:600;color:var(--gold)">${esc(sec.title)}</span>
-        <span class="wsa-arr" style="color:var(--gold);font-size:11px">${isFirst?'▼':'▶'}</span>
+    html+=`<div style="margin-bottom:12px;border-radius:6px;overflow:hidden;border:1px solid rgba(160,120,20,0.25);page-break-inside:avoid">
+      <div style="padding:10px 14px;background:rgba(160,120,20,0.1);display:flex;align-items:center">
+        <span style="font-size:13px;font-weight:600;color:var(--gold2)">${esc(sec.title)}</span>
       </div>
-      <div style="padding:12px 14px;font-size:12px;line-height:1.65;color:var(--text);display:${isFirst?'block':'none'}">
+      <div style="padding:12px 14px;font-size:12px;line-height:1.7;color:var(--text)">
         ${md(sec.content)}
       </div>
     </div>`;
   });
 
+  // Hubungan dengan Section 5
+  html += `<div style="margin-top:16px;padding:12px 14px;background:rgba(74,144,217,0.06);border-radius:6px;border:1px solid rgba(74,144,217,0.2);font-size:12px;color:var(--text);line-height:1.7">
+    <strong style="color:var(--blue);display:block;margin-bottom:6px">🔗 Hubungan 3W-D dengan Section 5 (Analisis Menyeluruh)</strong>
+    <strong style="color:var(--gold2)">3W-D Wealth Strategist Analysis</strong> (bagian ini) berfokus pada <em>strategi kekayaan spesifik</em> berdasarkan BaZi: arketipe finansial, pola risiko, siklus keberuntungan, dan langkah taktis yang perlu diambil.
+    <br><br>
+    <strong style="color:var(--gold2)">Section 5 — Analisis Menyeluruh</strong> mengintegrasikan BaZi + Zi Wei Dou Shu (紫微斗数) untuk memberikan gambaran <em>kehidupan holistik</em>: profesi cocok, bisnis ideal, kriteria pasangan, tahun beruntung, arah Feng Shui, dan warna keberuntungan.
+    <br><br>
+    <strong>Gunakan keduanya secara bersamaan:</strong> 3W-D memberi Anda <em>strategi keuangan dan karier</em> berbasis karakter bawaan, sementara Section 5 memberi <em>konteks waktu dan lingkungan</em> melalui bintang-bintang ZWDS. Keduanya saling melengkapi, bukan menggantikan.
+  </div>`;
+
   // Summary bar: archetype + wealth %
   if (wa.archetype && wa.dominantStructure) {
-    const topBadge=`<div style="margin-bottom:12px;padding:12px 14px;background:rgba(212,160,23,0.08);border-radius:6px;border:1px solid rgba(212,160,23,0.3);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    const topBadge=`<div style="margin-bottom:12px;padding:12px 14px;background:rgba(160,120,20,0.07);border-radius:6px;border:1px solid rgba(160,120,20,0.3);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <div style="flex:1;min-width:160px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:2px">Arketipe Kekayaan</div>
-        <div style="font-size:15px;font-weight:bold;color:var(--gold)">${esc(wa.archetype.name)}</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:2px">Arketipe Kekayaan (财富原型)</div>
+        <div style="font-size:15px;font-weight:bold;color:var(--gold2)">${esc(wa.archetype.name)}</div>
         <div style="font-size:11px;color:var(--text)">${esc(wa.archetype.desc)}</div>
       </div>
       <div style="text-align:center;min-width:80px">
-        <div style="font-size:10px;color:var(--muted)">财 dalam chart</div>
-        <div style="font-size:22px;font-weight:bold;color:${wa.wealthPct>=20?'#f59e0b':'#8b5cf6'}">${wa.wealthPct}%</div>
+        <div style="font-size:10px;color:var(--muted)">财 (Cái) dalam chart</div>
+        <div style="font-size:22px;font-weight:bold;color:${wa.wealthPct>=20?'#a07010':'#6d3db8'}">${wa.wealthPct}%</div>
       </div>
-      ${wa.clashes.length>0?`<div style="min-width:80px;text-align:center"><div style="font-size:10px;color:var(--muted)">Clash terdeteksi</div><div style="font-size:22px;font-weight:bold;color:#ef4444">${wa.clashes.length}</div></div>`:''}
+      ${wa.clashes.length>0?`<div style="min-width:80px;text-align:center"><div style="font-size:10px;color:var(--muted)">冲 (Chōng) Clash</div><div style="font-size:22px;font-weight:bold;color:#b52020">${wa.clashes.length}</div></div>`:''}
     </div>`;
     el.innerHTML=topBadge+html;
   } else {
@@ -1814,10 +1985,17 @@ function renderWealthNarrative(wa, containerId) {
 // ZWDS META
 // ============================================================
 function renderZwdsMeta(z) {
-  let html = `<div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px">
-    <div>🌟 Lima Unsur Struktur: <strong style="color:var(--gold)">${esc(z.fiveElements?.value||'—')}</strong></div>
-    <div>🏠 Ming Gong: <strong style="color:var(--gold)">${esc(z.mingGong?.name||'—')}</strong></div>
-    <div>🔮 Shen Gong: <strong style="color:var(--gold)">${esc(z.shenGong?.name||'—')}</strong></div>
+  let html = '';
+  if (_result?.bazi?.meta?.unknownHour) {
+    html += `<div style="display:flex;align-items:flex-start;gap:8px;padding:10px 14px;background:rgba(181,32,32,0.08);border:2px solid rgba(181,32,32,0.4);border-radius:6px;margin-bottom:12px;font-size:12px;color:#7a1010;line-height:1.6">
+      <span style="font-size:16px;flex-shrink:0">⚠️</span>
+      <span><strong>Peringatan: Jam lahir tidak diketahui.</strong> Zi Wei Dou Shu (紫微斗数 · Bintang Ungu) sangat bergantung pada jam lahir — susunan 12 Istana (宫 · Gōng) berputar setiap 2 jam. Tanpa jam yang tepat, seluruh peta ZWDS di bawah ini tidak dapat diandalkan. Gunakan hanya sebagai gambaran umum, bukan panduan keputusan.</span>
+    </div>`;
+  }
+  html += `<div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px">
+    <div>🌟 Lima Unsur Struktur (五行局 · Wǔ Xíng Jú): <strong style="color:var(--gold)">${esc(z.fiveElements?.value||'—')}</strong></div>
+    <div>🏠 Ming Gong (命宫 · Istana Nasib): <strong style="color:var(--gold)">${esc(z.mingGong?.name||'—')}</strong></div>
+    <div>🔮 Shen Gong (身宫 · Istana Jiwa): <strong style="color:var(--gold)">${esc(z.shenGong?.name||'—')}</strong></div>
   </div>`;
   document.getElementById('sec-zwds-meta').innerHTML = html;
 }
