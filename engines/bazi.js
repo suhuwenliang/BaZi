@@ -453,6 +453,16 @@ function calculateBazi(params) {
     dominantTenGod, currentDaYun, shenSha, fengshui, careers
   });
 
+  // ---- WEALTH PROFILING ----
+  const structures    = computeStructures(tenGodAggregate);
+  const profiles      = computeProfiles(tenGodAggregate);
+  const aspects       = computeAspects(wuXingDistribution, tenGodAggregate, shenSha);
+  const wealthAnalysis = buildWealthStrategistAnalysis({
+    dayMasterStem, dmElement, yongShen, isDMStrong,
+    tenGodAggregate, hiddenStems, pillars,
+    daYuns, currentDaYun, shenSha, wuXingDistribution
+  });
+
   return {
     meta: {
       inputDate: `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')} ${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`,
@@ -506,7 +516,8 @@ function calculateBazi(params) {
     interpretation,
     exportPrompt: buildClaudeExportPrompt({
       dayMasterStem, pillars, wuXingDistribution, yongShen, daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat
-    })
+    }),
+    wealthProfiling: { structures, profiles, aspects, wealthAnalysis }
   };
 }
 
@@ -762,6 +773,251 @@ ${Object.entries(shenSha).filter(([,v])=>v.active).map(([,v])=>v.name).join(', '
 Total: ${boneWeight.total.display}
 
 Tolong tulis narasi yang mencakup: karakter kepribadian, kekuatan & tantangan hidup, tema karir, kehidupan cinta, dan saran praktis.`;
+}
+
+// ============================================================
+// WEALTH PROFILING ENGINE
+// ============================================================
+
+/**
+ * Map 10 Ten Gods ke 5 Structures (五型格)
+ */
+function computeStructures(tenGodAggregate) {
+  const STRUCTURE_MAP = {
+    '比肩':'biJie','劫财':'biJie',
+    '食神':'shiShang','伤官':'shiShang',
+    '偏财':'cai','正财':'cai',
+    '七杀':'guanSha','正官':'guanSha',
+    '偏印':'yin','正印':'yin'
+  };
+  const META = {
+    biJie:    { name:'比劫', label:'Connectors', nameId:'Penghubung (比劫)', color:'#22c55e', desc:'Networker · Kompetitor · Mandiri' },
+    shiShang: { name:'食伤', label:'Creators',   nameId:'Kreator (食伤)',    color:'#f59e0b', desc:'Kreatif · Ekspresif · Inovatif' },
+    cai:      { name:'财星', label:'Managers',   nameId:'Manajer (财星)',    color:'#f97316', desc:'Pragmatis · Aset · Bisnis' },
+    guanSha:  { name:'官杀', label:'Supporters', nameId:'Supporter (官杀)',  color:'#8b5cf6', desc:'Terstruktur · Berkuasa · Disiplin' },
+    yin:      { name:'印星', label:'Thinkers',   nameId:'Pemikir (印星)',    color:'#3b82f6', desc:'Intelektual · Intuitif · Bijaksana' }
+  };
+  const groups = { biJie:0, shiShang:0, cai:0, guanSha:0, yin:0 };
+  let total = 0;
+  for (const [god, data] of Object.entries(tenGodAggregate)) {
+    const g = STRUCTURE_MAP[god];
+    if (g) { groups[g] += data.totalWeight; total += data.totalWeight; }
+  }
+  if (total === 0) total = 1;
+  return Object.entries(groups).map(([key, weight]) => ({
+    key, ...META[key], weight,
+    pct: Math.round((weight / total) * 100)
+  }));
+}
+
+/**
+ * 10 Profiles dari Ten God Aggregate (十神格)
+ */
+function computeProfiles(tenGodAggregate) {
+  const ALL_GODS = ['比肩','劫财','食神','伤官','偏财','正财','七杀','正官','偏印','正印'];
+  const total = Object.values(tenGodAggregate).reduce((s,v) => s + v.totalWeight, 0) || 1;
+  return ALL_GODS.map(god => {
+    const data = tenGodAggregate[god];
+    const weight = data?.totalWeight || 0;
+    return { god, weight, pct: Math.round((weight / total) * 100), info: data?.info || null };
+  });
+}
+
+/**
+ * 6 Aspects of Life
+ */
+function computeAspects(wuXingDistribution, tenGodAggregate, shenSha) {
+  const total = Object.values(tenGodAggregate).reduce((s,v) => s + v.totalWeight, 0) || 1;
+  function tgPct(gods) {
+    const w = gods.reduce((s,g) => s + (tenGodAggregate[g]?.totalWeight || 0), 0);
+    return Math.min(100, Math.round((w / total) * 150));
+  }
+  const pcts = Object.values(wuXingDistribution).map(d => d.pct);
+  const avg  = pcts.reduce((s,v) => s + v, 0) / 5;
+  const variance = pcts.reduce((s,v) => s + Math.pow(v - avg, 2), 0) / 5;
+  const wellnessScore = Math.max(10, Math.min(100, Math.round(100 - Math.sqrt(variance) * 2.5)));
+  return [
+    { key:'lifePurpose',  labelId:'Tujuan Hidup',  icon:'🌟', pct: tgPct(['偏印','正印']),  color:'#3b82f6', tip:'Kekuatan 印星 — kedalaman, wisdom, tujuan hidup' },
+    { key:'financial',    labelId:'Finansial',      icon:'💰', pct: tgPct(['偏财','正财']),  color:'#f59e0b', tip:'Kekuatan 财星 — menghasilkan & mengelola kekayaan' },
+    { key:'relationship', labelId:'Hubungan',       icon:'❤️', pct: tgPct(['七杀','正官']), color:'#ec4899', tip:'Kekuatan 官杀 — kualitas relasi romantis & sosial' },
+    { key:'family',       labelId:'Keluarga',       icon:'🏠', pct: tgPct(['比肩','劫财']),  color:'#22c55e', tip:'Kekuatan 比劫 — dukungan keluarga & peer network' },
+    { key:'wellness',     labelId:'Kesehatan',      icon:'🌿', pct: wellnessScore,            color:'#10b981', tip:'Keseimbangan Wu Xing — semakin balance semakin sehat' },
+    { key:'contribution', labelId:'Kontribusi',     icon:'✨', pct: tgPct(['食神','伤官']),  color:'#f97316', tip:'Kekuatan 食伤 — kemampuan memberi output & kontribusi' }
+  ];
+}
+
+/**
+ * Bangun narasi Wealth Strategist Analysis (rule-based, dua prompt)
+ */
+function buildWealthStrategistAnalysis({ dayMasterStem, dmElement, yongShen, isDMStrong,
+  tenGodAggregate, hiddenStems, pillars, daYuns, currentDaYun, shenSha, wuXingDistribution }) {
+
+  const EL  = { '木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air' };
+  const CONTROLS = { '木':'土','火':'金','土':'水','金':'木','水':'火' };
+  const wealthElement = CONTROLS[dmElement];
+
+  // Hidden 财 in branches
+  const hiddenWealth = [];
+  for (const [pName, hs] of Object.entries(hiddenStems)) {
+    for (const s of hs.stems) {
+      if (s.tenGod === '偏财' || s.tenGod === '正财') {
+        hiddenWealth.push({ pillar:pName, stem:s.stem, weight:s.weight, type:s.tenGod });
+      }
+    }
+  }
+
+  const structures  = computeStructures(tenGodAggregate);
+  const dominantStr = [...structures].sort((a,b) => b.pct - a.pct)[0];
+  const totalTGW    = Object.values(tenGodAggregate).reduce((s,v) => s+v.totalWeight, 0) || 1;
+  const wealthWeight = (tenGodAggregate['偏财']?.totalWeight||0)+(tenGodAggregate['正财']?.totalWeight||0);
+  const wealthPct   = Math.round((wealthWeight/totalTGW)*100);
+
+  // Branch clashes
+  const CLASHES = {'子':'午','午':'子','丑':'未','未':'丑','寅':'申','申':'寅','卯':'酉','酉':'卯','辰':'戌','戌':'辰','巳':'亥','亥':'巳'};
+  const allBr   = [pillars.year.zhi,pillars.month.zhi,pillars.day.zhi,pillars.hour.zhi];
+  const BRN     = ['Tahun','Bulan','Hari','Jam'];
+  const clashes = [];
+  for (let i=0; i<allBr.length; i++) for (let j=i+1; j<allBr.length; j++) {
+    if (CLASHES[allBr[i]]===allBr[j]) clashes.push({b1:allBr[i],b2:allBr[j],p1:BRN[i],p2:BRN[j]});
+  }
+
+  // Peak & good Da Yuns
+  const sortedDY  = [...daYuns].sort((a,b)=>(b.quality.score||0)-(a.quality.score||0));
+  const peakDaYun = sortedDY[0];
+  const goodDaYuns = daYuns.filter(d=>(d.quality.score||0)>=2);
+  const cyear = new Date().getFullYear();
+
+  const DM_PROFILE = {
+    '木':{ archetype:'Pertumbuhan Organik',       advice:'Properti, edukasi, konten digital, jaringan distribusi, agrikultur, fesyen, furnitur' },
+    '火':{ archetype:'Karisma & Transformasi',    advice:'Entertainment, marketing, branding, event organizer, public speaking, hospitality, kuliner premium' },
+    '土':{ archetype:'Fondasi Kuat & Akumulasi',  advice:'Real estate, investasi jangka panjang, bisnis makanan/minuman, manajemen proyek, logistik' },
+    '金':{ archetype:'Presisi & Efisiensi',        advice:'Keuangan, teknologi, manufaktur presisi, hukum, konsultasi, mining, perhiasan, trading' },
+    '水':{ archetype:'Adaptabilitas & Fleksibilitas', advice:'E-commerce, trading, logistik, media, informasi, investasi multipel, travel, import-export' }
+  };
+  const dmP = DM_PROFILE[dmElement] || { archetype:'Multidimensional', advice:'Lihat rekomendasi berdasarkan Yong Shen dan struktur dominan' };
+
+  const ARCH_MAP = {
+    biJie:   {name:'Kolaborator Kekayaan', desc:'Kekuatan Anda ada pada jaringan dan kemitraan strategis'},
+    shiShang:{name:'Kreator Kekayaan',     desc:'Kekuatan Anda ada pada menciptakan produk/jasa/kreasi bernilai'},
+    cai:     {name:'Magnet Kekayaan',      desc:'Kekuatan Anda ada pada mengelola, menarik, dan mengakumulasi aset'},
+    guanSha: {name:'Pemimpin Kekayaan',    desc:'Kekuatan Anda ada pada posisi otoritas dan kepemimpinan terstruktur'},
+    yin:     {name:'Arsitek Kekayaan',     desc:'Kekuatan Anda ada pada pengetahuan, strategi, dan visi jangka panjang'}
+  };
+  const archetype = ARCH_MAP[dominantStr.key] || {name:'Multidimensi',desc:'Energi Anda tersebar merata di berbagai domain'};
+
+  const YONG_ACT = {
+    '木':'Kerjakan di lingkungan hijau/alam · Perkuat networking organik · Partner ideal: elemen Kayu atau Air',
+    '火':'Bangun personal brand dan visibilitas · Aktif di social media & public speaking · Partner: elemen Api atau Kayu',
+    '土':'Bangun rutinitas stabil dan sistem · Investasikan di aset fisik/properti · Partner: elemen Tanah atau Api',
+    '金':'Fokus pada presisi dan kualitas tinggi · Kembangkan bidang teknis/analitis · Partner: elemen Logam atau Tanah',
+    '水':'Diversifikasi portfolio penghasilan · Tingkatkan adaptabilitas dan networking · Partner: elemen Air atau Logam'
+  };
+
+  const STRUCT_OPEN = {
+    biJie:   'Kemitraan strategis dan jaringan. Bisnis co-founding, distribusi melalui mitra, atau value network.',
+    shiShang:'Kreasi dan ekspresi. Monetisasi keahlian dan kreativitas secara langsung — setiap karya adalah aset.',
+    cai:     'Pengelolaan aset aktif. Anda punya instinct bisnis alami — percayai itu. Akuisisi, optimasi cashflow, dan diversifikasi.',
+    guanSha: 'Posisi dan otoritas. Karir terstruktur, kepemimpinan dalam organisasi besar, atau usaha berbasis regulasi.',
+    yin:     'Pengetahuan dan strategi. Jual expertise, konsultasi, atau intellectual property. Investasi berbasis riset mendalam.'
+  };
+
+  const STRUCT_ACTIONS = {
+    biJie:   '• Identifikasi 3-5 partner strategis potensial\n• Bangun sistem revenue sharing yang adil dan sustainable\n• Bergabung dengan mastermind group atau komunitas bisnis',
+    shiShang:'• Dokumentasikan dan monetisasi keahlian (kursus, buku, konsultasi)\n• Buat konten bernilai tinggi minimal 1x/minggu untuk membangun authority\n• Kembangkan produk/IP yang bisa diskala tanpa keterlibatan 1:1',
+    cai:     '• Review dan optimalkan portofolio aset setiap kuartal\n• Target: 30% penghasilan masuk ke instrumen investasi terstruktur\n• Pelajari 1 aset class baru per tahun (saham, properti, bisnis, dll)',
+    guanSha: '• Investasi karir: target posisi leadership dalam 2-3 tahun ke depan\n• Bangun track record tertulis dari setiap pencapaian\n• Network di level atas — mentoring dari senior, bergabung asosiasi profesi',
+    yin:     '• Kembangkan intellectual property: buku, sistem, metodologi, framework\n• Jual expertise melalui konsultasi premium, bukan jual waktu\n• Investasi berbasis research mendalam (value investing, niche market)'
+  };
+
+  // ---- SECTION: Archetype
+  const secArchetype = `Arketipe kekayaan Anda: **${archetype.name}** (dominan ${dominantStr.nameId} ${dominantStr.pct}%). ${archetype.desc}.\n\nSebagai Day Master ${dayMasterStem} (${dmElement}), Anda adalah tipe **${dmP.archetype}** — ${isDMStrong ? 'energi Day Master kuat, kapasitas besar untuk menggerakkan aset dan membuat keputusan.' : 'Day Master membutuhkan support — bangun fondasi kuat sebelum ekspansi agresif.'}\n\nElemen kekayaan (财): **${wealthElement} (${EL[wealthElement]})** yang DM Anda kendalikan. Bintang 财 dalam chart: **${wealthPct}%**${wealthPct < 12 ? ' — lemah, perlu diaktivasi melalui Da Yun yang tepat' : wealthPct > 35 ? ' — kuat, radar bisnis alami Anda tajam' : ' — sehat untuk pertumbuhan finansial berkelanjutan'}.`;
+
+  // ---- SECTION: Opening & Acquisition
+  const secOpening = `${isDMStrong
+    ? `Day Master **kuat (旺身)** — yang dibutuhkan bukan mengisi energi tapi **menyalurkannya**. Membuka keran rezeki berarti menciptakan OUTPUT yang bernilai.\n\nYong Shen: **${yongShen} (${EL[yongShen]})** adalah "saluran" Anda — aktivitas dan lingkungan yang membawa energi ${yongShen} akan membuka aliran rezeki secara organik.`
+    : `Day Master **lemah (弱身)** — sinyal bahwa Anda perlu **fondasi kuat** sebelum ekspansi. Bangun support system: mentor, modal, dan lingkungan yang mendukung.\n\nYong Shen: **${yongShen} (${EL[yongShen]})** adalah "bahan bakar" Anda — cari lingkungan dan partner yang memperkuat elemen ini dalam hidup.`
+  }\n\n**Jalur kekayaan berdasarkan struktur dominan:**\n${STRUCT_OPEN[dominantStr.key]||'Multidimensional — fokus pada 1-2 jalur utama agar energi tidak tersebar.'}\n\n**Bidang rekomendasi:** ${dmP.advice}`;
+
+  // ---- SECTION: Day Master & Hidden Wealth
+  const PILLAR_D = {year:'Pilar Tahun',month:'Pilar Bulan',day:'Pilar Hari',hour:'Pilar Jam'};
+  let secHidden = `Day Master ${dayMasterStem} (${dmElement}) ${isDMStrong ? 'kuat dan dominan' : 'membutuhkan support'} dalam chart ini.\n\n`;
+  if (hiddenWealth.length > 0) {
+    secHidden += `**Hidden Wealth ditemukan:**\n`;
+    hiddenWealth.forEach(hw => {
+      secHidden += `• ${PILLAR_D[hw.pillar]}: ${hw.stem} (${hw.type}, ${hw.weight}%) — ${hw.weight>=60?'sumber kekayaan UTAMA — energi kuat dan dominan':hw.weight>=20?'sumber kekayaan menengah — perlu diaktivasi':'kekayaan tersembunyi laten — muncul saat kondisi tepat'}\n`;
+    });
+    secHidden += `\nHidden Wealth menunjukkan bahwa sumber rezeki Anda tidak selalu terlihat di permukaan — ada potensi tersembunyi yang bisa diungkap dengan timing Da Yun yang tepat.\n\n`;
+  } else {
+    secHidden += `**Hidden Wealth:** Tidak ada 财 tersembunyi di branch chart. Kekayaan lebih dipengaruhi oleh Heavenly Stems manifest atau diaktivasi melalui Da Yun.\n\n`;
+  }
+  secHidden += `**Elemen kekayaan: ${wealthElement} (${EL[wealthElement]})** — semua yang bisa Anda "miliki dan kelola". ${isDMStrong ? 'Kapasitas besar untuk memegang kekayaan. Prioritaskan retensi (saving, investasi jangka panjang) sebelum ekspansi agresif.' : 'Fokus pada membangun kapasitas terlebih dulu — mentor, modal eksternal, atau keahlian yang meningkatkan nilai jual — sebelum mengambil risiko besar.'}`;
+
+  // ---- SECTION: Luck Pillars
+  let secLuck = '';
+  if (currentDaYun) {
+    secLuck += `**Da Yun Saat Ini: ${currentDaYun.ganzhi}** (Usia ${currentDaYun.ageStart}–${currentDaYun.ageEnd}, ${currentDaYun.yearStart}–${currentDaYun.yearEnd})\nRating: **${currentDaYun.quality.rating}** | ${currentDaYun.quality.desc}\n\n`;
+    const sc = currentDaYun.quality.score||0;
+    if (sc >= 2) secLuck += `⭐ **Anda sedang di periode emas.** Ambil langkah berani sekarang — buka bisnis baru, lakukan investasi signifikan, atau expand ke market baru. Jangan biarkan momentum ini berlalu.\n\n`;
+    else if (sc >= 0) secLuck += `⚡ **Periode netral-menantang.** Bukan waktu untuk langkah agresif — waktu terbaik untuk konsolidasi, belajar, dan membangun fondasi bagi Da Yun berikutnya.\n\n`;
+    else secLuck += `🔴 **Periode menantang.** Fokus pada pertahanan aset, hindari risiko tinggi. Persiapan Anda sekarang menentukan lompatan di Da Yun berikutnya.\n\n`;
+  }
+  if (peakDaYun) {
+    secLuck += `**Puncak Emas: ${peakDaYun.ganzhi}** (Usia ${peakDaYun.ageStart}–${peakDaYun.ageEnd}, ${peakDaYun.yearStart}–${peakDaYun.yearEnd})\n`;
+    if (peakDaYun.isCurrent) secLuck += `🌟 **Anda sedang di puncak emas SEKARANG.** Manfaatkan sepenuhnya — setiap keputusan besar memiliki dampak jangka panjang jauh lebih besar dari periode lain.\n\n`;
+    else if (peakDaYun.yearStart > cyear) secLuck += `Datang dalam ${peakDaYun.yearStart - cyear} tahun. Bangun fondasi sekarang: modal, jaringan, keahlian, dan track record agar saat puncak tiba Anda siap bergerak penuh.\n\n`;
+    else secLuck += `Periode puncak ini sudah berlalu, namun pelajarannya tetap relevan dan Da Yun baik berikutnya masih bisa dimanfaatkan.\n\n`;
+  }
+  if (goodDaYuns.length > 0) {
+    secLuck += `**Semua periode menguntungkan:**\n`;
+    goodDaYuns.forEach(dy => {
+      const tag = dy.isCurrent ? ' ← SAAT INI' : dy.yearStart > cyear ? ' (mendatang)' : ' (berlalu)';
+      secLuck += `• **${dy.ganzhi}** (Usia ${dy.ageStart}–${dy.ageEnd}): ${dy.quality.rating}${tag}\n`;
+    });
+  }
+
+  // ---- SECTION: Risk & Bottleneck
+  const risks = [];
+  clashes.forEach(c => risks.push(`**Clash ${c.p1}↔${c.p2} (${c.b1}冲${c.b2})** — benturan energi antar pilar. Hindari perubahan besar (pindah, investasi besar) saat tahun yang berkaitan dengan branch ini aktif. Gunakan harmonisasi elemen (warna, arah Feng Shui) sebagai mitigasi.`));
+  if (shenSha?.yangRen?.active) risks.push(`**Yang Ren (羊刃) aktif** — pedang bermata dua. Kemampuan menghasilkan besar tetapi risiko kerugian juga besar. Terapkan disiplin keuangan ketat: selalu sisihkan 20-30% penghasilan, konsultasikan investasi besar dengan advisor sebelum eksekusi.`);
+  if (shenSha?.jieSha?.active) risks.push(`**Jie Sha (劫煞) aktif** — risiko kerugian dari pihak ketiga (partner curang, penipuan, persaingan merusak). Perkuat due diligence, gunakan kontrak legal kuat, dan diversifikasi — jangan taruh semua telur dalam satu keranjang.`);
+  if (wealthPct < 10) risks.push(`**财 lemah (${wealthPct}%)** — kapasitas menangkap kekayaan terbatas. Kompensasi dengan sistem keuangan otomatis (auto-debit tabungan, investasi rutin) dan pilih profesi dengan penghasilan predictable daripada windfall tidak menentu.`);
+  const ysPct = wuXingDistribution[yongShen]?.pct || 0;
+  if (ysPct < 15) risks.push(`**Yong Shen ${yongShen}/${EL[yongShen]} lemah (${ysPct}%)** — elemen kunci kurang support dalam chart. Aktifkan melalui lingkungan fisik (warna, material), aktivitas harian, dan partner yang memiliki elemen ${yongShen} kuat.`);
+  const outputW = (tenGodAggregate['食神']?.totalWeight||0)+(tenGodAggregate['伤官']?.totalWeight||0);
+  const outputPct = Math.round((outputW/totalTGW)*100);
+  if (isDMStrong && outputPct < 10) risks.push(`**DM kuat tapi Output/食伤 sangat lemah (${outputPct}%)** — energi personal besar tapi saluran output terbatas. Ciptakan platform untuk mengekspresikan keahlian (teaching, writing, product development, content).`);
+
+  let secRisk = '';
+  if (risks.length === 0) {
+    secRisk = `✅ **Chart Anda relatif bersih dari risiko finansial besar.** Tidak ditemukan clash signifikan atau bintang pengganggu dominan. Fokus utama adalah optimasi, bukan mitigasi.\n\nTetap terapkan prinsip sehat: diversifikasi aset, emergency fund 6 bulan, dan investasi rutin tanpa menunggu "waktu sempurna".`;
+  } else {
+    secRisk = `**${risks.length} risiko teridentifikasi dalam chart:**\n\n`;
+    risks.forEach((r,i) => { secRisk += `${i+1}. ${r}\n\n`; });
+  }
+
+  // ---- SECTION: Strategic Actions
+  let secStrategy = `**Bidang Usaha Optimal untuk ${dayMasterStem} (${dmElement}):**\n${dmP.advice}\n\n`;
+  secStrategy += `**Aktivasi Yong Shen ${yongShen} (${EL[yongShen]}) dalam keseharian:**\n${YONG_ACT[yongShen]||'—'}\n\n`;
+  secStrategy += `**Aksi spesifik untuk ${dominantStr.nameId}:**\n${STRUCT_ACTIONS[dominantStr.key]||'—'}\n\n`;
+  if (currentDaYun) {
+    secStrategy += `**Timing — kondisi saat ini (${currentDaYun.ganzhi}, ${currentDaYun.quality.rating}):**\n`;
+    const sc = currentDaYun.quality.score||0;
+    if (sc >= 3) secStrategy += `✅ Ajukan proposal bisnis/investasi besar yang sudah matang dalam 6 bulan ke depan\n✅ Ekspansi kapasitas: hire, tambah produk/layanan, atau masuk market baru\n✅ Aktif di konferensi industri — bangun relationship dengan pemain kunci`;
+    else if (sc >= 0) secStrategy += `⚡ Konsolidasi posisi yang sudah ada sebelum buka front baru\n⚡ Investasi di pendidikan/sertifikasi/skill yang meningkatkan nilai jual\n⚡ Jaga dan perkuat relasi yang sudah ada sebagai modal Da Yun berikutnya`;
+    else secStrategy += `🔴 Prioritaskan likuiditas — pastikan emergency fund dan cashflow tetap positif\n🔴 Tunda ekspansi atau investasi spekulatif hingga Da Yun berganti\n🔴 Upgrade skill inti untuk meningkatkan kompetensi dan nilai jual Anda`;
+  }
+
+  return {
+    archetype, dominantStructure: dominantStr, wealthPct, hiddenWealth, clashes, peakDaYun, goodDaYuns,
+    sections: {
+      archetype: { title:'🏆 Arketipe Kekayaan Anda',                        content: secArchetype },
+      opening:   { title:'🔓 Membuka & Mengakuisisi Kekayaan',               content: secOpening  },
+      hidden:    { title:'💎 Day Master & Hidden Wealth',                     content: secHidden   },
+      luck:      { title:'⏳ Navigasi Luck Pillars — Timing & Milestone',     content: secLuck     },
+      risk:      { title:'⚠️ Risk & Bottleneck Management',                  content: secRisk     },
+      strategy:  { title:'🎯 Langkah Konkret & Rekomendasi Strategis',       content: secStrategy }
+    }
+  };
 }
 
 module.exports = { calculateBazi, computeTenGod, HIDDEN_STEMS, STEM_ELEMENT, BRANCH_ELEMENT };
