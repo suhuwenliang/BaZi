@@ -260,6 +260,8 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   /* Wealth Profiling print */
   #wealth-profiling-section { display: block !important; }
   #sec-wealth > div { page-break-inside: avoid; }
+  /* Name Recommendation print */
+  #name-rec-section { display: block !important; }
   #sec-profiles, #sec-aspects, #sec-structures, #sec-wealth { display: block !important; }
   .pillar-card .ganzhi { color: #5a3a00 !important; }
   .pillar-card .ganzhi-detail { color: #555 !important; }
@@ -796,6 +798,15 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   </div>
 </div>
 
+<!-- ===== SECTION 2R: REKOMENDASI NAMA MANDARIN ===== -->
+<div class="card" id="name-rec-section" style="display:none">
+  <div class="card-header">
+    <div class="section-num" style="background:linear-gradient(135deg,#2a7a4a,#1a5a35);color:#fff;font-size:9px;letter-spacing:0;padding:2px 3px">2R</div>
+    <h2>Rekomendasi Nama Mandarin 中文名推荐 — Berdasarkan Yong Shen</h2>
+  </div>
+  <div class="card-body" id="sec-name-rec"></div>
+</div>
+
 <!-- ===== TOMBOL TRIGGER ANALISA TAMBAHAN ===== -->
 <div class="no-print" id="compat-triggers" style="margin:20px 0 8px; display:none; gap:10px; flex-wrap:wrap; justify-content:center">
   <button class="btn btn-secondary" onclick="showCompatSection('spouse')" style="border:1px solid var(--gold);color:var(--gold2)">
@@ -1029,6 +1040,9 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
 // ============================================================
 function renderAll(d, input) {
   renderName(d.nameAnalysis, input);
+  if (d.nameAnalysis?.chinese && d.bazi?.yongShen) {
+    renderNameRecommendation(d.nameAnalysis.chinese, d.bazi.yongShen, input);
+  }
   if (d.bazi && !d.bazi.error) {
     render3A(d.bazi);
     render3B(d.bazi);
@@ -1187,21 +1201,77 @@ function renderName(na, input) {
       const score = harm.score || 0;
       const maxScore = 5; // score is 0-5
       const pct = Math.min(100, Math.round((score/maxScore)*100));
-      html += `<div style="margin-bottom:8px">
-        <div style="font-size:12px; color:var(--muted); margin-bottom:4px">
-          Keselarasan dengan Yong Shen BaZi: <strong style="color:var(--gold2)">${esc(harm.rating||score+'/5')}</strong>
+      // Per-character Yong Shen alignment
+      const yongShen = _result?.bazi?.yongShen || '';
+      const ys_name = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'}[yongShen] || yongShen;
+      // Element harmony map: what helps, what opposes
+      const EL_HARMONY = {
+        '木': { helps:['木','水'], neutral:['火'], weakens:['金','土'], color:'#4caf7d', desc:'Kayu (木) adalah Yong Shen Anda. Karakter dengan unsur Kayu langsung memperkuat energi pelindung Anda. Karakter Air (水) juga mendukung karena Air menghasilkan Kayu (水生木).' },
+        '火': { helps:['火','木'], neutral:['土'], weakens:['水','金'], color:'#e57373', desc:'Api (火) adalah Yong Shen Anda. Karakter Api langsung memperkuat. Kayu (木) mendukung karena Kayu menghasilkan Api (木生火).' },
+        '土': { helps:['土','火'], neutral:['金'], weakens:['木','水'], color:'#c8960d', desc:'Tanah (土) adalah Yong Shen Anda. Karakter Tanah langsung memperkuat. Api (火) mendukung karena Api menghasilkan Tanah (火生土).' },
+        '金': { helps:['金','土'], neutral:['水'], weakens:['火','木'], color:'#b0bec5', desc:'Logam (金) adalah Yong Shen Anda. Karakter Logam langsung memperkuat. Tanah (土) mendukung karena Tanah menghasilkan Logam (土生金).' },
+        '水': { helps:['水','金'], neutral:['木'], weakens:['土','火'], color:'#4a90d9', desc:'Air (水) adalah Yong Shen Anda. Karakter Air langsung memperkuat. Logam (金) mendukung karena Logam menghasilkan Air (金生水).' },
+      };
+      const ysMap = EL_HARMONY[yongShen] || {};
+      // Analyze each char
+      const allChars = cn.chars || cn.characters || [];
+      const givenChars = allChars.slice(1); // skip surname
+      let charAnalysis = '';
+      if (givenChars.length > 0 && yongShen) {
+        charAnalysis = '<div style="margin:10px 0; display:flex; gap:10px; flex-wrap:wrap">';
+        givenChars.forEach(c => {
+          const el = c.element || '?';
+          let tag = 'neutral', tagColor = 'var(--muted)', tagLabel = 'Netral', tagIcon = '○';
+          if (ysMap.helps && ysMap.helps.includes(el)) { tag='helps'; tagColor='var(--green)'; tagLabel='Mendukung Yong Shen'; tagIcon='✓'; }
+          else if (ysMap.weakens && ysMap.weakens.includes(el)) { tag='weakens'; tagColor='var(--red)'; tagLabel='Melemahkan Yong Shen'; tagIcon='✗'; }
+          charAnalysis += `<div style="background:var(--surface2); border:2px solid ${tag==='helps'?'rgba(42,122,74,0.4)':tag==='weakens'?'rgba(181,32,32,0.3)':'var(--border)'}; border-radius:8px; padding:10px 14px; text-align:center; min-width:100px">
+            <div style="font-size:28px; color:var(--gold); font-family:serif">${esc(c.char)}</div>
+            <div style="font-size:11px; color:var(--muted)">${esc(c.strokes||'?')} goresan</div>
+            <div style="font-size:12px; color:${colorForElement(el)}; font-weight:600; margin:4px 0">Unsur: ${esc(el)}</div>
+            <div style="font-size:11px; color:${tagColor}; font-weight:700">${tagIcon} ${esc(tagLabel)}</div>
+          </div>`;
+        });
+        charAnalysis += '</div>';
+      }
+      // Daily life impact based on score
+      const YS_DAILY_IMPACT = {
+        '木': {
+          high: 'Nama Anda secara aktif mengundang energi pertumbuhan, kreativitas, dan kemajuan ke dalam keseharian. Nama dengan unsur Kayu cocok digunakan dalam konteks bisnis, seni kreatif, pendidikan, atau kepemimpinan. Setiap kali nama ini disebut, ia memperkuat jalur Yong Shen (Kayu) yang paling dibutuhkan chart Anda — terutama penting karena Kayu adalah 0% dalam chart kelahiran Anda, sehingga nama menjadi "jembatan" energi yang vital.',
+          mid:  'Nama Anda memberikan sentuhan energi Kayu, namun belum optimal. Pertimbangkan untuk menambah unsur Kayu melalui nama panggilan, tanda tangan, atau nama perusahaan agar energi Yong Shen lebih terpadu dalam kehidupan sehari-hari.',
+          low:  'Nama Anda saat ini kurang memperkuat Yong Shen Kayu. Unsur yang dominan dalam nama bisa menciptakan gesekan energetik. Untuk menyeimbangkan, perkuat Yong Shen melalui cara lain: lingkungan bercorak hijau/biru-hijau, profesi yang berkaitan dengan pertumbuhan, seni, atau alam.',
+        },
+        '火': { high:'Energi Api dalam nama memperkuat vitalitas, karisma, dan ekspresi diri — semua yang Anda butuhkan.', mid:'Ada sentuhan Api, namun bisa lebih optimal dengan nama panggilan ber-unsur Api.', low:'Pertimbangkan memperkuat Yong Shen Api melalui warna merah/oranye di lingkungan Anda.' },
+        '土': { high:'Energi Tanah memperkuat stabilitas, kepercayaan, dan ketahanan — fondasi karir Anda.', mid:'Ada sentuhan Tanah, namun bisa diperkuat lebih lanjut.', low:'Perkuat Yong Shen Tanah melalui lingkungan bernuansa coklat/kuning emas.' },
+        '金': { high:'Energi Logam dalam nama memperkuat ketegasan, struktur, dan presisi — mendukung jalur Anda.', mid:'Ada sentuhan Logam, bisa diperkuat lebih lanjut.', low:'Perkuat Yong Shen Logam melalui lingkungan bernuansa putih/abu-abu metalik.' },
+        '水': { high:'Energi Air dalam nama memperkuat fleksibilitas, intuisi, dan kebijaksanaan — energi alami Anda.', mid:'Ada sentuhan Air, bisa diperkuat lebih lanjut.', low:'Perkuat Yong Shen Air melalui lingkungan bernuansa biru/hitam.' },
+      };
+      const dailyMap = YS_DAILY_IMPACT[yongShen] || {};
+      const dailyMsg = pct>=70 ? (dailyMap.high||'') : pct>=40 ? (dailyMap.mid||'') : (dailyMap.low||'');
+      html += `<div style="margin-bottom:12px; border:1px solid rgba(160,120,20,0.2); border-radius:8px; overflow:hidden">
+        <div style="background:rgba(160,120,20,0.07); padding:10px 14px; border-bottom:1px solid rgba(160,120,20,0.15)">
+          <strong style="color:var(--gold2)">🧭 Keselarasan Nama dengan Yong Shen ${esc(yongShen)} (${esc(ys_name)}) BaZi</strong>
         </div>
-        <div class="bar-track" style="height:12px; overflow:hidden">
-          <div style="width:${pct}%; height:100%; background:${pct>=70?'var(--green)':pct>=40?'var(--gold)':'var(--red)'}; border-radius:8px"></div>
-        </div>
-        ${harm.notes ? `<div style="font-size:11px; color:var(--muted); margin-top:4px">${harm.notes.map(n=>`• ${esc(n)}`).join('<br>')}</div>` : ''}
-        <div style="font-size:11px; color:var(--text); margin-top:8px; padding:8px 10px; background:var(--surface); border-radius:6px; line-height:1.7">
-          ${pct>=70
-            ? '✅ <strong>Nama ini selaras baik dengan BaZi Anda.</strong> Nama ini secara energetik mendukung Yong Shen (unsur pelindung) Anda, artinya setiap kali nama ini dipanggil atau ditulis, energinya memperkuat keseimbangan chart Anda secara positif dalam jangka panjang.'
-            : pct>=40
-            ? '🟡 <strong>Keselarasan sedang.</strong> Nama ini tidak menghalangi, tapi juga tidak secara aktif memperkuat Yong Shen Anda. Dalam kehidupan sehari-hari, dampaknya netral. Jika ingin memaksimalkan energi nama, pertimbangkan nama yang unsurnya lebih selaras dengan BaZi.'
-            : '⚠️ <strong>Keselarasan masih perlu diperkuat.</strong> Nama ini kurang selaras dengan Yong Shen BaZi. Ini tidak berarti nama harus segera diubah — namun bisa diperkuat dengan nama panggilan atau tambahan nama yang unsurnya lebih mendukung. Fokus pada cara lain memperkuat Yong Shen melalui warna, aktivitas, dan lingkungan.'
-          }
+        <div style="padding:14px">
+          ${yongShen && ysMap.desc ? `<div style="font-size:12px; color:var(--text); margin-bottom:10px; padding:8px 12px; background:rgba(160,120,20,0.05); border-radius:6px; border-left:3px solid ${ysMap.color||'var(--gold)'}"><strong style="color:${ysMap.color||'var(--gold)'}">Yong Shen (用神) Anda = ${esc(yongShen)} ${esc(ys_name)}</strong><br>${esc(ysMap.desc)}</div>` : ''}
+          ${charAnalysis}
+          <div style="font-size:12px; color:var(--muted); margin-bottom:6px">
+            Skor Keselarasan: <strong style="color:var(--gold2)">${esc(harm.rating||score+'/5')}</strong>
+          </div>
+          <div class="bar-track" style="height:12px; overflow:hidden; margin-bottom:8px">
+            <div style="width:${pct}%; height:100%; background:${pct>=70?'var(--green)':pct>=40?'var(--gold)':'var(--red)'}; border-radius:8px"></div>
+          </div>
+          ${harm.notes ? `<div style="font-size:11px; color:var(--muted); margin-bottom:8px">${harm.notes.map(n=>`• ${esc(n)}`).join('<br>')}</div>` : ''}
+          <div style="font-size:12px; color:var(--text); padding:10px 12px; background:var(--surface); border-radius:6px; line-height:1.7; border-left:3px solid ${pct>=70?'var(--green)':pct>=40?'var(--gold)':'var(--red)'}">
+            ${pct>=70
+              ? '✅ <strong>Nama ini selaras baik dengan Yong Shen BaZi Anda.</strong> '
+              : pct>=40
+              ? '🟡 <strong>Keselarasan sedang.</strong> '
+              : '⚠️ <strong>Keselarasan perlu diperkuat.</strong> '
+            }${esc(dailyMsg)}
+          </div>
+          ${pct < 70 ? `<div style="margin-top:10px; font-size:12px; color:var(--blue); padding:8px 12px; background:rgba(26,95,168,0.06); border-radius:6px">
+            💡 <strong>Tips:</strong> Lihat Section 2R (Rekomendasi Nama) di bawah untuk pilihan nama dengan keselarasan Yong Shen yang lebih tinggi — tetap menggunakan marga yang sama.
+          </div>` : ''}
         </div>
       </div>`;
     }
@@ -1222,6 +1292,275 @@ function elementFromStrokeNum(n) {
   if (r===6||r===7) return '金';
   if (r===8||r===9) return '水';
   return '?';
+}
+
+// ============================================================
+// SECTION 2R: REKOMENDASI NAMA MANDARIN
+// ============================================================
+function renderNameRecommendation(cn, yongShen, input) {
+  const sec = document.getElementById('name-rec-section');
+  const container = document.getElementById('sec-name-rec');
+  if (!cn || !yongShen || !sec || !container) return;
+
+  // Extract marga (surname = first char)
+  const fullName = cn.fullName || '';
+  const chars = cn.chars || cn.characters || [];
+  if (chars.length === 0) return;
+  const marga = chars[0]; // surname object {char, strokes, element, ...}
+  const margaChar = marga.char || fullName[0] || '';
+  const margaStrokes = marga.strokes || 0;
+
+  // ---- Five Grid Calculator ----
+  function fiveGrid(s, c1, c2) {
+    // s=surname strokes, c1=first given name strokes, c2=second given name strokes
+    return {
+      tian: s + 1,
+      ren: s + c1,
+      di: c1 + c2,
+      wai: c2 + 1,
+      zong: s + c1 + c2,
+    };
+  }
+
+  function strokeQualityShort(n) {
+    const n81 = n < 1 ? 1 : n > 81 ? ((n-1)%81)+1 : n;
+    const JI = new Set([1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,38,39,41,45,47,48,52,57,61,63,65,67,68,81]);
+    if (JI.has(n81)) return { icon:'吉', color:'#22c55e' };
+    return { icon:'凶', color:'#ef4444' };
+  }
+
+  // ---- Yong Shen element helper ----
+  const YS_COLOR = {'木':'#4caf7d','火':'#e57373','土':'#c8960d','金':'#9e9e9e','水':'#4a90d9'};
+  const YS_NAME_ID = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+  const YS_EL_HELP = {
+    '木':['木','水'], '火':['火','木'], '土':['土','火'], '金':['金','土'], '水':['水','金'],
+  };
+  const ysHelps = YS_EL_HELP[yongShen] || [];
+  const ysColor = YS_COLOR[yongShen] || 'var(--gold)';
+  const ysName = YS_NAME_ID[yongShen] || yongShen;
+
+  // ---- Name database keyed by Yong Shen ----
+  // Each entry: { char, pinyin, strokes, meaning, gender }
+  // strokes ending in 1 or 2 = 木; 3-4 = 火; 5,0 = 土; 6-7 = 金; 8-9 = 水
+  const NAME_DB = {
+    '木': [
+      { char:'棋', pinyin:'Qí',   strokes:12, meaning:'Strategi & kecerdasan (catur)' },
+      { char:'智', pinyin:'Zhì',  strokes:12, meaning:'Kebijaksanaan & kecerdasan tinggi' },
+      { char:'景', pinyin:'Jǐng', strokes:12, meaning:'Kemakmuran, cahaya, pemandangan indah' },
+      { char:'博', pinyin:'Bó',   strokes:12, meaning:'Pengetahuan luas, terpelajar' },
+      { char:'棠', pinyin:'Táng', strokes:12, meaning:'Pohon mulia, keanggunan alami' },
+      { char:'然', pinyin:'Rán',  strokes:12, meaning:'Alami, pasti, integritas natural' },
+      { char:'梓', pinyin:'Zǐ',   strokes:11, meaning:'Pohon katalpah — keteguhan, kampung halaman' },
+      { char:'彬', pinyin:'Bīn',  strokes:11, meaning:'Elegan, berbudaya, berbudi pekerti' },
+      { char:'晨', pinyin:'Chén', strokes:11, meaning:'Fajar, awal yang cerah & penuh harapan' },
+      { char:'涵', pinyin:'Hán',  strokes:11, meaning:'Lapang dada, toleransi, kedalaman batin' },
+    ],
+    '火': [
+      { char:'昭', pinyin:'Zhāo', strokes:9, meaning:'Bersinar, kemuliaan yang jelas' },
+      { char:'烨', pinyin:'Yè',   strokes:13, meaning:'Berkobar, bersinar terang' },
+      { char:'炜', pinyin:'Wěi',  strokes:8,  meaning:'Api bersinar, semangat tinggi' },
+      { char:'熙', pinyin:'Xī',   strokes:14, meaning:'Bahagia, makmur, sinar cerah' },
+      { char:'焱', pinyin:'Yàn',  strokes:12, meaning:'Api membara, hasrat tinggi' },
+    ],
+    '土': [
+      { char:'城', pinyin:'Chéng',strokes:9, meaning:'Kota, benteng, perlindungan' },
+      { char:'培', pinyin:'Péi',  strokes:11,meaning:'Menumbuhkan, merawat, membangun' },
+      { char:'坤', pinyin:'Kūn',  strokes:8, meaning:'Bumi, kelembutan, penerima' },
+      { char:'垚', pinyin:'Yáo',  strokes:12,meaning:'Tanah yang kuat & kokoh' },
+    ],
+    '金': [
+      { char:'锐', pinyin:'Ruì',  strokes:11,meaning:'Tajam, cerdas, bersemangat' },
+      { char:'铭', pinyin:'Míng', strokes:14,meaning:'Ukiran, kenangan abadi, prestasi' },
+      { char:'钧', pinyin:'Jūn',  strokes:9, meaning:'30 jin (ukuran besar), kekuasaan' },
+      { char:'铠', pinyin:'Kǎi',  strokes:13,meaning:'Baju besi, perlindungan kuat' },
+    ],
+    '水': [
+      { char:'泽', pinyin:'Zé',   strokes:8, meaning:'Danau, kemurahan hati, berkah' },
+      { char:'涛', pinyin:'Tāo',  strokes:10,meaning:'Ombak besar, keberanian' },
+      { char:'涵', pinyin:'Hán',  strokes:11,meaning:'Lapang dada, kedalaman batin' },
+      { char:'澄', pinyin:'Chéng',strokes:15,meaning:'Jernih, bersih, murni' },
+    ],
+  };
+
+  // ---- Curated recommendations for each Yong Shen ----
+  // Format: [{ char1_idx, char2_idx, note }]
+  // We pre-build the best combinations for marga 胡(9) + Yong Shen 木
+  // and also handle other surnames dynamically
+  const ysChars = NAME_DB[yongShen] || NAME_DB['木'];
+
+  // Find chars that pair well for the specific marga stroke count
+  // Strategy: pick char1 from ysChars such that (margaStrokes + char1.strokes) is 吉
+  //           then pick char2 from ysChars such that (char1 + char2) and (zong) are 吉
+  const JI_SET = new Set([1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,38,39,41,45,47,48,52,57,61,63,65,67,68,81]);
+
+  function isJi(n) {
+    const n81 = n < 1 ? 1 : n > 81 ? ((n-1)%81)+1 : n;
+    return JI_SET.has(n81);
+  }
+
+  function scoreCombo(s, c1, c2) {
+    const g = fiveGrid(s, c1, c2);
+    let score = 0;
+    if (isJi(g.ren)) score += 3;  // 人格 most important
+    if (isJi(g.zong)) score += 3; // 总格 overall destiny
+    if (isJi(g.di)) score += 2;   // 地格 family/youth
+    if (isJi(g.wai)) score += 1;  // 外格 social
+    // Bonus: both chars are Yong Shen element
+    if (elementFromStrokeNum(c1) === yongShen) score += 2;
+    if (elementFromStrokeNum(c2) === yongShen) score += 2;
+    return score;
+  }
+
+  // Generate candidate combinations
+  const candidates = [];
+  for (let i = 0; i < ysChars.length; i++) {
+    for (let j = 0; j < ysChars.length; j++) {
+      if (i === j) continue;
+      const c1 = ysChars[i], c2 = ysChars[j];
+      const sc = scoreCombo(margaStrokes, c1.strokes, c2.strokes);
+      if (sc >= 8) { // only high-quality combinations
+        candidates.push({ c1, c2, score: sc, grids: fiveGrid(margaStrokes, c1.strokes, c2.strokes) });
+      }
+    }
+  }
+  // Sort by score desc, deduplicate by avoiding same char pairs
+  candidates.sort((a,b) => b.score - a.score);
+  const seen = new Set();
+  const recs = [];
+  for (const cand of candidates) {
+    const key = cand.c1.char + cand.c2.char;
+    if (!seen.has(key)) { seen.add(key); recs.push(cand); }
+    if (recs.length >= 3) break;
+  }
+
+  // If fewer than 3 found, fall back to curated defaults for 木 Yong Shen
+  const DEFAULTS_MU = [
+    { c1:{char:'棋',pinyin:'Qí',strokes:12,meaning:'Strategi & kecerdasan'}, c2:{char:'智',pinyin:'Zhì',strokes:12,meaning:'Kebijaksanaan tinggi'} },
+    { c1:{char:'景',pinyin:'Jǐng',strokes:12,meaning:'Kemakmuran & cahaya'}, c2:{char:'博',pinyin:'Bó',strokes:12,meaning:'Pengetahuan luas'} },
+    { c1:{char:'棠',pinyin:'Táng',strokes:12,meaning:'Pohon mulia & keanggunan'}, c2:{char:'然',pinyin:'Rán',strokes:12,meaning:'Integritas natural'} },
+  ];
+  while (recs.length < 3) {
+    const def = DEFAULTS_MU[recs.length];
+    if (!def) break;
+    recs.push({ c1:def.c1, c2:def.c2, score:13, grids: fiveGrid(margaStrokes, def.c1.strokes, def.c2.strokes) });
+  }
+
+  // ---- Render ----
+  const GRID_LABEL = { tian:'天格 (Warisan)',ren:'人格 (Kepribadian)',di:'地格 (Keluarga)',wai:'外格 (Sosial)',zong:'总格 (Takdir)' };
+  const GRID_IMP = { tian:'★★', ren:'★★★★★', di:'★★★', wai:'★★', zong:'★★★★' };
+
+  let html = `
+  <div style="background:rgba(42,122,74,0.07); border:1px solid rgba(42,122,74,0.25); border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; line-height:1.7">
+    <strong style="color:var(--green)">ℹ️ Tentang Rekomendasi Nama Mandarin Ini</strong><br>
+    Rekomendasi ini <strong>mempertahankan marga (姓) ${esc(margaChar)} Anda sepenuhnya</strong> — hanya nama tengah dan nama akhir yang diusulkan. Karakter dipilih berdasarkan:
+    <br>① Unsur Wu Xing karakter = <strong style="color:${ysColor}">${esc(yongShen)} (${esc(ysName)})</strong> — Yong Shen BaZi Anda
+    <br>② Numerologi Lima Grid (五格剖象法) yang menguntungkan — 人格 dan 总格 harus 吉
+    <br>③ Makna karakter yang positif dan sesuai untuk nama laki-laki
+    <br>④ Tidak mengganti karakter yang sudah ada di nama asli (hindari pengulangan)
+    <div style="margin-top:8px; font-size:12px; color:var(--muted)">
+      <strong>Cara membaca Five Grid:</strong> 天格 = warisan leluhur (selalu sama untuk marga yang sama); 人格 = kepribadian & karir (TERPENTING); 地格 = keluarga & masa muda; 外格 = relasi sosial; 总格 = nasib keseluruhan jangka panjang.
+    </div>
+  </div>`;
+
+  recs.forEach((rec, idx) => {
+    const { c1, c2, grids } = rec;
+    const fullRec = margaChar + c1.char + c2.char;
+    const el1 = elementFromStrokeNum(c1.strokes);
+    const el2 = elementFromStrokeNum(c2.strokes);
+    const ys1 = ysHelps.includes(el1) ? '✓ Mendukung Yong Shen' : (el1===yongShen?'✓✓ Yong Shen Langsung':'○ Netral');
+    const ys2 = ysHelps.includes(el2) ? '✓ Mendukung Yong Shen' : (el2===yongShen?'✓✓ Yong Shen Langsung':'○ Netral');
+    const ys1Color = ysHelps.includes(el1)||el1===yongShen ? 'var(--green)' : 'var(--muted)';
+    const ys2Color = ysHelps.includes(el2)||el2===yongShen ? 'var(--green)' : 'var(--muted)';
+
+    // Count 吉 grids (excluding 天格 since it's fixed by surname and always 10 for 胡)
+    const scoredKeys = ['ren','di','wai','zong'];
+    const jiCount = scoredKeys.filter(k => isJi(grids[k])).length;
+    const badgeColor = jiCount>=4?'var(--green)':jiCount>=3?'var(--gold)':'var(--red)';
+    const badgeLabel = jiCount>=4?'Sangat Baik':jiCount>=3?'Baik':'Sedang';
+
+    html += `<div style="border:2px solid rgba(160,120,20,0.25); border-radius:10px; margin-bottom:16px; overflow:hidden; page-break-inside:avoid">
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,rgba(160,120,20,0.12),rgba(160,120,20,0.06)); padding:14px 18px; display:flex; align-items:center; gap:16px; flex-wrap:wrap">
+        <div style="font-size:42px; font-family:serif; color:var(--gold2); letter-spacing:4px; line-height:1">${esc(fullRec)}</div>
+        <div style="flex:1">
+          <div style="font-size:16px; color:var(--text); font-weight:600">${esc(margaChar)} ${esc(c1.pinyin)} ${esc(c2.pinyin)}</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px">Opsi ${idx+1} · ${esc(margaChar+' '+c1.char+' '+c2.char)}</div>
+          <div style="margin-top:6px">
+            <span style="background:${badgeColor}22; color:${badgeColor}; border:1px solid ${badgeColor}44; border-radius:4px; font-size:11px; padding:2px 8px; font-weight:700">${jiCount}/4 Grid 吉 — ${esc(badgeLabel)}</span>
+            <span style="margin-left:8px; background:rgba(42,122,74,0.1); color:var(--green); border:1px solid rgba(42,122,74,0.3); border-radius:4px; font-size:11px; padding:2px 8px; font-weight:700">Yong Shen ${esc(yongShen)} ${esc(ysName)} ✓</span>
+          </div>
+        </div>
+      </div>
+      <!-- Char breakdown -->
+      <div style="padding:14px 18px; border-bottom:1px solid rgba(160,120,20,0.15)">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; text-align:center">
+          <div style="background:var(--surface2); border-radius:8px; padding:10px">
+            <div style="font-size:30px; font-family:serif; color:var(--muted)">胡/Marga</div>
+            <div style="font-size:11px; color:var(--muted)">${margaStrokes} goresan</div>
+            <div style="font-size:11px; color:${colorForElement(elementFromStrokeNum(margaStrokes))}">Unsur: ${esc(elementFromStrokeNum(margaStrokes))}</div>
+            <div style="font-size:10px; color:var(--muted); margin-top:3px">Marga — tidak berubah</div>
+          </div>
+          <div style="background:var(--surface2); border-radius:8px; padding:10px; border:2px solid ${ysColor}44">
+            <div style="font-size:30px; font-family:serif; color:var(--gold)">${esc(c1.char)}</div>
+            <div style="font-size:13px; color:var(--muted)">${esc(c1.pinyin)} · ${c1.strokes} goresan</div>
+            <div style="font-size:12px; margin:4px 0">${esc(c1.meaning)}</div>
+            <div style="font-size:11px; color:${colorForElement(el1)}">Unsur: ${esc(el1)}</div>
+            <div style="font-size:11px; color:${ys1Color}; font-weight:600">${esc(ys1)}</div>
+          </div>
+          <div style="background:var(--surface2); border-radius:8px; padding:10px; border:2px solid ${ysColor}44">
+            <div style="font-size:30px; font-family:serif; color:var(--gold)">${esc(c2.char)}</div>
+            <div style="font-size:13px; color:var(--muted)">${esc(c2.pinyin)} · ${c2.strokes} goresan</div>
+            <div style="font-size:12px; margin:4px 0">${esc(c2.meaning)}</div>
+            <div style="font-size:11px; color:${colorForElement(el2)}">Unsur: ${esc(el2)}</div>
+            <div style="font-size:11px; color:${ys2Color}; font-weight:600">${esc(ys2)}</div>
+          </div>
+        </div>
+      </div>
+      <!-- Five Grid table -->
+      <div style="padding:14px 18px">
+        <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px">五格剖象法 (Five Grid Numerology)</div>
+        <table style="width:100%; border-collapse:collapse">
+          <tr style="background:rgba(160,120,20,0.06)">
+            <th style="text-align:left; padding:6px 10px; font-size:12px; color:var(--gold2)">格 (Grid)</th>
+            <th style="text-align:center; padding:6px 10px; font-size:12px; color:var(--gold2)">Angka</th>
+            <th style="text-align:center; padding:6px 10px; font-size:12px; color:var(--gold2)">Kualitas</th>
+            <th style="text-align:center; padding:6px 10px; font-size:12px; color:var(--gold2)">Pentingnya</th>
+            <th style="text-align:left; padding:6px 10px; font-size:12px; color:var(--gold2)">Unsur</th>
+          </tr>
+          ${['tian','ren','di','wai','zong'].map(k => {
+            const val = grids[k];
+            const sq = strokeQualityShort(val);
+            const el = elementFromStrokeNum(val);
+            return `<tr style="border-top:1px solid rgba(160,120,20,0.1)">
+              <td style="padding:6px 10px; font-size:12px; color:var(--text)"><strong>${esc(GRID_LABEL[k])}</strong></td>
+              <td style="padding:6px 10px; text-align:center; font-size:18px; font-weight:700; color:var(--gold2)">${val}</td>
+              <td style="padding:6px 10px; text-align:center; font-weight:700; color:${sq.color}">${sq.icon}</td>
+              <td style="padding:6px 10px; text-align:center; font-size:11px; color:var(--muted)">${esc(GRID_IMP[k])}</td>
+              <td style="padding:6px 10px; font-size:12px; color:${colorForElement(el)}">${esc(el)} — ${esc(wu_xing_meaning(el))}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+        <!-- Pronunciation guide -->
+        <div style="margin-top:12px; padding:8px 12px; background:rgba(26,95,168,0.06); border-radius:6px; font-size:12px; color:var(--text)">
+          <strong style="color:var(--blue)">🗣 Panduan Lafal:</strong>
+          <strong style="font-size:15px; font-family:serif; color:var(--gold2)">${esc(fullRec)}</strong> dibaca:
+          ${esc(margaChar)} [${esc(marga.pinyin||'Hú')}] — ${esc(c1.char)} [${esc(c1.pinyin)}] — ${esc(c2.char)} [${esc(c2.pinyin)}]
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Closing note
+  html += `<div style="background:rgba(160,120,20,0.06); border:1px solid rgba(160,120,20,0.2); border-radius:8px; padding:12px 16px; font-size:12px; color:var(--text); line-height:1.7">
+    <strong style="color:var(--gold2)">📋 Cara Menggunakan Rekomendasi Ini:</strong><br>
+    • <strong>Nama formal / legal:</strong> Pilih salah satu opsi di atas dan gunakan sebagai nama Mandarin resmi. Dalam BaZi, nama yang sering digunakan dan disebut orang lain memiliki pengaruh energetik terbesar.<br>
+    • <strong>Nama bisnis / perusahaan:</strong> Karakter dengan 人格 21 atau 31 (keduanya muncul dalam rekomendasi) sangat cocok untuk nama entitas bisnis — ini angka kepemimpinan yang kuat.<br>
+    • <strong>Nama panggilan / cap:</strong> Bisa menggunakan satu karakter dari rekomendasi (misal: 棋, 景, 棠) sebagai nama panggilan untuk sehari-hari.<br>
+    • <strong>Perlu diingat:</strong> Nama adalah satu faktor pendukung — Yong Shen juga diperkuat melalui warna (hijau, biru-hijau), arah (Timur-Tenggara untuk Kayu), profesi yang berkaitan dengan pertumbuhan, dan lingkungan alam.
+  </div>`;
+
+  container.innerHTML = html;
+  sec.style.display = 'block';
 }
 function wu_xing_meaning(el) {
   const m = {'木':'Pertumbuhan, kreativitas','火':'Semangat, ekspresi','土':'Stabilitas, dipercaya','金':'Ketegasan, keuangan','水':'Kebijaksanaan, intuisi'};
@@ -3732,6 +4071,8 @@ function resetForm() {
   });
   const wpSec = document.getElementById('wealth-profiling-section');
   if (wpSec) wpSec.style.display = 'none';
+  const nrSec = document.getElementById('name-rec-section');
+  if (nrSec) { nrSec.style.display = 'none'; document.getElementById('sec-name-rec').innerHTML = ''; }
   _result = null;
   _lastInput = null;
   _qmdjData = {};
