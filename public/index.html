@@ -618,6 +618,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
     <!-- 3W-D: Wealth Analysis -->
     <h3 style="color:var(--gold2); font-size:13px; margin-bottom:10px">3W-D · Wealth Strategist Analysis 财富战略分析</h3>
     <div id="sec-wealth"></div>
+    <div id="sec-wealth-extra"></div>
   </div>
 </div>
 
@@ -1700,6 +1701,29 @@ function render3A(b) {
     }
   }
 
+
+  // --- Batch 11: Self-sabotage panel based on dominant Ten God ---
+  const _domGod = b.tenGods?.dominant?.god;
+  if (_domGod) {
+    const _SAB = {
+      '比肩':{ c:'#f59e0b', t:'⚡ Pola Sabotase Diri — 比肩 Dominan', b:'Kemerdekaan adalah kekuatan, tapi bisa berubah menjadi isolasi. Anda cenderung menolak kolaborasi karena ego dan membagi sumber daya impulsif ke circle tanpa pertimbangan. <strong>Waspadai:</strong> over-kompetitif di lingkungan kooperatif, sulit meminta bantuan, dan membuat keputusan besar tanpa konsultasi.' },
+      '劫财':{ c:'#f59e0b', t:'⚡ Pola Sabotase Diri — 劫财 Dominan', b:'Energi kuat namun tersebar. Anda bisa impulsif dalam keputusan finansial dan terlalu percaya intuisi tanpa riset. <strong>Waspadai:</strong> risiko besar tanpa safety net, kompetisi tidak sehat, dan kehilangan peluang karena terlalu terburu-buru.' },
+      '食神':{ c:'#22c55e', t:'🌿 Pola Sabotase Diri — 食神 Dominan', b:'Antusias pada proyek kreatif namun sulit fokus pada satu hal. Anda bisa terjebak mengejar passion tanpa profitabilitas. <strong>Waspadai:</strong> overspending pada hobi/proyek baru, sulit berkomitmen jangka panjang, dan menghindari konflik hingga masalah membesar.' },
+      '伤官':{ c:'#22c55e', t:'🌿 Pola Sabotase Diri — 伤官 Dominan', b:'Brilian namun anti-otoritas. Anda bisa merusak relasi penting dengan kritik tajam atau sikap yang terlalu independen. <strong>Waspadai:</strong> membakar jembatan dengan klien/atasan kunci, kesulitan menerima feedback, dan menyampaikan kebenaran dengan cara yang menyakiti daripada membangun.' },
+      '正财':{ c:'var(--green)', t:'💚 Pola Sabotase Diri — 正财 Dominan', b:'Fokus pada keamanan finansial bisa menghambat pertumbuhan. <strong>Waspadai:</strong> menolak peluang besar karena takut risiko kecil, terlalu konservatif saat momen justru butuh keberanian, dan materialisme yang menguras kualitas hubungan.' },
+      '偏财':{ c:'var(--green)', t:'💚 Pola Sabotase Diri — 偏财 Dominan', b:'Mahir dalam transaksi dan jaringan namun sering tidak tuntas. <strong>Waspadai:</strong> gaya hidup yang melampaui income, deal-chasing tanpa execution, dan instabilitas finansial dari volatilitas revenue.' },
+      '正官':{ c:'var(--blue)', t:'💙 Pola Sabotase Diri — 正官 Dominan', b:'Pekerja keras yang mengikuti aturan — tapi bisa terjebak people-pleasing dan overwork. <strong>Waspadai:</strong> terlalu banyak tanggung jawab sampai burnout, sulit mendelegasikan, dan mengorbankan ambisi pribadi demi ekspektasi orang lain.' },
+      '七杀':{ c:'#f87171', t:'⚠️ Pola Sabotase Diri — 七杀 Dominan', b:'Berani dan kompetitif, tapi bisa memicu konflik yang tidak perlu. <strong>Waspadai:</strong> reaksi defensif berlebihan, keputusan besar saat marah/tertekan, dan pola self-destructive saat merasa terancam atau diremehkan.' },
+      '正印':{ c:'var(--blue)', t:'💙 Pola Sabotase Diri — 正印 Dominan', b:'Pemikir mendalam yang bisa terjebak dalam analysis paralysis. <strong>Waspadai:</strong> menunda keputusan menunggu "kondisi sempurna", terlalu bergantung pada persetujuan mentor/otoritas, dan kurang action karena terlalu banyak belajar tanpa eksekusi.' },
+      '偏印':{ c:'var(--blue)', t:'🔮 Pola Sabotase Diri — 偏印 Dominan', b:'Intuisi dan pemikiran non-konvensional adalah kekuatan — tapi bisa membuat Anda sulit dipahami. <strong>Waspadai:</strong> isolasi diri, overconfidence pada intuisi tanpa validasi, dan resistensi terhadap cara mainstream yang sebenarnya efektif.' },
+    };
+    const _sab = _SAB[_domGod];
+    if (_sab) html += `<div style="border-left:3px solid ${_sab.c}; background:rgba(0,0,0,0.02); border-radius:0 8px 8px 0; padding:12px 14px; margin-top:14px">
+      <div style="font-weight:700; font-size:12px; color:${_sab.c}; margin-bottom:6px">${_sab.t}</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.8">${_sab.b}</div>
+    </div>`;
+  }
+
   document.getElementById('sec-3a').innerHTML = html;
 }
 
@@ -1860,6 +1884,36 @@ function render3C(b) {
       </div>
     </div>`;
   }
+
+  // --- Batch 11: Real-life element manifestation guide ---
+  const _EL_MANIFEST = {
+    '木':{ col:'#22c55e', label:'Kayu', life:'Kreativitas, perencanaan jangka panjang, pendidikan, seni visual, kepemimpinan berbasis empati', env:'Ruang dengan tanaman hidup, warna hijau, kegiatan alam bebas, lingkungan yang tumbuh', avoid:'Lingkungan terlalu kaku/rigid tanpa ruang bereksplorasi dan berkreasi' },
+    '火':{ col:'#ef4444', label:'Api', life:'Presentasi publik, networking aktif, seni pertunjukan, marketing, kompetisi', env:'Ruang terang dan hangat, komunitas yang energetik, warna merah/oranye, kegiatan sosial', avoid:'Isolasi dan pekerjaan monoton tanpa interaksi sosial yang bermakna' },
+    '土':{ col:'#d97706', label:'Tanah', life:'Manajemen, real estate, food & beverage, logistik, peran pemersatu dan penghubung tim', env:'Lingkungan stabil dan terorganisir, warna cokelat/kuning, ritme kerja yang konsisten', avoid:'Perubahan mendadak, ketidakpastian jangka panjang, dan chaos lingkungan' },
+    '金':{ col:'#9ca3af', label:'Logam', life:'Hukum, keuangan formal, teknik presisi, kedokteran, administrasi, militer/kepolisian', env:'Lingkungan bersih dan terstruktur, warna putih/silver, standar operasional yang jelas', avoid:'Lingkungan kacau, proses tidak terstandarisasi, ketidakjelasan aturan' },
+    '水':{ col:'#3b82f6', label:'Air', life:'Komunikasi, riset, travel internasional, perdagangan lintas batas, media, filosofi', env:'Ruang fluid dan adaptif, warna hitam/biru tua, kebebasan bergerak dan berpindah', avoid:'Rutinitas terlalu ketat tanpa fleksibilitas dan tanpa stimulus baru' },
+  };
+  const _ysEl2 = wx.yongShen;
+  const _ysM = _EL_MANIFEST[_ysEl2];
+  const _domElM = wx.dominant;
+  const _domM = _EL_MANIFEST[_domElM];
+  if (_ysM) {
+    html += `<div style="background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.2); border-radius:8px; padding:14px; margin-top:16px">
+      <div style="font-weight:700; font-size:12px; color:#16a34a; margin-bottom:8px">🌱 Manifestasi Yong Shen (${esc(WX_ID[_ysEl2]||_ysEl2)}) dalam Kehidupan Nyata</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.9">
+        <div style="margin-bottom:5px">💡 <strong>Aktivitas &amp; Karir:</strong> ${_ysM.life}</div>
+        <div style="margin-bottom:5px">🏠 <strong>Lingkungan &amp; Gaya Hidup:</strong> ${_ysM.env}</div>
+        <div>⛔ <strong>Hindari:</strong> ${_ysM.avoid}</div>
+      </div>
+    </div>`;
+  }
+  if (_domM && _domElM !== _ysEl2) {
+    html += `<div style="background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.15); border-radius:8px; padding:12px 14px; margin-top:10px">
+      <div style="font-weight:700; font-size:12px; color:var(--red); margin-bottom:5px">⚠️ Unsur Dominan (${esc(WX_ID[_domElM]||_domElM)}) — Terlalu Banyak Pun Berbahaya</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.8">Karena ${esc(WX_ID[_domElM]||_domElM)} sudah mendominasi chart Anda, <strong>hati-hati</strong> menambah lingkungan atau pekerjaan yang memperkuat unsur ini lebih jauh — ini akan semakin menekan Yong Shen Anda dan memperdalam ketidakseimbangan.</div>
+    </div>`;
+  }
+
   document.getElementById('sec-3c').innerHTML = uhBanner + html;
 }
 
@@ -1889,6 +1943,33 @@ function render3D(b) {
   if (b.interpretation?.tenGods) {
     html += `<div class="summary-box"><strong>Ringkasan Sepuluh Dewa:</strong> ${esc(b.interpretation.tenGods)}</div>`;
   }
+
+  // --- Batch 11: Spouse Star (配偶星) identification ---
+  const _STEM_EL_SP = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+  const _CTRL_SP = {'木':'土','火':'金','土':'水','金':'木','水':'火'};
+  const _CTRL_BY_SP = {'木':'金','火':'水','土':'木','金':'火','水':'土'};
+  const _WX_NAME_SP = {'木':'Kayu (木)','火':'Api (火)','土':'Tanah (土)','金':'Logam (金)','水':'Air (水)'};
+  const _dmElSp = _STEM_EL_SP[b.dayMaster?.stem] || '';
+  const _isPria = (b.meta?.gender || '').includes('Pria') || (b.meta?.gender || '').includes('男');
+  if (_dmElSp) {
+    let _spouseStar, _spouseEl, _spouseNote;
+    if (_isPria) {
+      _spouseStar = '正财 (Zhèng Cái)';
+      _spouseEl = _CTRL_SP[_dmElSp];
+      _spouseNote = `Untuk pria, bintang pasangan utama adalah <strong>正财 (Zheng Cai)</strong> — unsur ${_WX_NAME_SP[_spouseEl]||_spouseEl} yang dikendalikan Day Master Anda. Kehadiran dan kualitas bintang ini dalam chart mencerminkan karakter pasangan hidup. Da Yun atau Nian Yun yang membawa unsur <strong>${_WX_NAME_SP[_spouseEl]||_spouseEl}</strong> cenderung lebih kondusif untuk perkembangan hubungan serius atau pernikahan. Jika 偏财 (Pian Cai) juga hadir, artinya ada potensi relasi paralel atau hubungan sebelum menikah yang berpengaruh.`;
+    } else {
+      _spouseStar = '正官 (Zhèng Guān)';
+      _spouseEl = _CTRL_BY_SP[_dmElSp];
+      _spouseNote = `Untuk wanita, bintang pasangan utama adalah <strong>正官 (Zheng Guan)</strong> — unsur ${_WX_NAME_SP[_spouseEl]||_spouseEl} yang mengendalikan Day Master Anda. Kualitas bintang ini mencerminkan tipe suami dan pola otoritas dalam hubungan. Da Yun yang membawa unsur <strong>${_WX_NAME_SP[_spouseEl]||_spouseEl}</strong> cenderung lebih kondusif untuk hubungan serius. Jika 七杀 (Qi Sha) hadir, ini menambah dinamika relasi yang lebih kompleks.`;
+    }
+    const _spElPct = b.wuXing?.distribution?.[_spouseEl]?.pct ?? null;
+    const _spStr = _spElPct === null ? '' : _spElPct === 0 ? ' <span style="color:var(--red); font-size:11px">(0% — perlu diaktifkan dari luar)</span>' : _spElPct < 15 ? ' <span style="color:#f59e0b; font-size:11px">(lemah dalam chart)</span>' : ' <span style="color:var(--green); font-size:11px">(cukup hadir dalam chart)</span>';
+    html += `<div style="border-left:3px solid #f472b6; background:rgba(244,114,182,0.05); border-radius:0 8px 8px 0; padding:12px 14px; margin-top:14px">
+      <div style="font-weight:700; font-size:12px; color:#db2777; margin-bottom:6px">💕 Bintang Pasangan (配偶星): ${_spouseStar}${_spStr}</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.8">${_spouseNote}</div>
+    </div>`;
+  }
+
   document.getElementById('sec-3d').innerHTML = html;
 }
 
@@ -2066,6 +2147,7 @@ function render3W(b) {
   renderProfilesChart(wp.profiles, 'sec-profiles');
   renderAspectsChart(wp.aspects, 'sec-aspects');
   renderWealthNarrative(wp.wealthAnalysis, 'sec-wealth');
+  renderWealthExtra(b, 'sec-wealth-extra');
 }
 
 /** SVG Pentagon/Radar Chart for 5 Structures */
@@ -2409,6 +2491,82 @@ function renderWealthNarrative(wa, containerId) {
   } else {
     el.innerHTML=html;
   }
+}
+
+
+// ============================================================
+// SECTION 3W-E: FINANCIAL BLIND SPOTS & ENTREPRENEUR VS EMPLOYEE
+// ============================================================
+function renderWealthExtra(b, containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const STEM_EL_WE = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+  const dmEl_WE = STEM_EL_WE[b.dayMaster?.stem] || '';
+  const isDMStr = b.wuXing?.isDMStrong;
+  const domGod_WE = b.tenGods?.dominant?.god || '';
+
+  // Financial blind spots by Day Master element
+  const BLIND_SPOT = {
+    '木':{ t:'Kayu', b:'Terlalu optimis soal masa depan — mudah investasi di proyek jangka panjang sebelum fondasi keuangan jangka pendek aman. Juga berisiko mengabaikan detail kontrak karena terlalu percaya pada intuisi dan niatan baik orang lain.' },
+    '火':{ t:'Api', b:'Impulsif dalam keputusan finansial — sering beli saat euforia dan jual saat panik. Kebutuhan akan pengakuan sosial bisa mendorong pengeluaran yang melebihi kapasitas hanya untuk tampil baik di lingkungan.' },
+    '土':{ t:'Tanah', b:'Terlalu konservatif — uang "tidur" tanpa bekerja. Kesempatan investasi dilewatkan karena terlalu hati-hati. Di sisi lain, bisa over-commit pada bisnis yang membutuhkan modal besar (properti, F&B) yang mengikat likuiditas.' },
+    '金':{ t:'Logam', b:'Gengsi mempengaruhi keputusan finansial — membeli aset/gaya hidup yang mencerminkan status, bukan nilai. Juga bisa terlalu kaku dalam negosiasi dan kehilangan deal karena tidak mau fleksibel pada posisi tertentu.' },
+    '水':{ t:'Air', b:'Uang "mengalir" — mudah keluar tanpa jejak. Kecenderungan meminjamkan uang kepada teman/keluarga tanpa dokumentasi. Boundary finansial lemah membuat orang lain mudah mengakses sumber daya Anda tanpa timbal balik setara.' },
+  };
+
+  // Entrepreneur vs Employee scoring
+  const ENT_GODS = {'偏财':4,'食神':3,'伤官':3,'七杀':2,'比肩':1,'劫财':1};
+  const EMP_GODS = {'正官':4,'正印':3,'正财':2,'偏印':2};
+  const profiles = b.wealthProfiling?.profiles || [];
+  let entScore = 0, empScore = 0;
+  profiles.forEach(p => {
+    const g = p.name || '';
+    const pct = p.pct || 0;
+    if (ENT_GODS[g]) entScore += ENT_GODS[g] * pct / 100;
+    if (EMP_GODS[g]) empScore += EMP_GODS[g] * pct / 100;
+  });
+  // Also use DM strength
+  if (isDMStr) entScore += 0.5; else empScore += 0.5;
+  const total = entScore + empScore || 1;
+  const entPct = Math.round(entScore / total * 100);
+  const empPct = 100 - entPct;
+  const isEntrepreneur = entPct >= 55;
+  const isMixed = Math.abs(entPct - empPct) < 15;
+
+  let html = '';
+
+  // Financial Blind Spots
+  const bs = BLIND_SPOT[dmEl_WE];
+  if (bs) {
+    html += `<div style="margin-top:0; border-radius:8px; overflow:hidden; border:1px solid rgba(239,68,68,0.25)">
+      <div style="padding:10px 14px; background:rgba(239,68,68,0.08); font-size:13px; font-weight:600; color:#dc2626">⚠️ 3W-E · Blind Spot Finansial — ${bs.t} Day Master</div>
+      <div style="padding:12px 14px; font-size:12px; line-height:1.8; color:var(--text)">${bs.b}</div>
+    </div>`;
+  }
+
+  // Entrepreneur vs Employee
+  html += `<div style="margin-top:10px; border-radius:8px; overflow:hidden; border:1px solid rgba(160,120,20,0.25)">
+    <div style="padding:10px 14px; background:rgba(160,120,20,0.1); font-size:13px; font-weight:600; color:var(--gold2)">🏗️ Entrepreneur vs Karyawan — Skor BaZi Anda</div>
+    <div style="padding:12px 14px">
+      <div style="display:flex; gap:10px; margin-bottom:12px; align-items:stretch">
+        <div style="flex:${entPct}; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:6px; padding:10px; text-align:center; min-width:0">
+          <div style="font-size:22px; font-weight:bold; color:#16a34a">${entPct}%</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px">🏗️ Entrepreneur</div>
+        </div>
+        <div style="flex:${empPct}; background:rgba(74,144,217,0.1); border:1px solid rgba(74,144,217,0.3); border-radius:6px; padding:10px; text-align:center; min-width:0">
+          <div style="font-size:22px; font-weight:bold; color:var(--blue)">${empPct}%</div>
+          <div style="font-size:11px; color:var(--muted); margin-top:2px">🏛️ Profesional/Karyawan</div>
+        </div>
+      </div>
+      <div style="font-size:12px; color:var(--text); line-height:1.8">${
+        isMixed ? `Chart Anda menunjukkan keseimbangan antara jiwa entrepreneur dan stabilitas profesional. <strong>Model terbaik:</strong> jalur profesional dengan proyek sampingan yang independen — atau posisi leadership dalam organisasi yang memberi Anda otonomi tinggi (contoh: direktur, partner, atau kepala divisi dengan P&L sendiri).` :
+        isEntrepreneur ? `Chart Anda lebih kuat di jalur entrepreneur dan bisnis mandiri. <strong>Rekomendasi:</strong> Bangun bisnis sendiri atau peran dengan otonomi penuh (founder, co-founder, freelancer senior, konsultan independen). Lingkungan korporasi terlalu ketat bisa menghambat potensi Anda.` :
+        `Chart Anda lebih cocok sebagai profesional dalam organisasi yang terstruktur. <strong>Rekomendasi:</strong> Karier korporat, lembaga pemerintah, atau profesi berlisensi (dokter, pengacara, akuntan). Bila berbisnis, lakukan sebagai mitra dalam tim yang solid — bukan solo founder.`
+      }</div>
+    </div>
+  </div>`;
+
+  el.innerHTML = html;
 }
 
 // ============================================================
@@ -3228,6 +3386,100 @@ function render5(c, b) {
       <span style="color:var(--muted); font-size:11px">💡 Untuk sintesis mendetail antara BaZi, ZWDS, dan QMDJ khusus untuk situasi Anda, lihat Seksi 6 — Perbandingan & Sintesis Tiga Sistem.</span>
     </div>
   </div>`;
+
+
+  // --- Batch 11: Comprehensive Action Guidance panel ---
+  {
+    const _STEM_EL_AG = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'};
+    const _EL_NAME_AG = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+    const _dmElAG = _STEM_EL_AG[b?.dayMaster?.stem] || '';
+    const _ysAG = b?.wuXing?.yongShen || '';
+    const _isDMStrongAG = b?.wuXing?.isDMStrong;
+    const _domGodAG = b?.tenGods?.dominant?.god || '';
+    const _curDyAG = (b?.daYun?.periods || []).find(p => p.isCurrent);
+    const _curDyRating = _curDyAG?.quality?.rating || 'Netral';
+
+    // Get ZWDS palace strengths for career/wealth
+    const _mingPalace = (z?.palaces || []).find(p => (p.name||p.palaceName||'').includes('命宫'));
+    const _guanluPalace = (z?.palaces || []).find(p => (p.name||p.palaceName||'').includes('官禄'));
+    const _caiboPalace = (z?.palaces || []).find(p => (p.name||p.palaceName||'').includes('财帛'));
+
+    const _YS_ACTION_AG = {
+      '木':{ career:'Prioritaskan karir/bisnis yang berhubungan dengan tumbuhan, pendidikan, kreativitas, desain, dan perencanaan strategis. Sertakan elemen kayu fisik (tanaman, material kayu) di ruang kerja Anda.', life:'Jadwalkan waktu di alam bebas minimal 2× seminggu. Pilih hobi kreatif (menggambar, berkebun, musik) sebagai "pengisi energi" utama.', money:'Investasi terbaik: bisnis edukasi, properti berbasis lingkungan, industri kreatif. Hindari spekulasi cepat — jalur keuangan Anda lebih melalui pertumbuhan organik.' },
+      '火':{ career:'Bidang yang membutuhkan presentasi publik, jaringan luas, dan energi interpersonal: sales, marketing, entertainment, public speaking, trading aktif.', life:'Lingkungan komunitas yang hidup dan dinamis sangat penting — hindari isolasi panjang. Bergabunglah dengan komunitas yang memberi stimulasi sosial dan pengakuan.', money:'Peluang terbaik datang dari relasi dan networking, bukan kerja solo. Investasi di bisnis dengan komponen sosial tinggi (F&B, event, ritel).' },
+      '土':{ career:'Manajemen, real estate, bisnis berbasis aset fisik, pengolahan makanan, logistik. Anda unggul sebagai pembangun sistem dan pengorganisir tim.', life:'Rutinitas yang konsisten adalah fondasi — jaga jadwal tidur, makan, dan kerja yang teratur. Hindari perubahan lingkungan yang terlalu sering.', money:'Akumulasi kekayaan terbaik melalui aset fisik yang stabil: properti, bisnis berdepositif, investasi jangka panjang berbasis fundamental.' },
+      '金':{ career:'Hukum, keuangan, teknik, kedokteran, auditing, atau karir yang membutuhkan ketepatan dan standar tinggi. Keunggulan Anda ada di kualitas dan presisi.', life:'Lingkungan yang bersih, terstruktur, dan bernilai tinggi mendukung energi Anda. Bergaul dengan lingkaran profesional yang menghargai standar.', money:'Keuangan paling kuat ketika dikelola dengan disiplin: anggaran ketat, portofolio diversifikasi, dan keputusan berdasarkan data bukan emosi.' },
+      '水':{ career:'Komunikasi, riset, trading, konsultasi, travel, media, atau karir yang menuntut fleksibilitas dan adaptabilitas tinggi.', life:'Kebebasan bergerak penting untuk kesehatan mental Anda — hindari rutinitas yang terlalu monoton. Perjalanan periodik (bisnis atau leisure) mengisi ulang energi.', money:'Uang bergerak cepat dalam kehidupan Anda — perlu sistem pencatatan yang ketat. Investasi terbaik: sektor yang bergerak dinamis (teknologi, komunikasi, trading).' },
+    };
+
+    const _ysActAG = _YS_ACTION_AG[_ysAG] || {};
+    const _dyRatingColor = { 'Sangat Baik':'var(--green)', 'Baik':'#86efac', 'Netral':'var(--muted)', 'Perlu Waspada':'var(--red)' };
+    const _dyActAG = {
+      'Sangat Baik':'Ini adalah periode TERBAIK untuk mengambil langkah besar: ekspansi bisnis, investasi signifikan, atau perubahan karir yang selama ini tertunda. Window emas — jangan sia-siakan.',
+      'Baik':'Periode mendukung namun tidak spektakuler. Bangun fondasi dengan konsisten — hasil terbaik datang dari eksekusi yang disiplin, bukan satu langkah besar.',
+      'Netral':'Gunakan periode ini untuk mempersiapkan diri: belajar, membangun jaringan, dan memperkuat posisi. Hati-hati dalam risiko besar — lebih baik menunggu Da Yun berikutnya.',
+      'Perlu Waspada':'Fokus pada perlindungan aset dan manajemen risiko. Hindari keputusan besar yang tidak bisa dibatalkan. Gunakan waktu ini untuk introspeksi dan perbaikan internal.',
+    };
+
+    html += `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">`;
+    html += `<h3 style="color:var(--gold2); font-size:13px; margin-bottom:8px">🎯 Panduan Aksi Konkret — BaZi + ZWDS + QMDJ</h3>`;
+    html += `<div style="background:rgba(232,184,109,0.05); border:1px solid rgba(232,184,109,0.2); border-radius:10px; overflow:hidden">`;
+    
+    // Action block 1: Career & Wealth
+    if (_ysActAG.career) {
+      html += `<div style="padding:12px 14px; border-bottom:1px solid rgba(232,184,109,0.15)">
+        <div style="font-weight:700; font-size:12px; color:var(--gold2); margin-bottom:5px">💼 Strategi Karir & Kekayaan (Berbasis Yong Shen: ${esc(_EL_NAME_AG[_ysAG]||_ysAG)})</div>
+        <div style="font-size:12px; color:var(--text); line-height:1.8">${_ysActAG.career}</div>
+      </div>`;
+    }
+
+    // Action block 2: Lifestyle
+    if (_ysActAG.life) {
+      html += `<div style="padding:12px 14px; border-bottom:1px solid rgba(232,184,109,0.15)">
+        <div style="font-weight:700; font-size:12px; color:var(--blue); margin-bottom:5px">🌿 Gaya Hidup & Lingkungan Ideal</div>
+        <div style="font-size:12px; color:var(--text); line-height:1.8">${_ysActAG.life}</div>
+      </div>`;
+    }
+
+    // Action block 3: Money strategy
+    if (_ysActAG.money) {
+      html += `<div style="padding:12px 14px; border-bottom:1px solid rgba(232,184,109,0.15)">
+        <div style="font-weight:700; font-size:12px; color:var(--green); margin-bottom:5px">💰 Strategi Keuangan & Investasi</div>
+        <div style="font-size:12px; color:var(--text); line-height:1.8">${_ysActAG.money}</div>
+      </div>`;
+    }
+
+    // Action block 4: Current Da Yun strategy
+    if (_curDyAG) {
+      html += `<div style="padding:12px 14px; border-bottom:1px solid rgba(232,184,109,0.15)">
+        <div style="font-weight:700; font-size:12px; color:${_dyRatingColor[_curDyRating]||'var(--muted)'}; margin-bottom:5px">⏱️ Strategi Da Yun Sekarang (${esc(_curDyAG.ganzhi||'')} — ${esc(_curDyRating)})</div>
+        <div style="font-size:12px; color:var(--text); line-height:1.8">${_dyActAG[_curDyRating]||'Gunakan periode ini dengan bijak berdasarkan kekuatan chart Anda.'}</div>
+      </div>`;
+    }
+
+    // Action block 5: Personal growth based on dominant Ten God
+    const _GROWTH_AG = {
+      '比肩':'Latih kemampuan kolaborasi — kekuatan Anda bisa berlipat ganda saat Anda berhasil mengorkestrasi tim, bukan hanya mengandalkan diri sendiri.',
+      '劫财':'Bangun disiplin finansial yang konkret: anggaran bulanan yang ketat dan aturan 24-jam sebelum keputusan keuangan besar.',
+      '食神':'Monetisasi passion Anda secara terstruktur — buat sistem dan proses agar energi kreatif menghasilkan output yang konsisten.',
+      '伤官':'Belajar komunikasi diplomatik: cara menyampaikan kebenaran tanpa merusak relasi. Ini akan melipatgandakan dampak pikiran tajam Anda.',
+      '正财':'Ambil satu risiko yang terukur per kuartal — keluar dari zona nyaman secara gradual untuk mendorong pertumbuhan finansial yang stagnan.',
+      '偏财':'Fokus pada SATU peluang utama dan eksekusi tuntas sebelum memulai yang baru. Kedalaman > keluasan untuk fase saat ini.',
+      '正官':'Tetapkan boundaries waktu: tentukan jam kerja maksimal per hari dan patuhi. Produktivitas Anda meningkat dengan istirahat berkualitas, bukan jam kerja lebih panjang.',
+      '七杀':'Kembangkan "response gap" — jeda 24 jam sebelum bereaksi terhadap provokasi atau keputusan besar dalam kondisi emosional.',
+      '正印':'Tetapkan deadline untuk setiap proyek pembelajaran — belajar tanpa deadline adalah prokrastinasi yang terasa produktif.',
+      '偏印':'Jadikan perspektif unik Anda sebagai produk/jasa — dokumentasikan pemikiran Anda dan bagikan kepada dunia secara terstruktur.',
+    };
+    const _growth = _GROWTH_AG[_domGodAG];
+    if (_growth) {
+      html += `<div style="padding:12px 14px">
+        <div style="font-weight:700; font-size:12px; color:#8b5cf6; margin-bottom:5px">🧘 Pertumbuhan Diri (Berdasarkan ${esc(_domGodAG)} Dominan)</div>
+        <div style="font-size:12px; color:var(--text); line-height:1.8">${_growth}</div>
+      </div>`;
+    }
+
+    html += `</div>`;
+  }
 
   document.getElementById('sec-5').innerHTML = html;
 }
@@ -4293,7 +4545,7 @@ function resetForm() {
     if (card) card.style.display = 'none';
   });
   ['sec-3a','sec-3b','sec-3c','sec-3d','sec-3e','sec-3f','sec-3g',
-   'sec-structures','sec-profiles','sec-aspects','sec-wealth',
+   'sec-structures','sec-profiles','sec-aspects','sec-wealth','sec-wealth-extra',
    'sec-4a','sec-4b','sec-4c','sec-4d'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = '';
