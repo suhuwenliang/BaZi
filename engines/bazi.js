@@ -338,32 +338,89 @@ function calculateBazi(params) {
       if (s > 0) supScore += s * wt; else drnScore += Math.abs(s) * wt;
     }
   }
-  const isDMStrong = supScore > drnScore;
-  const dmStrengthDetail = {
-    sup: Math.round(supScore * 10) / 10,
-    drn: Math.round(drnScore * 10) / 10,
-    yueLing: yueLingScore,
-    yueLingLabel: yueLingScore >= 4 ? '旺' : yueLingScore >= 3 ? '相' : yueLingScore >= 2 ? '休' : yueLingScore >= 1.5 ? '囚' : '死'
+  // ========== LAYER 5: 天干五合 (Stem Combinations) ==========
+  const STEM_HE={'甲':'己','己':'甲','乙':'庚','庚':'乙','丙':'辛','辛':'丙','丁':'壬','壬':'丁','戊':'癸','癸':'戊'};
+  const STEM_HUA_MAP={'甲己':'土','己甲':'土','乙庚':'金','庚乙':'金','丙辛':'水','辛丙':'水','丁壬':'木','壬丁':'木','戊癸':'火','癸戊':'火'};
+  const allCharStems=[
+    {stem:pillars.year.gan,w:1.0,pos:'year'},{stem:pillars.month.gan,w:2.0,pos:'month'},
+    {stem:dayMasterStem,w:0,pos:'day'},{stem:unknownHour?null:pillars.hour.gan,w:unknownHour?0:1.5,pos:'hour'}
+  ].filter(x=>x.stem);
+  const stemCombos=[];
+  for(let i=0;i<allCharStems.length;i++){
+    for(let j=i+1;j<allCharStems.length;j++){
+      const a=allCharStems[i],b=allCharStems[j];
+      if(STEM_HE[a.stem]===b.stem){
+        const huaEl=STEM_HUA_MAP[a.stem+b.stem]||null;
+        stemCombos.push({s1:a.stem,s2:b.stem,hua:huaEl,w1:a.w,w2:b.w,pos:[a.pos,b.pos]});
+        if(a.pos!=='day'&&b.pos!=='day'){
+          const e1=elemScoreDM(STEM_ELEMENT[a.stem],dmElement);
+          const e2=elemScoreDM(STEM_ELEMENT[b.stem],dmElement);
+          if(e1>0)supScore=Math.max(0,supScore-Math.abs(e1)*a.w*0.3);
+          else drnScore=Math.max(0,drnScore-Math.abs(e1)*a.w*0.3);
+          if(e2>0)supScore=Math.max(0,supScore-Math.abs(e2)*b.w*0.3);
+          else drnScore=Math.max(0,drnScore-Math.abs(e2)*b.w*0.3);
+          if(huaEl){
+            const hs=elemScoreDM(huaEl,dmElement),hw=(a.w+b.w)/2*0.6;
+            if(hs>0)supScore+=hs*hw; else drnScore+=Math.abs(hs)*hw;
+          }
+        }
+      }
+    }
+  }
+  // ========== LAYER 6: 地支三合局 (Branch Three-Harmony) ==========
+  const BRANCH_TRIO_MAP=[
+    {set:['申','子','辰'],element:'水',name:'申子辰三合水局'},
+    {set:['寅','午','戌'],element:'火',name:'寅午戌三合火局'},
+    {set:['巳','酉','丑'],element:'金',name:'巳酉丑三合金局'},
+    {set:['亥','卯','未'],element:'木',name:'亥卯未三合木局'}
+  ];
+  const chartBranches4=[pillars.year.zhi,pillars.month.zhi,pillars.day.zhi];
+  if(!unknownHour)chartBranches4.push(pillars.hour.zhi);
+  const branchSet4=new Set(chartBranches4);
+  const branchCombos=[];
+  for(const trio of BRANCH_TRIO_MAP){
+    const present=trio.set.filter(b=>branchSet4.has(b));
+    const score=elemScoreDM(trio.element,dmElement);
+    if(present.length===3){
+      branchCombos.push({type:'三合',name:trio.name,element:trio.element,branches:present,strength:'full'});
+      if(score>0)supScore+=Math.abs(score)*2.0; else drnScore+=Math.abs(score)*2.0;
+    }else if(present.length===2&&present.includes(pillars.month.zhi)){
+      const halfName=trio.name.replace('三合','半合(月令)');
+      branchCombos.push({type:'半三合',name:halfName,element:trio.element,branches:present,strength:'half'});
+      if(score>0)supScore+=Math.abs(score)*0.8; else drnScore+=Math.abs(score)*0.8;
+    }
+  }
+  const isDMStrong=supScore>drnScore;
+  const dmStrengthDetail={
+    sup:Math.round(supScore*10)/10,drn:Math.round(drnScore*10)/10,
+    yueLing:yueLingScore,
+    yueLingLabel:yueLingScore>=4?'旺':yueLingScore>=3?'相':yueLingScore>=2?'休':yueLingScore>=1.5?'囚':'死',
+    stemCombos:stemCombos.map(c=>c.s1+c.s2+'合'+(c.hua||'?')),
+    branchCombos:branchCombos.map(c=>c.name)
   };
 
   // Yong Shen base: DM kuat → 食伤 (drains excess); DM lemah → 印星 (supports DM)
   const yongShen = isDMStrong ? ELEMENT_PRODUCES[dmElement] : ELEMENT_FEEDS[dmElement];
 
-  // ========== LAYER 2: 调候 (Tiao Hou) Seasonal Climate Adjustment ==========
-  // For extreme seasons, a climate-balancing element is recommended as secondary Yong Shen
-  // 巳午未月 (peak summer/Fire season) → Water cools; 亥子丑月 (peak winter/Water season) → Fire warms
-  const TIAO_HOU = {
-    hot:  { branches: ['巳','午','未'], priority: '水', support: '金', label: '调候用神: 夏季宜水(降温), 辅以金(生水)' },
-    cold: { branches: ['亥','子','丑'], priority: '火', support: '木', label: '调候用神: 冬季宜火(暖局), 辅以木(生火)' }
+  // ========== LAYER 2: 调候 (Tiao Hou) — Per-DM Classical Table ==========
+  // 三命通会/子平真诠: each DM has specific 调候 per month branch.
+  // Key insight: e.g. 癸水 in 巳月 needs 庚辛金 (Metal→Water), NOT more Water.
+  const TIAO_HOU_PER_DM = {
+    '甲':{'子':{primary:'火',secondary:'水',stems:['丙','癸'],label:'甲木子月: 丙火暖局，癸水滋木'},'丑':{primary:'火',secondary:'水',stems:['丙','癸'],label:'甲木丑月: 丙火解冻最急'},'寅':{primary:'火',secondary:'土',stems:['丙','癸'],label:'甲木寅月: 丙火暖木，癸水滋润'},'卯':{primary:'金',secondary:'火',stems:['庚','丙'],label:'甲木卯月: 庚金修剪，丙火调候'},'辰':{primary:'金',secondary:'水',stems:['庚','壬'],label:'甲木辰月: 庚金制木，壬水润之'},'巳':{primary:'水',secondary:'金',stems:['癸','庚'],label:'甲木巳月: 夏木易燥，癸水滋润，庚金生水'},'午':{primary:'水',secondary:'金',stems:['癸','庚'],label:'甲木午月: 烈日炎炎，癸水解渴最急'},'未':{primary:'水',secondary:'金',stems:['癸','庚'],label:'甲木未月: 三伏热极，癸水庚金并用'},'申':{primary:'火',secondary:'水',stems:['丁','壬'],label:'甲木申月: 秋金克木，丁火制金护木'},'酉':{primary:'金',secondary:'火',stems:['庚','丙'],label:'甲木酉月: 金旺过多须丙火解之'},'戌':{primary:'水',secondary:'金',stems:['壬','庚'],label:'甲木戌月: 燥土伤木，壬水润土'},'亥':{primary:'火',secondary:'金',stems:['丙','庚'],label:'甲木亥月: 冬水泛滥，丙火暖局为急'}},
+    '乙':{'子':{primary:'火',secondary:null,stems:['丙'],label:'乙木子月: 隆冬寒极，丙火暖局最急'},'丑':{primary:'火',secondary:'水',stems:['丙','癸'],label:'乙木丑月: 丙火解冻，癸水滋润'},'寅':{primary:'火',secondary:'水',stems:['丙','癸'],label:'乙木寅月: 春寒料峭，丙火为主'},'卯':{primary:'火',secondary:'水',stems:['丙','癸'],label:'乙木卯月: 木旺调候，丙火癸水并用'},'辰':{primary:'水',secondary:'火',stems:['癸','丙'],label:'乙木辰月: 癸水滋木，丙火暖局'},'巳':{primary:'水',secondary:'火',stems:['癸','丙'],label:'乙木巳月: 夏火炎，癸水浇灌为急'},'午':{primary:'水',secondary:'火',stems:['癸','丙'],label:'乙木午月: 乙木被灼，癸水为命'},'未':{primary:'水',secondary:'火',stems:['癸','丙'],label:'乙木未月: 燥土焦木，癸水润之'},'申':{primary:'火',secondary:'水',stems:['丙','癸'],label:'乙木申月: 金旺克木，丙火化金护木'},'酉':{primary:'水',secondary:'火',stems:['癸','丙'],label:'乙木酉月: 金克木，癸水生木护根'},'戌':{primary:'水',secondary:'火',stems:['癸','丙'],label:'乙木戌月: 燥土克水，癸水为先'},'亥':{primary:'火',secondary:null,stems:['丙'],label:'乙木亥月: 冬木最需丙火照暖'}},
+    '丙':{'子':{primary:'水',secondary:'土',stems:['壬','戊'],label:'丙火子月: 壬水为财，戊土制水护火'},'丑':{primary:'木',secondary:'水',stems:['甲','壬'],label:'丙火丑月: 甲木生火，壬水为财'},'寅':{primary:'水',secondary:'金',stems:['壬','庚'],label:'丙火寅月: 火相月，壬水为财最重'},'卯':{primary:'水',secondary:'金',stems:['壬','庚'],label:'丙火卯月: 壬水为财，庚金生水'},'辰':{primary:'木',secondary:'水',stems:['甲','壬'],label:'丙火辰月: 甲木疏土生火，壬水为财'},'巳':{primary:'水',secondary:'金',stems:['壬','庚'],label:'丙火巳月: 火旺，壬水制之最要'},'午':{primary:'水',secondary:'金',stems:['壬','庚'],label:'丙火午月: 烈火，壬水调候最急'},'未':{primary:'水',secondary:'金',stems:['壬','庚'],label:'丙火未月: 热极，壬水庚金调候'},'申':{primary:'水',secondary:'土',stems:['壬','戊'],label:'丙火申月: 秋火弱，壬水为财，戊土护火'},'酉':{primary:'木',secondary:'水',stems:['甲','壬'],label:'丙火酉月: 甲木生火，壬水为财'},'戌':{primary:'木',secondary:'水',stems:['甲','壬'],label:'丙火戌月: 土旺晦火，甲木疏土'},'亥':{primary:'木',secondary:'水',stems:['甲','壬'],label:'丙火亥月: 冬水旺，甲木化水生火'}},
+    '丁':{'子':{primary:'木',secondary:'金',stems:['甲','庚'],label:'丁火子月: 甲木引火，庚金劈木点燃'},'丑':{primary:'木',secondary:'金',stems:['甲','庚'],label:'丁火丑月: 寒冬，甲木庚金并用'},'寅':{primary:'木',secondary:'金',stems:['甲','庚'],label:'丁火寅月: 甲木生丁，庚金劈柴'},'卯':{primary:'金',secondary:'木',stems:['庚','甲'],label:'丁火卯月: 庚金劈木引丁，甲木为薪'},'辰':{primary:'木',secondary:'金',stems:['甲','庚'],label:'丁火辰月: 甲木为薪，庚金相佐'},'巳':{primary:'木',secondary:'金',stems:['甲','庚'],label:'丁火巳月: 甲木庚金并用，壬水调候'},'午':{primary:'水',secondary:'金',stems:['壬','庚'],label:'丁火午月: 火极，壬水调候为要'},'未':{primary:'木',secondary:'水',stems:['甲','壬'],label:'丁火未月: 甲木生丁，壬水调候'},'申':{primary:'木',secondary:'火',stems:['甲','丙'],label:'丁火申月: 秋气寒，甲木丙火助丁'},'酉':{primary:'木',secondary:'火',stems:['甲','丙'],label:'丁火酉月: 甲木生丁，丙火照暖'},'戌':{primary:'木',secondary:'火',stems:['甲','丙'],label:'丁火戌月: 甲木疏土，丙火协助'},'亥':{primary:'木',secondary:'金',stems:['甲','庚'],label:'丁火亥月: 冬水旺，急需甲木引丁火'}},
+    '戊':{'子':{primary:'火',secondary:'木',stems:['丙','甲'],label:'戊土子月: 冻土，丙火解冻，甲木疏松'},'丑':{primary:'火',secondary:'木',stems:['丙','甲'],label:'戊土丑月: 寒湿土，丙火暖燥为要'},'寅':{primary:'火',secondary:'木',stems:['丙','甲'],label:'戊土寅月: 丙火暖土，甲木疏土'},'卯':{primary:'火',secondary:'木',stems:['丙','甲'],label:'戊土卯月: 丙火化木生土，甲木疏之'},'辰':{primary:'木',secondary:'火',stems:['甲','丙'],label:'戊土辰月: 土旺，甲木疏土最急'},'巳':{primary:'木',secondary:'水',stems:['甲','壬'],label:'戊土巳月: 土燥，甲木疏松，壬水润之'},'午':{primary:'水',secondary:'木',stems:['壬','甲'],label:'戊土午月: 燥热，壬水润土，甲木疏松'},'未':{primary:'水',secondary:'火',stems:['癸','丙'],label:'戊土未月: 三伏热土，癸水润燥'},'申':{primary:'火',secondary:'木',stems:['丙','甲'],label:'戊土申月: 秋凉，丙火温土，甲木疏松'},'酉':{primary:'火',secondary:'水',stems:['丙','癸'],label:'戊土酉月: 丙火暖土，癸水滋润'},'戌':{primary:'木',secondary:'水',stems:['甲','壬'],label:'戊土戌月: 燥土旺月，甲木癸水为用'},'亥':{primary:'火',secondary:'木',stems:['丙','甲'],label:'戊土亥月: 寒冬，丙火暖土最急'}},
+    '己':{'子':{primary:'火',secondary:'木',stems:['丙','甲'],label:'己土子月: 湿冷，丙火暖土为主'},'丑':{primary:'火',secondary:'木',stems:['丙','甲'],label:'己土丑月: 冰冻，丙火解冻急迫'},'寅':{primary:'火',secondary:'水',stems:['丙','癸'],label:'己土寅月: 丙火暖土，癸水润燥'},'卯':{primary:'火',secondary:'水',stems:['丙','癸'],label:'己土卯月: 木旺克土，丙火化木生土'},'辰':{primary:'火',secondary:'木',stems:['丙','甲'],label:'己土辰月: 土旺，丙火癸水调节'},'巳':{primary:'水',secondary:'火',stems:['癸','丙'],label:'己土巳月: 燥热，癸水润己土'},'午':{primary:'水',secondary:'火',stems:['癸','丙'],label:'己土午月: 热极，癸水最为急需'},'未':{primary:'水',secondary:'火',stems:['癸','丙'],label:'己土未月: 燥土，癸水润之'},'申':{primary:'火',secondary:'水',stems:['丙','癸'],label:'己土申月: 秋凉，丙火温暖'},'酉':{primary:'火',secondary:'水',stems:['丙','癸'],label:'己土酉月: 丙火暖局，癸水滋润'},'戌':{primary:'木',secondary:'水',stems:['甲','癸'],label:'己土戌月: 燥土旺月，甲木疏土'},'亥':{primary:'火',secondary:'木',stems:['丙','甲'],label:'己土亥月: 寒湿，丙火急需，甲木疏松'}},
+    '庚':{'子':{primary:'火',secondary:'土',stems:['丁','甲'],label:'庚金子月: 丁火煅金为先，甲木引丁'},'丑':{primary:'火',secondary:'木',stems:['丁','甲'],label:'庚金丑月: 寒冬，丁火煅冷金'},'寅':{primary:'土',secondary:'木',stems:['戊','丁'],label:'庚金寅月: 戊土培金，丁火温煅'},'卯':{primary:'火',secondary:'木',stems:['丁','甲'],label:'庚金卯月: 丁火炼庚，甲木引丁'},'辰':{primary:'木',secondary:'火',stems:['甲','丁'],label:'庚金辰月: 甲木引丁，丁火煅金'},'巳':{primary:'水',secondary:'土',stems:['壬','戊'],label:'庚金巳月: 火旺，壬水解热，戊土护根'},'午':{primary:'水',secondary:'水',stems:['壬','癸'],label:'庚金午月: 热极，壬水癸水调候'},'未':{primary:'火',secondary:'木',stems:['丁','甲'],label:'庚金未月: 丁火炼金成器，甲木引丁'},'申':{primary:'火',secondary:'水',stems:['丁','壬'],label:'庚金申月: 金旺宜丁火煅练'},'酉':{primary:'火',secondary:'木',stems:['丁','甲'],label:'庚金酉月: 金极旺，丁火陶冶为要'},'戌':{primary:'木',secondary:'水',stems:['甲','壬'],label:'庚金戌月: 甲木引丁，壬水调候'},'亥':{primary:'火',secondary:'木',stems:['丁','甲'],label:'庚金亥月: 冬寒，丁火煅金暖局'}},
+    '辛':{'子':{primary:'水',secondary:'木',stems:['壬','甲'],label:'辛金子月: 壬水洗金，甲木疏水'},'丑':{primary:'水',secondary:'火',stems:['壬','丙'],label:'辛金丑月: 壬水流通，丙火暖局'},'寅':{primary:'土',secondary:'水',stems:['己','壬'],label:'辛金寅月: 己土生金，壬水流通'},'卯':{primary:'水',secondary:'木',stems:['壬','甲'],label:'辛金卯月: 壬水洗净辛金'},'辰':{primary:'水',secondary:'木',stems:['壬','甲'],label:'辛金辰月: 壬水流通，甲木疏土'},'巳':{primary:'水',secondary:'水',stems:['壬','癸'],label:'辛金巳月: 夏热，壬癸水调候解热'},'午':{primary:'水',secondary:'金',stems:['壬','庚'],label:'辛金午月: 火旺，壬水为急，庚金辅助'},'未':{primary:'水',secondary:'金',stems:['壬','庚'],label:'辛金未月: 燥热，壬水庚金为用'},'申':{primary:'水',secondary:'木',stems:['壬','甲'],label:'辛金申月: 壬水洗金，甲木流通秀气'},'酉':{primary:'水',secondary:'木',stems:['壬','甲'],label:'辛金酉月: 金旺，壬水泄秀'},'戌':{primary:'水',secondary:'火',stems:['壬','丙'],label:'辛金戌月: 壬水流通，丙火调候'},'亥':{primary:'水',secondary:'火',stems:['壬','丙'],label:'辛金亥月: 壬水洗金，丙火调节'}},
+    '壬':{'子':{primary:'金',secondary:'土',stems:['庚','戊'],label:'壬水子月: 水旺须戊土堤防，庚金为水源'},'丑':{primary:'火',secondary:'木',stems:['丙','甲'],label:'壬水丑月: 寒冬，丙火调候为先'},'寅':{primary:'土',secondary:'金',stems:['戊','庚'],label:'壬水寅月: 戊土堤防，庚金生水'},'卯':{primary:'土',secondary:'金',stems:['戊','庚'],label:'壬水卯月: 戊土制水，庚金生水'},'辰':{primary:'木',secondary:'金',stems:['甲','庚'],label:'壬水辰月: 甲木疏土引水，庚金生水'},'巳':{primary:'金',secondary:'水',stems:['庚','壬'],label:'壬水巳月: 庚金生水源，再取壬水助力'},'午':{primary:'金',secondary:'水',stems:['庚','癸'],label:'壬水午月: 庚金生水，癸水助壬'},'未':{primary:'金',secondary:'木',stems:['辛','甲'],label:'壬水未月: 辛金生水，甲木疏土'},'申':{primary:'土',secondary:'火',stems:['戊','丁'],label:'壬水申月: 金水旺，戊土堤防为急'},'酉':{primary:'木',secondary:'火',stems:['甲','丁'],label:'壬水酉月: 甲木疏水，丁火调候'},'戌':{primary:'木',secondary:'火',stems:['甲','丙'],label:'壬水戌月: 甲木引水，丙火调候'},'亥':{primary:'土',secondary:'木',stems:['戊','甲'],label:'壬水亥月: 水旺泛滥，戊土堤防最急'}},
+    '癸':{'子':{primary:'火',secondary:'金',stems:['丙','辛'],label:'癸水子月: 丙火调候解寒，辛金滋水源'},'丑':{primary:'火',secondary:'金',stems:['丙','辛'],label:'癸水丑月: 丙火暖局，辛金生水'},'寅':{primary:'金',secondary:'火',stems:['辛','丙'],label:'癸水寅月: 辛金生水为先，丙火调候次之'},'卯':{primary:'金',secondary:'火',stems:['辛','丙'],label:'癸水卯月: 辛金生水，丙火暖局'},'辰':{primary:'火',secondary:'金',stems:['丙','辛'],label:'癸水辰月: 丙火调候，辛金生水'},'巳':{primary:'金',secondary:'金',stems:['庚','辛'],label:'癸水巳月: 夏热水干，庚辛金生水源最急(非直接加水!)'},'午':{primary:'金',secondary:'金',stems:['庚','辛'],label:'癸水午月: 火旺水弱，庚辛金生水最急'},'未':{primary:'金',secondary:'金',stems:['庚','辛'],label:'癸水未月: 燥极，庚辛金生水，润枯救急'},'申':{primary:'火',secondary:'火',stems:['丁','丙'],label:'癸水申月: 水金旺，丁丙火调候'},'酉':{primary:'火',secondary:'金',stems:['丙','辛'],label:'癸水酉月: 丙火调候，辛金生水'},'戌':{primary:'金',secondary:'火',stems:['辛','丙'],label:'癸水戌月: 辛金生水，丙火调候'},'亥':{primary:'金',secondary:'火',stems:['庚','丙'],label:'癸水亥月: 庚金生水，丙丁暖局'}}
   };
-  let tiaoHouYS = null;
-  for (const { branches, priority, support, label } of Object.values(TIAO_HOU)) {
-    if (branches.includes(monthBranch)) {
-      // Tiao Hou applies when climate regulation is needed
-      // It supplements (not necessarily overrides) the primary Yong Shen
-      tiaoHouYS = { element: priority, support, label, monthBranch };
-      break;
-    }
+  const perDmEntry=TIAO_HOU_PER_DM[dayMasterStem]?.[monthBranch]||null;
+  let tiaoHouYS=null;
+  if(perDmEntry){
+    tiaoHouYS={element:perDmEntry.primary,support:perDmEntry.secondary,stems:perDmEntry.stems,label:perDmEntry.label,monthBranch,dmStem:dayMasterStem};
   }
 
   // ---- TEN GODS (十神) ----

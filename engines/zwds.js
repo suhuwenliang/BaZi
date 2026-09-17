@@ -211,6 +211,18 @@ function calculateZwds(params) {
       const palaceIdx = (mingGongIdx + i) % 12;
       const isCurrent = currentAge >= ageStart && currentAge <= ageEnd;
 
+      // 大限四化: derive 4 transformations from this Da Xian palace's heavenly stem
+      const dxPalace = palaces[palaceIdx] || {};
+      const dxStem = dxPalace.heavenlyStem || '';
+      const dxMutagens = (LIUNIAN_MUTAGEN_TABLE[dxStem] || []).map(m => {
+        // Find which palace this star resides in
+        let starPalace = null;
+        for (const p of palaces) {
+          const found = (p.majorStars || []).concat(p.minorStars || []).find(s => s.name === m.star);
+          if (found) { starPalace = p.name; break; }
+        }
+        return { ...m, palace: starPalace, meaning: MUTAGEN_MEANING[m.type] || m.type };
+      });
       daXians.push({
         index: i,
         ageStart,
@@ -218,10 +230,12 @@ function calculateZwds(params) {
         yearStart,
         yearEnd,
         isCurrent,
-        palace: palaces[palaceIdx] || {},
+        palace: dxPalace,
         palaceName: PALACE_NAMES_ZH[palaceIdx] || `宫${palaceIdx}`,
-        majorStars: palaces[palaceIdx]?.majorStars || [],
-        meaning: buildDaXianMeaning(PALACE_NAMES_ZH[palaceIdx], palaces[palaceIdx], ageStart, ageEnd, isCurrent)
+        majorStars: dxPalace.majorStars || [],
+        daXianStem: dxStem,
+        daXianMutagens: dxMutagens,
+        meaning: buildDaXianMeaning(PALACE_NAMES_ZH[palaceIdx], dxPalace, ageStart, ageEnd, isCurrent)
       });
     }
   } catch(e) {
@@ -429,6 +443,8 @@ Tolong tulis narasi interpretasi personal berdasarkan data Zi Wei Dou Shu beriku
 ## Empat Transformasi Natal: ${natalMutagens.map(m => `${m.type}化${m.star}(${m.palace})`).join(', ')}
 
 ## Da Xian Saat Ini: ${currentDaXian ? `${currentDaXian.palaceName} (${currentDaXian.ageStart}-${currentDaXian.ageEnd} tahun)` : 'Tidak tersedia'}
+${currentDaXian && currentDaXian.daXianStem ? `### 大限四化 (天干 ${currentDaXian.daXianStem}):
+${(currentDaXian.daXianMutagens||[]).map(m => `- ${m.type}化${m.star} → 在${m.palace||'未知'}宫: ${m.meaning}`).join('\n')}` : ''}
 
 ## Liu Nian ${currentYear}: ${liuNian?.ganzhi || '—'}, Xiao Xian di ${liuNian?.xiaoxianPalace?.name || '—'}
 四化: ${liuNian?.mutagens?.map(m => `化${m.type}→${m.star}`).join(', ') || 'Tidak ada'}
