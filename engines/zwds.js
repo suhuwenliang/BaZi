@@ -26,6 +26,9 @@ const PALACE_NAMES_ZH = [
 ];
 
 // Terjemahan kecerahan bintang
+// v4e: Star brightness weight multipliers
+const BRIGHTNESS_WEIGHT = { '庙': 1.5, '旺': 1.2, '利': 1.0, '平': 0.8, '陷': 0.5, '': 1.0 };
+
 const BRIGHTNESS_ID = {
   '庙': 'Miao (Sangat Kuat ★★★★★)',
   '旺': 'Wang (Kuat ★★★★)',
@@ -174,6 +177,11 @@ function calculateZwds(params) {
     const eb = palace.earthlyBranch || '';
     const lifeStage = calcLifeStage(eb, juNumber, yearStemIsYin, isMale);
 
+    // v4e: brightness-weighted quality score for this palace
+    const brightScore = majorStars.reduce((sum, s) => sum + (BRIGHTNESS_WEIGHT[s.brightness||''] || 1.0), 0);
+    const palaceQuality = majorStars.length > 0 ? brightScore / majorStars.length : 1.0;
+    const palaceQualityLabel = palaceQuality >= 1.4 ? '庙旺' : palaceQuality >= 1.1 ? '旺' : palaceQuality <= 0.65 ? '陷' : '平';
+
     return {
       index: idx,
       name: palaceName,
@@ -186,10 +194,49 @@ function calculateZwds(params) {
       minorStars,
       mutagens,
       lifeStage,
+      brightScore: Math.round(palaceQuality * 100) / 100,
+      brightLabel: palaceQualityLabel,
       purpose: palaceInfo.purpose || '',
       whatToLook: palaceInfo.what_to_look || '',
       personalMeaning,
       advice: palaceInfo.advice_template || ''
+    };
+  });
+
+  // ---- v4c: 三方四正 (Tri-Party Palace System) ----
+  // Each palace + its opposition + two tri-party palaces = 4 palaces total read together
+  // Classical ZWDS: 命宫 三方四正 = 命宫 + 迁移 + 官禄 + 财帛
+  const SAN_FANG_MAP = {
+    '命宫':   ['命宫','迁移','官禄','财帛'],
+    '兄弟':   ['兄弟','交友','田宅','福德'],
+    '夫妻':   ['夫妻','官禄','子女','迁移'],
+    '子女':   ['子女','疾厄','夫妻','交友'],
+    '财帛':   ['财帛','命宫','福德','官禄'],
+    '疾厄':   ['疾厄','迁移','子女','田宅'],
+    '迁移':   ['迁移','命宫','疾厄','官禄'],
+    '交友':   ['交友','兄弟','官禄','疾厄'],
+    '官禄':   ['官禄','财帛','命宫','夫妻'],
+    '田宅':   ['田宅','福德','兄弟','子女'],
+    '福德':   ['福德','田宅','财帛','兄弟'],
+    '父母':   ['父母','疾厄','兄弟','交友']
+  };
+  // Helper to get stars for palace by name
+  const findPalaceByName = name => palaces.find(p => p.name === name || p.name + '宫' === name || p.name === name + '宫');
+  // Build tri-party star aggregate for each palace
+  palaces.forEach(palace => {
+    const triNames = SAN_FANG_MAP[palace.name] || SAN_FANG_MAP[palace.name.replace('宫','')] || [palace.name];
+    const triPalaces = triNames.map(n => findPalaceByName(n)).filter(Boolean);
+    const triStars = triPalaces.flatMap(p => p.majorStars.map(s => ({ ...s, fromPalace: p.name })));
+    const triMutagens = triPalaces.flatMap(p => p.mutagens.map(m => ({ ...m, fromPalace: p.name })));
+    const triBrightScore = triStars.length > 0
+      ? triStars.reduce((sum, s) => sum + (BRIGHTNESS_WEIGHT[s.brightness||''] || 1.0), 0) / triStars.length
+      : 1.0;
+    palace.triParty = {
+      palaceNames: triNames,
+      stars: triStars,
+      mutagens: triMutagens,
+      brightScore: Math.round(triBrightScore * 100) / 100,
+      brightLabel: triBrightScore >= 1.4 ? '庙旺强局' : triBrightScore >= 1.1 ? '旺' : triBrightScore <= 0.65 ? '陷弱' : '平'
     };
   });
 
@@ -357,9 +404,17 @@ function buildPalaceInterpretation(palaceName, majorStars, mutagens, palace) {
 
 function buildDaXianMeaning(palaceName, palace, ageStart, ageEnd, isCurrent) {
   const stars = palace?.majorStars || [];
-  const starDesc = stars.length > 0 ? stars.map(s => s.name).join('、') : 'istana kosong';
+  // v4e: brightness-weighted star quality score
+  let brightScore = 0;
+  const starDesc = stars.length > 0 ? stars.map(s => {
+    const bw = BRIGHTNESS_WEIGHT[s.brightness || ''] || 1.0;
+    brightScore += bw;
+    return `${s.name}(${s.brightness||'?'})`;
+  }).join('、') : 'istana kosong';
+  const avgBright = stars.length > 0 ? brightScore / stars.length : 1.0;
+  const brightLabel = avgBright >= 1.4 ? '(庙旺强局)' : avgBright >= 1.1 ? '(气势佳)' : avgBright <= 0.65 ? '(星耀偏陷，需谨慎)' : '';
   const currentMark = isCurrent ? ' [PERIODE SAAT INI]' : '';
-  return `Usia ${ageStart}-${ageEnd} tahun${currentMark}: Fokus pada istana ${palaceName} dengan bintang ${starDesc}. ${PALACE_INFO[palaceName]?.purpose || ''}`;
+  return `Usia ${ageStart}-${ageEnd} tahun${currentMark}: Fokus pada istana ${palaceName}${brightLabel} dengan bintang ${starDesc}. ${PALACE_INFO[palaceName]?.purpose || ''}`;
 }
 
 function buildLiuNianMeaning(year, age, xiaoxianPalace, mutagens, currentDaXian) {
@@ -441,6 +496,15 @@ Tolong tulis narasi interpretasi personal berdasarkan data Zi Wei Dou Shu beriku
 - 夫妻宫 (Pasangan): ${fuqiStars}
 
 ## Empat Transformasi Natal: ${natalMutagens.map(m => `${m.type}化${m.star}(${m.palace})`).join(', ')}
+
+## 三方四正命宫 (Ming Gong Tri-Party):
+${(() => {
+  const mg = palaces.find(p => p.name === '命宫');
+  if (!mg || !mg.triParty) return '(tidak tersedia)';
+  const triStars = mg.triParty.stars.map(s => `${s.name}(${s.brightness||'?'})@${s.fromPalace}`).join('、');
+  const triMut = mg.triParty.mutagens.map(m => `${m.type}化${m.star}@${m.fromPalace}`).join(', ');
+  return `Bintang tri-party: ${triStars||'(kosong)'}\nMutagen tri-party: ${triMut||'(tidak ada)'}\nKualitas brightness: ${mg.triParty.brightLabel} (${mg.triParty.brightScore})`;
+})()}
 
 ## Da Xian Saat Ini: ${currentDaXian ? `${currentDaXian.palaceName} (${currentDaXian.ageStart}-${currentDaXian.ageEnd} tahun)` : 'Tidak tersedia'}
 ${currentDaXian && currentDaXian.daXianStem ? `### 大限四化 (天干 ${currentDaXian.daXianStem}):

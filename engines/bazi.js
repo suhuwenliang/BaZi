@@ -390,17 +390,47 @@ function calculateBazi(params) {
       if(score>0)supScore+=Math.abs(score)*0.8; else drnScore+=Math.abs(score)*0.8;
     }
   }
-  const isDMStrong=supScore>drnScore;
+  // ========== v4b: DM Strength 5-Level System ==========
+  // ratio: sup/(sup+drn) — 0~1 scale
+  const total = supScore + drnScore;
+  const supRatio = total > 0 ? supScore / total : 0.5;
+  // 5 levels: 极旺(≥0.72) 偏旺(≥0.57) 中和(≥0.43) 偏弱(≥0.28) 极弱(<0.28)
+  let dmLevel, dmLevelLabel, dmLevelEn;
+  if      (supRatio >= 0.72) { dmLevel = 5; dmLevelLabel = '极旺'; dmLevelEn = 'extreme-strong'; }
+  else if (supRatio >= 0.57) { dmLevel = 4; dmLevelLabel = '偏旺'; dmLevelEn = 'moderate-strong'; }
+  else if (supRatio >= 0.43) { dmLevel = 3; dmLevelLabel = '中和'; dmLevelEn = 'balanced'; }
+  else if (supRatio >= 0.28) { dmLevel = 2; dmLevelLabel = '偏弱'; dmLevelEn = 'moderate-weak'; }
+  else                        { dmLevel = 1; dmLevelLabel = '极弱'; dmLevelEn = 'extreme-weak'; }
+  const isDMStrong = dmLevel >= 4;   // 偏旺 or 极旺
+  const isDMWeak   = dmLevel <= 2;   // 偏弱 or 极弱
+  const isDMBalanced = dmLevel === 3; // 中和
+
   const dmStrengthDetail={
     sup:Math.round(supScore*10)/10,drn:Math.round(drnScore*10)/10,
+    supRatio:Math.round(supRatio*100)/100,
+    dmLevel, dmLevelLabel, dmLevelEn,
     yueLing:yueLingScore,
     yueLingLabel:yueLingScore>=4?'旺':yueLingScore>=3?'相':yueLingScore>=2?'休':yueLingScore>=1.5?'囚':'死',
     stemCombos:stemCombos.map(c=>c.s1+c.s2+'合'+(c.hua||'?')),
     branchCombos:branchCombos.map(c=>c.name)
   };
 
-  // Yong Shen base: DM kuat → 食伤 (drains excess); DM lemah → 印星 (supports DM)
-  const yongShen = isDMStrong ? ELEMENT_PRODUCES[dmElement] : ELEMENT_FEEDS[dmElement];
+  // Yong Shen base — depends on DM level:
+  // 极旺/偏旺 → 食伤 (drain excess) OR 财 (spend energy)
+  // 中和 → 官 (structure) or 财 (wealth) — use dominant element's克 as target
+  // 偏弱/极弱 → 印 (support DM) or 比劫 (companions)
+  let yongShen;
+  if (isDMStrong) {
+    yongShen = ELEMENT_PRODUCES[dmElement]; // 食伤: DM generates
+  } else if (isDMBalanced) {
+    // 中和: chart is self-sustaining. Yong Shen = 官 (element that controls DM) for structure
+    // or 财 (element DM controls) — pick whichever is weaker in chart
+    const guanEl = ELEMENT_CONTROLS[dmElement];   // what controls DM = 官
+    const caiEl  = ELEMENT_PRODUCES[ELEMENT_PRODUCES[dmElement]]; // 食伤 generates 财
+    yongShen = guanEl; // 中和 prefers 官 for life structure
+  } else {
+    yongShen = ELEMENT_FEEDS[dmElement]; // 印: feeds/generates DM
+  }
 
   // ========== LAYER 2: 调候 (Tiao Hou) — Per-DM Classical Table ==========
   // 三命通会/子平真诠: each DM has specific 调候 per month branch.
@@ -448,6 +478,76 @@ function calculateBazi(params) {
   }
   const dominantTenGod = Object.entries(tenGodAggregate)
     .sort((a, b) => b[1].totalWeight - a[1].totalWeight)[0];
+
+  // ========== v4a: 格局 (Gé Jú) Chart Structure Detection ==========
+  // 格局 determines the TRUE pattern of the chart — overrides simple DM-strong/weak Yong Shen
+  // Source: 子平真诠, 穷通宝鉴. Month branch 本气 determines 格局 type.
+  const YUEZHENG_FORMAT = {
+    // month branch → {格: name, 用神 category, 喜: what helps, 忌: what hurts}
+    '子':{ ge:'壬水格',type:'印',tenGod:'正印',positive:['木','金'],negative:['土','火'] },
+    '丑':{ ge:'己土格',type:'印',tenGod:'偏印',positive:['火','木'],negative:['水','金'] },
+    '寅':{ ge:'甲木格',type:'印',tenGod:'正印',positive:['水','火'],negative:['金','土'] },
+    '卯':{ ge:'乙木格',type:'印',tenGod:'偏印',positive:['水','火'],negative:['金','土'] },
+    '辰':{ ge:'戊土格',type:'印',tenGod:'正印',positive:['火','木'],negative:['水','金'] },
+    '巳':{ ge:'丙火格',type:'官',tenGod:'正官',positive:['水','土'],negative:['木'] },
+    '午':{ ge:'丁火格',type:'官',tenGod:'偏官',positive:['水','土'],negative:['木'] },
+    '未':{ ge:'己土格',type:'印',tenGod:'偏印',positive:['火','木'],negative:['水','金'] },
+    '申':{ ge:'庚金格',type:'财',tenGod:'正财',positive:['土','火'],negative:['木','水'] },
+    '酉':{ ge:'辛金格',type:'财',tenGod:'偏财',positive:['土','火'],negative:['木','水'] },
+    '戌':{ ge:'戊土格',type:'印',tenGod:'正印',positive:['火','木'],negative:['水','金'] },
+    '亥':{ ge:'壬水格',type:'印',tenGod:'正印',positive:['木','金'],negative:['土','火'] }
+  };
+  // Ten-God of month branch 本气 relative to DM → determines 格局 name
+  const monthStemHidden = hiddenStems?.month?.stems?.[0]?.stem || null; // 本气 stem
+  const TEN_GOD_GE_MAP = {
+    '比肩':'建禄格','劫财':'月刃格',
+    '食神':'食神格','伤官':'伤官格',
+    '正财':'正财格','偏财':'偏财格',
+    '正官':'正官格','七杀':'七杀格',
+    '正印':'正印格','偏印':'偏印格(枭神格)'
+  };
+  // Compute ten-god of month branch 本气 stem relative to DM
+  function getTenGodRel(stemA, dmStem) {
+    const elA = STEM_ELEMENT[stemA], elDM = STEM_ELEMENT[dmStem];
+    const samePolarity = (['甲','丙','戊','庚','壬'].includes(stemA)) === (['甲','丙','戊','庚','壬'].includes(dmStem));
+    if (elA === elDM) return samePolarity ? '比肩' : '劫财';
+    if (ELEMENT_PRODUCES[elA] === elDM) return samePolarity ? '正印' : '偏印';
+    if (ELEMENT_PRODUCES[elDM] === elA) return samePolarity ? '伤官' : '食神';
+    if (ELEMENT_CONTROLS[elDM] === elA) return samePolarity ? '正财' : '偏财';
+    if (ELEMENT_CONTROLS[elA] === elDM) return samePolarity ? '正官' : '七杀';
+    return null;
+  }
+  const monthBenQiTenGod = monthStemHidden ? getTenGodRel(monthStemHidden, dayMasterStem) : null;
+  const geJuName = TEN_GOD_GE_MAP[monthBenQiTenGod] || null;
+
+  // 特殊格局: 从格 — DM has almost no support (极弱, < 5% personal qi)
+  // 专旺格 — DM element overwhelmingly dominant (>70% distribution)
+  const dmDistPct = wuXingDistribution?.[dmElement]?.pct || 0;
+  let specialGe = null;
+  if (dmLevel === 1 && supRatio < 0.15) {
+    // 从格: follow the strongest element
+    const strongestEl = Object.entries(wuXingDistribution || {}).sort((a,b)=>b[1].pct-a[1].pct)[0]?.[0];
+    specialGe = { type: '从格', name: `从${strongestEl||'?'}格`, followEl: strongestEl,
+      yongShen: strongestEl, label: `极弱DM无援 → 从${strongestEl}格，用神随从强者` };
+  } else if (dmLevel === 5 && dmDistPct > 65) {
+    specialGe = { type: '专旺格', name: `${dayMasterStem}专旺格`, followEl: dmElement,
+      yongShen: ELEMENT_PRODUCES[dmElement], label: `DM极旺，专旺格 → 用神食伤泄秀` };
+  }
+
+  // Override yongShen if special 格局 detected
+  let yongShenFinal = yongShen;
+  if (specialGe) yongShenFinal = specialGe.yongShen || yongShen;
+
+  const geJuInfo = {
+    name: specialGe ? specialGe.name : (geJuName || '普通格'),
+    type: specialGe ? specialGe.type : (monthBenQiTenGod || ''),
+    monthBenQi: monthStemHidden || '',
+    monthBenQiTenGod: monthBenQiTenGod || '',
+    specialGe: specialGe || null,
+    yongShenOverride: specialGe ? specialGe.yongShen : null,
+    label: specialGe ? specialGe.label : `月令本气${monthStemHidden}(${monthBenQiTenGod}) → ${geJuName||'未知格'}`,
+  };
+
 
   // ---- DA YUN (大运) — Layer 3: 24 Jieqi method ----
   // Menggunakan semua 24 节气 (bukan hanya 12 节) untuk menghitung usia awal Da Yun
@@ -548,7 +648,8 @@ function calculateBazi(params) {
       isCurrent,
       element_gan: STEM_ELEMENT[dgStem],
       element_zhi: BRANCH_ELEMENT[dgBranch],
-      quality: evaluateDaYunQuality(dgStem, dgBranch, dayMasterStem, yongShen)
+      quality: evaluateDaYunQuality(dgStem, dgBranch, dayMasterStem, yongShenFinal,
+        [pillars.year.zhi, pillars.month.zhi, pillars.day.zhi, ...(unknownHour?[]:[pillars.hour.zhi])])
     };
   });
 
@@ -661,7 +762,7 @@ function calculateBazi(params) {
   // ---- RANGKUMAN INTERPRETASI ----
   const interpretation = buildBaziInterpretation({
     dayMasterStem, dayMasterInfo, pillars, wuXingDistribution,
-    dominantElement, weakestElement, yongShen, isDMStrong,
+    dominantElement, weakestElement, yongShen, isDMStrong, isDMWeak, isDMBalanced, dmStrengthDetail,
     dominantTenGod, currentDaYun, shenSha, fengshui, careers
   });
 
@@ -698,11 +799,15 @@ function calculateBazi(params) {
       distribution: wuXingDistribution,
       dominant: dominantElement,
       weakest: weakestElement,
-      yongShen,
+      yongShen: yongShenFinal,
+      yongShenBase: yongShen,
       tiaoHouYS,
       isDMStrong,
+      isDMWeak,
+      isDMBalanced,
       dmStrengthDetail,
-      summary: `Day Master Anda (${dayMasterStem}/${dayMasterInfo.element}) ${isDMStrong ? 'kuat' : 'perlu dukungan'} (月令${dmStrengthDetail.yueLingLabel}, dukungan=${dmStrengthDetail.sup} vs tekanan=${dmStrengthDetail.drn}). Yong Shen (用神): ${yongShen} (${WU_XING[yongShen]?.name_id})${tiaoHouYS ? ' | 调候: '+tiaoHouYS.element+'('+tiaoHouYS.label+')' : ''}`
+      geJu: geJuInfo,
+      summary: `Day Master Anda (${dayMasterStem}/${dayMasterInfo.element}) ${dmStrengthDetail.dmLevelLabel} — ${dmStrengthDetail.dmLevelEn} (月令${dmStrengthDetail.yueLingLabel}, rasio=${Math.round(dmStrengthDetail.supRatio*100)}%). 格局: ${geJuInfo.name}. Yong Shen (用神): ${yongShenFinal} (${WU_XING[yongShenFinal]?.name_id})${geJuInfo.specialGe?' ['+geJuInfo.specialGe.type+']':''}${tiaoHouYS?' | 调候: '+tiaoHouYS.element:''}` 
     },
     tenGods: {
       byStem: tenGods,
@@ -738,7 +843,7 @@ function calculateBazi(params) {
     yearShio,
     interpretation,
     exportPrompt: buildClaudeExportPrompt({
-      dayMasterStem, pillars, wuXingDistribution, yongShen, daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat
+      dayMasterStem, pillars, wuXingDistribution, yongShen, dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced, daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat
     }),
     wealthProfiling: { structures, profiles, aspects, wealthAnalysis }
   };
@@ -781,21 +886,27 @@ function computeTenGod(dayMaster, targetStem) {
 
 /**
  * Evaluasi kualitas Da Yun terhadap Day Master & Yong Shen
- * Mempertimbangkan baik Gan (stem) maupun Zhi (branch) Da Yun
+ * v4d: tambah 六冲/六合/三刑 antara Da Yun Zhi vs natal branches
  */
-function evaluateDaYunQuality(dyGan, dyZhi, dayMaster, yongShen) {
+function evaluateDaYunQuality(dyGan, dyZhi, dayMaster, yongShen, natalBranches) {
   const PRODUCES = { '木':'火','火':'土','土':'金','金':'水','水':'木' };
   const CONTROLS = { '木':'土','火':'金','土':'水','金':'木','水':'火' };
 
-  const ganEl = STEM_ELEMENT[dyGan];
-  // Ambil unsur dominan dari hidden stems Zhi Da Yun (pakai hidden stem pertama/本气)
-  const zhiEl = BRANCH_ELEMENT[dyZhi];
-  const zhiHidden = HIDDEN_STEMS[dyZhi]?.[0];
-  const zhiDomEl = zhiHidden ? STEM_ELEMENT[zhiHidden.stem] : zhiEl;
+  // ---- v4d: 六冲 六合 三刑 maps ----
+  const LIU_CHONG = {'子':'午','午':'子','丑':'未','未':'丑','寅':'申','申':'寅','卯':'酉','酉':'卯','辰':'戌','戌':'辰','巳':'亥','亥':'巳'};
+  const LIU_HE    = {'子':'丑','丑':'子','寅':'亥','亥':'寅','卯':'戌','戌':'卯','辰':'酉','酉':'辰','巳':'申','申':'巳','午':'未','未':'午'};
+  const SAN_XING  = { // 三刑: 寅巳申相刑, 丑戌未持势刑, 子卯无礼刑
+    '寅':['巳','申'],'巳':['寅','申'],'申':['寅','巳'],
+    '丑':['戌','未'],'戌':['丑','未'],'未':['丑','戌'],
+    '子':['卯'],'卯':['子']
+  };
 
-  // Scoring: Gan bobot 60%, Zhi (hidden stem dominan) bobot 40%
+  const ganEl = STEM_ELEMENT[dyGan];
+  const zhiHidden = HIDDEN_STEMS[dyZhi]?.[0];
+  const zhiDomEl = zhiHidden ? STEM_ELEMENT[zhiHidden.stem] : BRANCH_ELEMENT[dyZhi];
+
   let score = 0;
-  let ganDesc = '', zhiDesc = '';
+  let ganDesc = '', zhiDesc = '', interDesc = '';
 
   // Evaluasi Gan
   if (ganEl === yongShen)              { score += 3; ganDesc = `Gan ${dyGan}(${ganEl})=Yong Shen`; }
@@ -804,19 +915,44 @@ function evaluateDaYunQuality(dyGan, dyZhi, dayMaster, yongShen) {
   else if (CONTROLS[ganEl] === yongShen) { score -= 2; ganDesc = `Gan ${dyGan}(${ganEl}) menekan Yong Shen`; }
   else { ganDesc = `Gan ${dyGan}(${ganEl}) netral`; }
 
-  // Evaluasi Zhi (hidden stem dominan)
+  // Evaluasi Zhi element
   if (zhiDomEl === yongShen)              { score += 2; zhiDesc = `Zhi ${dyZhi}(${zhiDomEl})=Yong Shen`; }
   else if (PRODUCES[zhiDomEl] === yongShen) { score += 1; zhiDesc = `Zhi ${dyZhi}(${zhiDomEl}) menghasilkan Yong Shen`; }
   else if (zhiDomEl === STEM_ELEMENT[dayMaster]) { score += 1; zhiDesc = `Zhi ${dyZhi} memperkuat DM`; }
   else if (CONTROLS[zhiDomEl] === yongShen) { score -= 1; zhiDesc = `Zhi ${dyZhi}(${zhiDomEl}) menekan Yong Shen`; }
   else { zhiDesc = `Zhi ${dyZhi} netral`; }
 
-  const desc = `${ganDesc}; ${zhiDesc}`;
-  if (score >= 4) return { rating: 'Sangat Baik', score, desc };
-  if (score >= 2) return { rating: 'Baik', score, desc };
-  if (score >= 1) return { rating: 'Netral-Baik', score, desc };
-  if (score <= -2) return { rating: 'Menantang', score, desc };
-  return { rating: 'Netral', score, desc };
+  // ---- v4d: Branch interactions with natal chart ----
+  const interactions = [];
+  if (natalBranches && natalBranches.length > 0) {
+    for (const nb of natalBranches) {
+      if (LIU_CHONG[dyZhi] === nb) {
+        interactions.push(`六冲 ${dyZhi}冲${nb}`);
+        score -= 2; // clash with natal branch is turbulent
+        // If clashed branch = month branch (月令), extra penalty
+        if (nb === natalBranches[1]) score -= 1; // index 1 = month
+      } else if (LIU_HE[dyZhi] === nb) {
+        const heEl = BRANCH_ELEMENT[nb];
+        interactions.push(`六合 ${dyZhi}合${nb}(${heEl})`);
+        if (heEl === yongShen) score += 2;
+        else score += 1;
+      }
+      const xings = SAN_XING[dyZhi] || [];
+      if (xings.includes(nb) && !interactions.some(i => i.includes(nb))) {
+        interactions.push(`三刑 ${dyZhi}刑${nb}`);
+        score -= 1;
+      }
+    }
+  }
+  if (interactions.length > 0) interDesc = ` [${interactions.join(', ')}]`;
+
+  const desc = `${ganDesc}; ${zhiDesc}${interDesc}`;
+  if (score >= 5) return { rating: 'Sangat Baik ★★★', score, desc, interactions };
+  if (score >= 3) return { rating: 'Baik ★★', score, desc, interactions };
+  if (score >= 1) return { rating: 'Netral-Baik ★', score, desc, interactions };
+  if (score <= -3) return { rating: 'Sangat Menantang ▼▼', score, desc, interactions };
+  if (score <= -1) return { rating: 'Menantang ▼', score, desc, interactions };
+  return { rating: 'Netral', score, desc, interactions };
 }
 
 /**
@@ -931,7 +1067,7 @@ function computeShenSha(dayMasterStem, yearBranch, dayBranch, allBranches) {
  * Bangun teks interpretasi rule-based
  */
 function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXingDistribution,
-  dominantElement, weakestElement, yongShen, isDMStrong, dominantTenGod, currentDaYun, shenSha, fengshui, careers }) {
+  dominantElement, weakestElement, yongShen, isDMStrong, isDMWeak, isDMBalanced, dmStrengthDetail, dominantTenGod, currentDaYun, shenSha, fengshui, careers }) {
 
   const dmEl = dayMasterInfo.element || '';
   const sorted = Object.entries(wuXingDistribution).sort((a,b) => b[1].pct - a[1].pct);
@@ -946,7 +1082,7 @@ function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXing
 
     hiddenStems: `Di balik Earthly Branch (地支) empat pilar Anda, terdapat berbagai energi tersembunyi (藏干). Unsur tersembunyi yang paling dominan berkontribusi pada kedalaman karakter Anda yang mungkin tidak terlihat di permukaan.`,
 
-    wuXing: `Distribusi Wu Xing (五行) Anda: ${sorted.map(([el, d]) => `${WU_XING[el]?.name_id} ${d.pct}%`).join(', ')}. Unsur terkuat: ${WU_XING[dominantElement]?.name_id}. Unsur paling lemah: ${WU_XING[weakestElement]?.name_id}. Day Master Anda ${isDMStrong ? 'tergolong kuat (旺身)' : 'memerlukan dukungan (弱身)'}. Unsur yang paling Anda butuhkan (用神 Yong Shen) adalah ${WU_XING[yongShen]?.name_id} — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.`,
+    wuXing: `Distribusi Wu Xing (五行) Anda: ${sorted.map(([el, d]) => `${WU_XING[el]?.name_id} ${d.pct}%`).join(', ')}. Unsur terkuat: ${WU_XING[dominantElement]?.name_id}. Unsur paling lemah: ${WU_XING[weakestElement]?.name_id}. Day Master Anda tergolong **${dmStrengthDetail?.dmLevelLabel||'?'}** (${isDMStrong?'旺身':isDMWeak?'弱身':'中和'}). Unsur yang paling Anda butuhkan (用神 Yong Shen) adalah ${WU_XING[yongShen]?.name_id} — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.`,
 
     tenGods: dominantTenGod
       ? `Ten God yang paling dominan dalam chart Anda adalah ${dominantTenGod[0]}. ${TEN_GODS[dominantTenGod[0]]?.meaning || ''} Dalam kehidupan, ini tercermin dalam: ${TEN_GODS[dominantTenGod[0]]?.life_area || ''}.`
@@ -971,6 +1107,7 @@ function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXing
  * Generate prompt siap-pakai untuk ekspor ke Claude
  */
 function buildClaudeExportPrompt({ dayMasterStem, pillars, wuXingDistribution, yongShen,
+  dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced,
   daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat }) {
   return `# Data BaZi untuk Interpretasi Naratif
 
@@ -984,7 +1121,7 @@ Tolong tulis narasi interpretasi personal yang mendalam, hangat, dan mudah dipah
 
 ## Distribusi Wu Xing
 ${Object.entries(wuXingDistribution).map(([el,d]) => `- ${el}: ${d.pct}%`).join('\n')}
-Yong Shen (unsur dibutuhkan): ${yongShen}
+Yong Shen (unsur dibutuhkan): ${yongShen} | Kekuatan DM: ${dmStrengthDetail?.dmLevelLabel} (${dmStrengthDetail?.dmLevelEn}, rasio ${Math.round((dmStrengthDetail?.supRatio||0)*100)}%)
 
 ## Da Yun Saat Ini
 ${currentDaYun ? `${currentDaYun.ganzhi} (${currentDaYun.yearStart}-${currentDaYun.yearEnd}) — ${currentDaYun.quality.rating}` : 'Tidak tersedia'}
