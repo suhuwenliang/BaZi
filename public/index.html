@@ -507,7 +507,10 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
       <input type="hidden" name="dayunSect" value="2">
 
       <!-- Submit -->
-      <div class="btn-row" style="margin-top:16px">
+      <div class="btn-row no-print" style="margin-top:8px">
+        <button type="button" class="btn btn-secondary" onclick="resetAll()" style="font-size:12px; padding:8px 16px; border:1px solid var(--muted); color:var(--muted)">← Kembali ke Menu</button>
+      </div>
+      <div class="btn-row" style="margin-top:8px">
         <button type="submit" class="btn btn-primary" id="calc-btn">✨ Hitung Sekarang</button>
         <button type="button" class="btn btn-secondary" onclick="fillDemo()">📋 Isi Data Contoh</button>
         <button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ Print / PDF</button>
@@ -529,7 +532,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 <div id="error-box" class="error-box hidden"></div>
 
 <!-- ===== STANDALONE: QMDJ 30 HARI ===== -->
-<div class="card" id="qmdj-calendar-card" style="margin-bottom:16px">
+<div class="card" id="qmdj-calendar-card" style="margin-bottom:16px; display:none">
   <div class="card-header" style="cursor:pointer" onclick="toggleQmdjCalendarCard()">
     <div class="section-num" style="background:#22c55e;color:#fff">📆</div>
     <h2 style="color:#22c55e">Panduan Kegiatan QMDJ 30 Hari</h2>
@@ -4647,7 +4650,43 @@ function resetAll(returnToLanding) {
 function resetForm() { resetAll(); }
 
 // Navigate to mode without landing page
-function navTo(m) { resetAll(false); setMode(m); }
+function prefillForm(data) {
+  if (!data) return;
+  var form = document.getElementById('calc-form');
+  if (!form) return;
+  function setField(name, val) {
+    var el = form.querySelector('[name="' + name + '"]');
+    if (el && val !== undefined && val !== null && String(val) !== '') el.value = val;
+  }
+  setField('name', data.name);
+  setField('chineseName', data.chineseName);
+  setField('chineseSurname', data.chineseSurname);
+  setField('gender', data.gender);
+  setField('birthYear', data.birthYear);
+  setField('birthMonth', data.birthMonth);
+  setField('birthDay', data.birthDay);
+  setField('birthHour', data.birthHour);
+  setField('birthMinute', data.birthMinute);
+  setField('timezone', data.timezone);
+  if (data.longitude) setField('longitude', data.longitude);
+  if (data.latitude)  setField('latitude',  data.latitude);
+}
+
+function navTo(m) {
+  // If coming from relasi, capture Person A data as seed for the form
+  var savedInput = _lastInput;
+  if (_currentMode === 3 && !savedInput) {
+    try { savedInput = getPersonFromForm('pa'); } catch(e) {}
+  }
+  resetAll(false);
+  // Restore _lastInput after resetAll clears it
+  _lastInput = savedInput || null;
+  setMode(m);
+  // Pre-fill form if navigating to a form-based mode and we have previous data
+  if ((m === 1 || m === 2) && _lastInput) {
+    prefillForm(_lastInput);
+  }
+}
 
 // ============================================================
 // QMDJ DESTINY CHART (本命盤) RENDERER
