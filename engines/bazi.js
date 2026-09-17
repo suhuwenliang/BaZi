@@ -848,7 +848,7 @@ function calculateBazi(params) {
   // ---- RANGKUMAN INTERPRETASI ----
   const interpretation = buildBaziInterpretation({
     dayMasterStem, dayMasterInfo, pillars, wuXingDistribution,
-    dominantElement, weakestElement, yongShen, isDMStrong, isDMWeak, isDMBalanced, dmStrengthDetail,
+    dominantElement, weakestElement, yongShen: yongShenFinal, isDMStrong, isDMWeak, isDMBalanced, dmStrengthDetail,
     dominantTenGod, currentDaYun, shenSha, fengshui, careers,
     sixGods, geJu: { name: geJuInfo.name, geJuValidation }
   });
@@ -858,7 +858,7 @@ function calculateBazi(params) {
   const profiles      = computeProfiles(tenGodAggregate);
   const aspects       = computeAspects(wuXingDistribution, tenGodAggregate, shenSha);
   const wealthAnalysis = buildWealthStrategistAnalysis({
-    dayMasterStem, dmElement, yongShen, isDMStrong,
+    dayMasterStem, dmElement, yongShen: yongShenFinal, isDMStrong,
     tenGodAggregate, hiddenStems, pillars,
     daYuns, currentDaYun, shenSha, wuXingDistribution
   });
@@ -932,7 +932,7 @@ function calculateBazi(params) {
     yearShio,
     interpretation,
     exportPrompt: buildClaudeExportPrompt({
-      dayMasterStem, pillars, wuXingDistribution, yongShen, dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced, daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat, sixGods, geJuValidation, geJuInfo
+      dayMasterStem, pillars, wuXingDistribution, yongShen: yongShenFinal, dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced, daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat, sixGods, geJuValidation, geJuInfo
     }),
     wealthProfiling: { structures, profiles, aspects, wealthAnalysis }
   };
