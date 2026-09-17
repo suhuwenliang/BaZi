@@ -271,8 +271,9 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   /* ── QMDJ 30 Hari standalone card: expand body and day details for print ── */
   #qmdj-calendar-card-body { display: block !important; }
   .qmdj-day-detail { display: block !important; }
-  /* ── QMDJ Natal Hari: tampilkan saat print full reading ── */
+  /* ── QMDJ Natal & Destiny: tampilkan saat print full reading ── */
   #qmdj-destiny-section { display: block !important; }
+  #qmdj-content-rj { display: block !important; }
   /* ── Mode selector: sembunyikan saat print ── */
   #mode-selector { display: none !important; }
   /* ── Form input: sembunyikan saat print ── */
@@ -707,16 +708,13 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   </div>
   <div class="card-body">
 
-    <!-- Tab selector -->
-    <div class="qmdj-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="btn btn-secondary qmdj-tab active" onclick="switchQmdjTab('nianjia',this)">📅 年家 · Natal Tahun</button>
-      <button class="btn btn-secondary qmdj-tab" onclick="switchQmdjTab('rijia',this)">🗓 日家 · Natal Hari</button>
-    </div>
+    <!-- ── Sub-section A: Natal Tahun (年家) ── -->
+    <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border)">📅 年家 · Natal Tahun</div>
 
-    <!-- Loading indicator -->
-    <div id="qmdj-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Menghitung Qi Men Dun Jia...</div>
+    <!-- Loading indicator (nianjia) -->
+    <div id="qmdj-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Menghitung Qi Men Dun Jia Natal Tahun...</div>
 
-    <!-- Chart display -->
+    <!-- Chart display (nianjia) -->
     <div id="qmdj-content" style="display:none">
 
       <!-- Chart header info -->
@@ -748,6 +746,48 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
       <div id="qmdj-comparisons" style="margin-top:20px"></div>
 
     </div>
+
+    <!-- ── Sub-section B: Natal Hari (日家) ── -->
+    <div style="margin-top:32px;padding-top:24px;border-top:2px solid var(--border)">
+      <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border)">🗓 日家 · Natal Hari</div>
+
+      <!-- Loading indicator (rijia) -->
+      <div id="qmdj-loading-rj" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Menghitung Qi Men Dun Jia Natal Hari...</div>
+
+      <!-- Chart display (rijia) -->
+      <div id="qmdj-content-rj" style="display:none">
+
+        <!-- Chart header info -->
+        <div id="qmdj-header-rj" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px">
+          <div id="qmdj-label-rj" style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:6px"></div>
+          <div id="qmdj-summary-rj" style="color:var(--muted)"></div>
+          <div id="qmdj-quality-rj" style="font-size:15px;font-weight:600;margin-top:6px"></div>
+        </div>
+
+        <!-- 3x3 Palace Grid -->
+        <div id="qmdj-grid-rj" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:20px;max-width:620px;margin-left:auto;margin-right:auto"></div>
+
+        <!-- Kong Wang & Best Direction -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+          <div id="qmdj-kongwang-box-rj" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px"></div>
+          <div id="qmdj-direction-box-rj" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:12px"></div>
+        </div>
+
+        <!-- Patterns / 格局 -->
+        <div id="qmdj-patterns-rj" style="margin-bottom:20px"></div>
+
+        <!-- Palace Interpretations -->
+        <div id="qmdj-interps-rj"></div>
+
+        <!-- Deep Narrative: Apa artinya untuk Anda -->
+        <div id="qmdj-deep-narasi-rj" style="margin-top:20px"></div>
+
+        <!-- Perbandingan Lintas Sistem -->
+        <div id="qmdj-comparisons-rj" style="margin-top:20px"></div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1101,7 +1141,8 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
     document.getElementById('qmdj-section').style.display = '';
     document.getElementById('qmdj-destiny-section').style.display = '';
     _qmdjData = {};
-    loadQmdj('nianjia');
+    loadQmdj('nianjia', '');
+    loadQmdj('rijia', '-rj');
     loadQmdjDestiny();
     document.getElementById('results').classList.remove('hidden');
     document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
@@ -3778,14 +3819,8 @@ let _qmdjType = 'nianjia';
 let _qmdjData = {}; // cache per type
 
 function switchQmdjTab(type, btn) {
+  // Tabs are no longer used (both sections auto-render), kept for compat
   _qmdjType = type;
-  document.querySelectorAll('.qmdj-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  if (_qmdjData[type]) {
-    renderQmdj(_qmdjData[type]);
-  } else if (_result) {
-    loadQmdj(type);
-  }
 }
 
 // Load + render Section 8B Destiny Chart
@@ -3813,28 +3848,22 @@ async function loadQmdjDestiny() {
   }
 }
 
-async function loadQmdj(type) {
+async function loadQmdj(type, sfx) {
   if (!type) type = _qmdjType;
-  const sec = document.getElementById('qmdj-section');
-  const loading = document.getElementById('qmdj-loading');
-  const content = document.getElementById('qmdj-content');
-  loading.style.display = 'block';
-  content.style.display = 'none';
+  if (sfx === undefined) sfx = '';
+  const loading = document.getElementById('qmdj-loading' + sfx);
+  const content = document.getElementById('qmdj-content' + sfx);
+  if (loading) loading.style.display = 'block';
+  if (content) content.style.display = 'none';
 
   try {
     const r = _result;
     const payload = { type };
-    if (r) {
-      payload.birthYear  = r.bazi?.fourPillars?.year?.heavenlyStem ? undefined : _lastInput?.birthYear;
-      payload.birthMonth = _lastInput?.birthMonth;
-      payload.birthDay   = _lastInput?.birthDay;
-      // Use stored input values
-      if (_lastInput) {
-        payload.birthYear  = _lastInput.birthYear;
-        payload.birthMonth = _lastInput.birthMonth;
-        payload.birthDay   = _lastInput.birthDay;
-        if (type === 'benmingpan') payload.birthHour = _lastInput.birthHour || 0;
-      }
+    if (_lastInput) {
+      payload.birthYear  = _lastInput.birthYear;
+      payload.birthMonth = _lastInput.birthMonth;
+      payload.birthDay   = _lastInput.birthDay;
+      if (type === 'benmingpan') payload.birthHour = _lastInput.birthHour || 0;
     }
 
     const resp = await fetch('/api/qmdj', {
@@ -3849,28 +3878,33 @@ async function loadQmdj(type) {
     if (type === 'benmingpan') {
       renderQmdjDestinyChart(data.qmdj);
     } else {
-      renderQmdj(data.qmdj);
+      renderQmdj(data.qmdj, sfx);
     }
   } catch(e) {
-    loading.style.display = 'none';
-    content.style.display = 'none';
-    content.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
-    content.style.display = 'block';
+    if (loading) loading.style.display = 'none';
+    if (content) {
+      content.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
+      content.style.display = 'block';
+    }
   }
 }
 
-function renderQmdj(q) {
-  const loading = document.getElementById('qmdj-loading');
-  const content = document.getElementById('qmdj-content');
+function renderQmdj(q, sfx) {
+  if (sfx === undefined) sfx = '';
+  const loading = document.getElementById('qmdj-loading' + sfx);
+  const content = document.getElementById('qmdj-content' + sfx);
+
+  // Helper shorthand
+  const EL = id => document.getElementById(id + sfx);
 
   // Header
-  document.getElementById('qmdj-label').textContent = q.label;
-  document.getElementById('qmdj-summary').textContent = q.summary;
-  document.getElementById('qmdj-quality').innerHTML = `Kualitas Chart (总体格局): <strong>${q.overallQuality}</strong>`;
+  EL('qmdj-label').textContent = q.label;
+  EL('qmdj-summary').textContent = q.summary;
+  EL('qmdj-quality').innerHTML = `Kualitas Chart (总体格局): <strong>${q.overallQuality}</strong>`;
 
   // 3×3 Palace Grid (Lo Shu arrangement: 4 9 2 / 3 5 7 / 8 1 6)
   const GRID_ORDER = [4,9,2,3,5,7,8,1,6]; // Lo Shu top-left to bottom-right
-  const grid = document.getElementById('qmdj-grid');
+  const grid = EL('qmdj-grid');
   grid.innerHTML = '';
   const byNum = {};
   q.palaces.forEach(p => { byNum[p.palaceNumber] = p; });
@@ -3985,7 +4019,7 @@ function renderQmdj(q) {
 
   // Kong Wang & Best Direction
   const kw = q.kongWang || [];
-  document.getElementById('qmdj-kongwang-box').innerHTML = `
+  EL('qmdj-kongwang-box').innerHTML = `
     <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px">🌑 空亡 (Arah Kosong)</div>
     <div style="font-size:13px">${kw.length > 0 ? kw.join('、') : '—'}</div>
     <div style="font-size:11px;color:var(--muted);margin-top:4px">Arah yang jatuh ke kekosongan (空亡) energinya kosong — tindakan di sini cenderung sia-sia.</div>
@@ -3995,7 +4029,7 @@ function renderQmdj(q) {
 
   const bd = q.bestDirection;
   const cd = q.cautionDirection;
-  document.getElementById('qmdj-direction-box').innerHTML = `
+  EL('qmdj-direction-box').innerHTML = `
     <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Arah Terbaik untuk Aktivitas Penting</div>
     ${bd ? `<div style="font-size:16px;font-weight:700">${bd.direction||''} — ${PAL_DIR[bd.palace]||''} <span style="font-size:11px;color:var(--muted)">(${bd.palaceName}${bd.palace})</span></div>
     <div style="font-size:11px;color:var(--muted);margin-top:2px">${bd.quality} · ${bd.reason||''}</div>` : '<div>—</div>'}
@@ -4022,7 +4056,7 @@ function renderQmdj(q) {
       });
     }
   }
-  document.getElementById('qmdj-patterns').innerHTML = patHtml;
+  EL('qmdj-patterns').innerHTML = patHtml;
 
   // Palace interpretations
   let interpHtml = `<h3 style="font-size:14px;font-weight:700;color:var(--accent);margin-bottom:10px">🔮 Interpretasi Per Ruas (diurutkan terbaik → terburuk)</h3>`;
@@ -4062,25 +4096,27 @@ function renderQmdj(q) {
       </div>`;
   }
 
-  document.getElementById('qmdj-interps').innerHTML = interpHtml;
+  EL('qmdj-interps').innerHTML = interpHtml;
 
   // ── Deep Narasi: Apa artinya untuk Anda ──────────────────────
-  renderQmdjDeepNarasi(q, _qmdjType || 'nianjia');
+  const _type = sfx === '-rj' ? 'rijia' : 'nianjia';
+  renderQmdjDeepNarasi(q, _type, sfx);
 
   // ── Perbandingan lintas sistem (八宅, BaZi, ZWDS vs QMDJ) ───
-  renderQmdjComparisons(q);
+  renderQmdjComparisons(q, sfx);
 
-  loading.style.display = 'none';
-  content.style.display = 'block';
+  if (loading) loading.style.display = 'none';
+  if (content) content.style.display = 'block';
 
-  // Re-render Section 6 now that QMDJ data is available
-  if (_result?.comprehensive?.comparison) {
+  // Re-render Section 6 now that QMDJ data is available (only on first/nianjia render)
+  if (sfx === '' && _result?.comprehensive?.comparison) {
     render6(_result.comprehensive.comparison);
   }
 }
 
-function renderQmdjDeepNarasi(q, type) {
-  const container = document.getElementById('qmdj-deep-narasi');
+function renderQmdjDeepNarasi(q, type, sfx) {
+  if (sfx === undefined) sfx = '';
+  const container = document.getElementById('qmdj-deep-narasi' + sfx);
   if (!container) return;
 
   const isNianjia = type === 'nianjia';
@@ -4215,8 +4251,9 @@ function renderQmdjDeepNarasi(q, type) {
 // ============================================================
 // QMDJ CROSS-SYSTEM COMPARISONS
 // ============================================================
-function renderQmdjComparisons(q) {
-  const container = document.getElementById('qmdj-comparisons');
+function renderQmdjComparisons(q, sfx) {
+  if (sfx === undefined) sfx = '';
+  const container = document.getElementById('qmdj-comparisons' + sfx);
   if (!container || !_result) return;
 
   const bazi = _result.bazi || {};
@@ -4604,7 +4641,7 @@ function resetAll(returnToLanding) {
   var m2nav = document.getElementById('qmdj-mode2-nav');
   if (m2nav) m2nav.style.display = 'none';
 
-  ['qmdj-section','qmdj-content','qmdj-destiny-section'].forEach(function(id) {
+  ['qmdj-section','qmdj-content','qmdj-content-rj','qmdj-destiny-section'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   var destPanel = document.getElementById('qmdj-destiny-panel');
