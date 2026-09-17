@@ -272,21 +272,99 @@ function calculateBazi(params) {
   const sorted = Object.entries(wuXingDistribution).sort((a, b) => b[1].score - a[1].score);
   const dominantElement = sorted[0][0];
   const weakestElement  = sorted[sorted.length - 1][0];
-  // Yong Shen = unsur yang paling dibutuhkan untuk menyeimbangkan
-  // Rule: DM kuat → butuh unsur yang menguras/mengontrol DM (食伤 = apa yang DM hasilkan)
-  //       DM lemah → butuh unsur yang mendukung DM (印星 = apa yang menghasilkan DM)
-  // (Analisis penuh memerlukan konteks lengkap; ini aproksimasi)
   const ELEMENT_PRODUCES = { '木': '火', '火': '土', '土': '金', '金': '水', '水': '木' };
   const ELEMENT_CONTROLS = { '木': '土', '火': '金', '土': '水', '金': '木', '水': '火' };
-  // ELEMENT_FEEDS: unsur yang MENGHASILKAN dm (印星) — kebalikan dari ELEMENT_PRODUCES
-  const ELEMENT_FEEDS = { '木': '水', '火': '木', '土': '火', '金': '土', '水': '金' };
+  const ELEMENT_FEEDS    = { '木': '水', '火': '木', '土': '火', '金': '土', '水': '金' };
   const dmElement = STEM_ELEMENT[dayMasterStem];
-  const dmScore = wuXingDistribution[dmElement]?.score || 0;
-  const avgScore = totalScore / 5;
-  const isDMStrong = dmScore > avgScore * 1.2;
-  // DM kuat: Yong Shen = 食伤 (apa yang DM hasilkan) — menguras energi berlebih DM
-  // DM lemah: Yong Shen = 印星 (apa yang menghasilkan DM) — mendukung DM yang lemah
+
+  // ========== LAYER 1: 月令 (Yue Ling) Weighted DM Strength ==========
+  // Standard 旺相休囚死 table: seasonal strength of each element in each month branch
+  // 旺=4(own season), 相=3(feeds into), 休=2(produced DM), 囚=1.5(controls season), 死=1(controlled by season)
+  const YUELIGN = {
+    '子': {'木':3,'火':1,'土':1.5,'金':2,'水':4},  // Water season (旺)
+    '丑': {'木':1.5,'火':2,'土':4,'金':3,'水':1},  // Earth season — end of Winter
+    '寅': {'木':4,'火':3,'土':1,'金':1.5,'水':2},  // Wood season (旺)
+    '卯': {'木':4,'火':3,'土':1,'金':1.5,'水':2},  // Wood season (旺)
+    '辰': {'木':1.5,'火':2,'土':4,'金':3,'水':1},  // Earth season — end of Spring
+    '巳': {'木':2,'火':4,'土':3,'金':1,'水':1.5},  // Fire season (旺)
+    '午': {'木':2,'火':4,'土':3,'金':1,'水':1.5},  // Fire season (旺)
+    '未': {'木':1.5,'火':2,'土':4,'金':3,'水':1},  // Earth season — end of Summer
+    '申': {'木':1,'火':1.5,'土':2,'金':4,'水':3},  // Metal season (旺)
+    '酉': {'木':1,'火':1.5,'土':2,'金':4,'水':3},  // Metal season (旺)
+    '戌': {'木':1.5,'火':2,'土':4,'金':3,'水':1},  // Earth season — end of Autumn
+    '亥': {'木':3,'火':1,'土':1.5,'金':2,'水':4}   // Water season (旺)
+  };
+
+  // elemScore: how much does element 'el' support (+) or drain (-) the DM element
+  function elemScoreDM(el, dmEl) {
+    if (el === dmEl) return 1.0;                          // 比劫: same element
+    if (ELEMENT_PRODUCES[el] === dmEl) return 0.75;     // 印星: el produces DM
+    if (ELEMENT_PRODUCES[dmEl] === el) return -0.5;     // 食伤: DM produces el
+    if (ELEMENT_CONTROLS[dmEl] === el) return -0.75;    // 财星: DM controls el
+    if (ELEMENT_CONTROLS[el] === dmEl) return -1.0;     // 官杀: el controls DM
+    return 0;
+  }
+
+  const monthBranch = pillars.month.zhi;
+  const yueLingScore = YUELIGN[monthBranch]?.[dmElement] ?? 2;
+  // Yue Ling weight: Month Branch gets 3× base multiplied by Yue Ling factor (0.5–2.0)
+  // yueLingFactor: 旺(4)→2.0, 相(3)→1.5, 休(2)→1.0, 囚(1.5)→0.75, 死(1)→0.5
+  const yueLingMultiplier = yueLingScore / 2;
+
+  let supScore = 0, drnScore = 0;
+  // Heavenly Stems (excluding Day Master itself):
+  const stemWeights = [
+    { el: STEM_ELEMENT[pillars.year.gan],  w: 1.0 },
+    { el: STEM_ELEMENT[pillars.month.gan], w: 2.0 },
+    { el: STEM_ELEMENT[pillars.hour.gan],  w: unknownHour ? 0 : 1.5 }
+  ];
+  for (const { el, w } of stemWeights) {
+    const s = elemScoreDM(el, dmElement);
+    if (s > 0) supScore += s * w; else drnScore += Math.abs(s) * w;
+  }
+  // Earthly Branches via Hidden Stems:
+  // Month Branch gets 3× weight × Yue Ling multiplier (THE most important factor)
+  const branchWeights = [
+    { zhi: pillars.year.zhi,  w: 1.0 },
+    { zhi: pillars.month.zhi, w: 3.0 * yueLingMultiplier },
+    { zhi: pillars.day.zhi,   w: 2.0 },
+    { zhi: pillars.hour.zhi,  w: unknownHour ? 0 : 1.5 }
+  ];
+  for (const { zhi, w } of branchWeights) {
+    const hidden = HIDDEN_STEMS[zhi] || [];
+    for (const hs of hidden) {
+      const s = elemScoreDM(STEM_ELEMENT[hs.stem], dmElement);
+      const wt = w * (hs.weight / 100);
+      if (s > 0) supScore += s * wt; else drnScore += Math.abs(s) * wt;
+    }
+  }
+  const isDMStrong = supScore > drnScore;
+  const dmStrengthDetail = {
+    sup: Math.round(supScore * 10) / 10,
+    drn: Math.round(drnScore * 10) / 10,
+    yueLing: yueLingScore,
+    yueLingLabel: yueLingScore >= 4 ? '旺' : yueLingScore >= 3 ? '相' : yueLingScore >= 2 ? '休' : yueLingScore >= 1.5 ? '囚' : '死'
+  };
+
+  // Yong Shen base: DM kuat → 食伤 (drains excess); DM lemah → 印星 (supports DM)
   const yongShen = isDMStrong ? ELEMENT_PRODUCES[dmElement] : ELEMENT_FEEDS[dmElement];
+
+  // ========== LAYER 2: 调候 (Tiao Hou) Seasonal Climate Adjustment ==========
+  // For extreme seasons, a climate-balancing element is recommended as secondary Yong Shen
+  // 巳午未月 (peak summer/Fire season) → Water cools; 亥子丑月 (peak winter/Water season) → Fire warms
+  const TIAO_HOU = {
+    hot:  { branches: ['巳','午','未'], priority: '水', support: '金', label: '调候用神: 夏季宜水(降温), 辅以金(生水)' },
+    cold: { branches: ['亥','子','丑'], priority: '火', support: '木', label: '调候用神: 冬季宜火(暖局), 辅以木(生火)' }
+  };
+  let tiaoHouYS = null;
+  for (const { branches, priority, support, label } of Object.values(TIAO_HOU)) {
+    if (branches.includes(monthBranch)) {
+      // Tiao Hou applies when climate regulation is needed
+      // It supplements (not necessarily overrides) the primary Yong Shen
+      tiaoHouYS = { element: priority, support, label, monthBranch };
+      break;
+    }
+  }
 
   // ---- TEN GODS (十神) ----
   const tenGods = {
@@ -314,29 +392,105 @@ function calculateBazi(params) {
   const dominantTenGod = Object.entries(tenGodAggregate)
     .sort((a, b) => b[1].totalWeight - a[1].totalWeight)[0];
 
-  // ---- DA YUN (大运) ----
+  // ---- DA YUN (大运) — Layer 3: 24 Jieqi method ----
+  // Menggunakan semua 24 节气 (bukan hanya 12 节) untuk menghitung usia awal Da Yun
+  // Referensi: JH-000 manual report, metode mayoritas software modern
   const daYunArr = yun.getDaYun();
   const currentYear = new Date().getFullYear();
+
+  // 24 Jieqi start age calculation
+  let yunStart24 = null;
+  try {
+    const isForward = yun.isForward(); // true=顺行, false=逆行
+    const birthLunar = lunar; // lunar object already computed above
+    if (!isForward) {
+      // 逆行 (reverse): count minutes from PREVIOUS of ALL 24 jieqi to birth date
+      const prevJQ = birthLunar.getPrevJieQi();
+      if (prevJQ) {
+        const prevJQSolar = prevJQ.getSolar();
+        const totalMinutes = solar.subtractMinute(prevJQSolar);
+        const y24 = Math.floor(totalMinutes / 4320);
+        const rem1 = totalMinutes - y24 * 4320;
+        const m24 = Math.floor(rem1 / 360);
+        const rem2 = rem1 - m24 * 360;
+        const d24 = Math.floor(rem2 / 12);
+        yunStart24 = {
+          years: y24, months: m24, days: d24,
+          totalMinutes,
+          jieqiName: prevJQ.getName(),
+          jieqiDate: prevJQSolar.toYmd(),
+          method: '24节气逆行'
+        };
+      }
+    } else {
+      // 顺行 (forward): count minutes from birth date to NEXT of ALL 24 jieqi
+      const nextJQ = birthLunar.getNextJieQi();
+      if (nextJQ) {
+        const nextJQSolar = nextJQ.getSolar();
+        const totalMinutes = nextJQSolar.subtractMinute(solar);
+        const y24 = Math.floor(totalMinutes / 4320);
+        const rem1 = totalMinutes - y24 * 4320;
+        const m24 = Math.floor(rem1 / 360);
+        const rem2 = rem1 - m24 * 360;
+        const d24 = Math.floor(rem2 / 12);
+        yunStart24 = {
+          years: y24, months: m24, days: d24,
+          totalMinutes,
+          jieqiName: nextJQ.getName(),
+          jieqiDate: nextJQSolar.toYmd(),
+          method: '24节气顺行'
+        };
+      }
+    }
+  } catch(e24) {
+    // fallback: yunStart24 remains null → use library default
+  }
+
+  // Compute start age in decimal years for period offset
+  const startAge24Decimal = yunStart24
+    ? yunStart24.years + yunStart24.months / 12 + yunStart24.days / 365
+    : null;
+  const startAge24Round = startAge24Decimal !== null ? Math.round(startAge24Decimal) : null;
+
   const daYuns = daYunArr.map((dy, i) => {
-    const startYear = dy.getStartYear();
-    const endYear = dy.getEndYear();
-    const isCurrent = currentYear >= startYear && currentYear <= endYear;
     const gz = dy.getGanZhi();
-    const dgStem = gz[0]; // Gan Da Yun
-    const dgBranch = gz[1]; // Zhi Da Yun
+    const dgStem = gz[0];
+    const dgBranch = gz[1];
+
+    let yearStart, yearEnd, ageStart, ageEnd;
+    if (startAge24Round !== null && i > 0) {
+      // 24 Jieqi override: period i (1-based actual Da Yun) starts at birth year + startAge24Round + (i-1)*10
+      ageStart = startAge24Round + (i - 1) * 10 + 1;
+      ageEnd   = startAge24Round + i * 10;
+      yearStart = calcYear + startAge24Round + (i - 1) * 10;
+      yearEnd   = calcYear + startAge24Round + i * 10 - 1;
+    } else if (startAge24Round !== null && i === 0) {
+      // Pre-Da-Yun period (empty GanZhi): from birth to start of first Da Yun
+      ageStart = 1;
+      ageEnd   = startAge24Round;
+      yearStart = calcYear;
+      yearEnd   = calcYear + startAge24Round - 1;
+    } else {
+      // Fallback to library values
+      yearStart = dy.getStartYear();
+      yearEnd   = dy.getEndYear();
+      ageStart  = dy.getStartAge();
+      ageEnd    = dy.getEndAge();
+    }
+
+    const isCurrent = currentYear >= yearStart && currentYear <= yearEnd;
     return {
       index: i,
       ganzhi: gz,
       gan: dgStem,
       zhi: dgBranch,
-      yearStart: startYear,
-      yearEnd: endYear,
-      ageStart: dy.getStartAge(),
-      ageEnd: dy.getEndAge(),
+      yearStart,
+      yearEnd,
+      ageStart,
+      ageEnd,
       isCurrent,
       element_gan: STEM_ELEMENT[dgStem],
       element_zhi: BRANCH_ELEMENT[dgBranch],
-      // Evaluasi kualitas: apakah Da Yun menguntungkan Day Master
       quality: evaluateDaYunQuality(dgStem, dgBranch, dayMasterStem, yongShen)
     };
   });
@@ -488,8 +642,10 @@ function calculateBazi(params) {
       dominant: dominantElement,
       weakest: weakestElement,
       yongShen,
+      tiaoHouYS,
       isDMStrong,
-      summary: `Day Master Anda (${dayMasterStem}/${dayMasterInfo.element}) ${isDMStrong ? 'kuat' : 'perlu dukungan'}. Unsur yang dibutuhkan (用神): ${yongShen} (${WU_XING[yongShen]?.name_id})`
+      dmStrengthDetail,
+      summary: `Day Master Anda (${dayMasterStem}/${dayMasterInfo.element}) ${isDMStrong ? 'kuat' : 'perlu dukungan'} (月令${dmStrengthDetail.yueLingLabel}, dukungan=${dmStrengthDetail.sup} vs tekanan=${dmStrengthDetail.drn}). Yong Shen (用神): ${yongShen} (${WU_XING[yongShen]?.name_id})${tiaoHouYS ? ' | 调候: '+tiaoHouYS.element+'('+tiaoHouYS.label+')' : ''}`
     },
     tenGods: {
       byStem: tenGods,
@@ -497,7 +653,15 @@ function calculateBazi(params) {
       dominant: dominantTenGod ? { god: dominantTenGod[0], ...dominantTenGod[1] } : null
     },
     daYun: {
-      startInfo: {
+      startInfo: yunStart24 ? {
+        startYear: yunStart24.years,
+        startMonth: yunStart24.months,
+        startDay: yunStart24.days,
+        description: `Mulai Da Yun: ${yunStart24.years} tahun ${yunStart24.months} bulan ${yunStart24.days} hari setelah lahir (Metode 24节气, dari ${yunStart24.jieqiName} ${yunStart24.jieqiDate})`,
+        method: yunStart24.method,
+        jieqiName: yunStart24.jieqiName,
+        jieqiDate: yunStart24.jieqiDate
+      } : {
         startYear: yun.getStartYear(),
         startMonth: yun.getStartMonth(),
         startDay: yun.getStartDay(),

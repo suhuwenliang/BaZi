@@ -238,7 +238,17 @@ function calculateZwds(params) {
     const liuNianGanzhi = astrolabe.solarDate ? getLiuNianGanzhi(currentYear) : '—';
 
     // Empat Transformasi Liu Nian — dari Heavenly Stem tahun berjalan
-    const liuNianMutagens = getLiuNianMutagens(currentYear);
+    // Build star → palace map so each mutagen entry includes which palace it activates
+    const starPalaceMap = {};
+    palaces.forEach(p => {
+      [...(p.majorStars || []), ...(p.minorStars || [])].forEach(s => {
+        starPalaceMap[s.name] = p.name;
+      });
+    });
+    const liuNianMutagens = getLiuNianMutagens(currentYear).map(m => ({
+      ...m,
+      palace: starPalaceMap[m.star] || null
+    }));
 
     liuNian = {
       year: currentYear,
@@ -281,7 +291,7 @@ function calculateZwds(params) {
       value: fiveElementsStr,
       ...fiveElements
     },
-    mingGong: palaces[0] || null,
+    mingGong: palaces.find(p => p.name === '命宫') || palaces[mingGongIdx] || null,
     shenGong: palaces.find(p => p.isBodyPalace) || null,
     palaces,
     natalMutagens,
@@ -397,10 +407,12 @@ function getLiuNianMutagens(year) {
 // EXPORT PROMPT UNTUK CLAUDE
 // ============================================================
 function buildZwdsExportPrompt({ palaces, fiveElementsStr, natalMutagens, currentDaXian, liuNian, currentYear }) {
-  const mingStars = palaces[0]?.majorStars?.map(s => s.name).join('、') || '(kosong)';
-  const caiStars  = palaces[4]?.majorStars?.map(s => s.name).join('、') || '(kosong)';
-  const guanStars = palaces[8]?.majorStars?.map(s => s.name).join('、') || '(kosong)';
-  const fuqiStars = palaces[2]?.majorStars?.map(s => s.name).join('、') || '(kosong)';
+  // iztro returns most palace names WITHOUT 宫 suffix (e.g., '财帛' not '财帛宫'), except '命宫'
+  const findPalace = name => palaces.find(p => p.name === name) || palaces.find(p => p.name + '宫' === name);
+  const mingStars = findPalace('命宫')?.majorStars?.map(s => s.name).join('、') || '(kosong)';
+  const caiStars  = findPalace('财帛')?.majorStars?.map(s => s.name).join('、') || '(kosong)';
+  const guanStars = findPalace('官禄')?.majorStars?.map(s => s.name).join('、') || '(kosong)';
+  const fuqiStars = findPalace('夫妻')?.majorStars?.map(s => s.name).join('、') || '(kosong)';
 
   return `# Data Zi Wei Dou Shu untuk Interpretasi Naratif
 

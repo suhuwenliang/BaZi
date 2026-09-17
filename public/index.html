@@ -1864,12 +1864,22 @@ function render3C(b) {
     <div style="margin-bottom:8px">
       <span style="color:var(--muted)">Day Master Anda tergolong:</span><br>
       <span class="tag ${dmStrong?'tag-gold':'tag-blue'}">${dmLabel}</span>
+      ${wx.dmStrengthDetail ? `<div style="font-size:11px; color:var(--muted); margin-top:4px; padding:4px 8px; background:rgba(0,0,0,0.03); border-radius:4px">
+        月令 (Yue Ling): <strong>${wx.dmStrengthDetail.yueLingLabel}</strong> (${wx.dmStrengthDetail.yueLing}) &nbsp;|&nbsp;
+        Dukungan: <strong style="color:var(--green)">${wx.dmStrengthDetail.sup}</strong> &nbsp;vs&nbsp;
+        Tekanan: <strong style="color:var(--red)">${wx.dmStrengthDetail.drn}</strong>
+      </div>` : ''}
     </div>
     <div style="margin-bottom:8px">
       <span style="color:var(--muted)">Unsur yang paling Anda butuhkan (用神 Yong Shen) adalah:</span><br>
       <strong style="color:var(--gold)">${WX_ID[wx.yongShen]||wx.yongShen||'—'}</strong>
       <span style="color:var(--muted); font-size:12px"> — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.</span>
     </div>
+    ${wx.tiaoHouYS ? `<div style="margin-bottom:8px; padding:10px 12px; background:rgba(232,184,109,0.06); border:1px solid rgba(232,184,109,0.2); border-radius:8px">
+      <div style="font-size:11px; font-weight:700; color:var(--gold); margin-bottom:4px">🌡️ 调候用神 (Tiao Hou — Penyeimbang Iklim Musim)</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.7">${esc(wx.tiaoHouYS.label)}</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px">Elemen prioritas: <strong style="color:var(--gold)">${WX_ID[wx.tiaoHouYS.element]||wx.tiaoHouYS.element}</strong> &nbsp;| Pendukung: <strong>${WX_ID[wx.tiaoHouYS.support]||wx.tiaoHouYS.support}</strong></div>
+    </div>` : ''}
   </div>`;
   // Q&A: Mengapa Yong Shen justru 0%?
   const ysEl = wx.yongShen;
@@ -1982,8 +1992,11 @@ function render3E(b) {
 
   let html = '';
   if (dy.startInfo) {
+    const startInfoLabel = dy.startInfo.method
+      ? `<span style="font-size:11px; color:var(--gold); font-weight:700">[${esc(dy.startInfo.method)}]</span> `
+      : '';
     html += `<div style="font-size:12px; color:var(--muted); margin-bottom:10px">
-      Da Yun dimulai: <span style="color:var(--text)">${esc(dy.startInfo.description||dy.startInfo)}</span>
+      Da Yun dimulai: ${startInfoLabel}<span style="color:var(--text)">${esc(dy.startInfo.description||dy.startInfo)}</span>
     </div>`;
   }
 
@@ -1995,7 +2008,7 @@ function render3E(b) {
     const ratingColor = score>=2?'var(--green)':score<=-1?'var(--red)':'var(--muted)';
     html += `<div class="dayun-item ${cls}" title="${esc(period.quality?.desc||'')}">
       ${isCurrent?'<div style="font-size:10px; color:var(--gold)">▶ SEKARANG</div>':''}
-      <div class="dy-gz">${esc(period.ganzhi||'')}</div>
+      <div class="dy-gz">${period.ganzhi ? esc(period.ganzhi) : '<span style="color:var(--muted); font-size:11px">Pra-Da Yun</span>'}</div>
       <div class="dy-years">${period.ageStart||'?'} – ${period.ageEnd||'?'} thn<br/>(${period.yearStart||'?'} – ${period.yearEnd||'?'})</div>
       <div class="dy-rating" style="color:${ratingColor}">${esc(period.quality?.rating||'Netral')}</div>
     </div>`;
