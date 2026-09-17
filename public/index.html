@@ -5347,8 +5347,9 @@ function resetCompatUnified() {
   const frmDiv = document.getElementById('compat-relasi-form');
   if (resDiv) { resDiv.innerHTML = ''; resDiv.style.display = 'none'; }
   if (frmDiv) frmDiv.style.display = 'block';
-  // Rebuild fresh forms (keep Person A if _lastInput still present)
-  showRelasi();
+  // Keep Person A & B data intact — user only wants to change relationship type
+  const sec = document.getElementById('section-compat-relasi');
+  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function showCompatTriggers() {
