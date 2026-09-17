@@ -327,6 +327,66 @@ function calculateZwds(params) {
     liuNian = { error: e.message, year: currentYear };
   }
 
+
+  // ====== v5c: 双忌 Detection (Double 化忌) ======
+  // When both 大限 and 流年 produce 化忌 on the SAME star, it's 双忌 — a critical warning
+  let shuangJiWarnings = [];
+  try {
+    if (currentDaXian && liuNian && !liuNian.error) {
+      const dxJiStars = (currentDaXian.daXianMutagens || [])
+        .filter(m => m.type === '忌')
+        .map(m => ({ star: m.star, palace: m.palace, source: '大限化忌' }));
+      const lyJiStars = (liuNian.mutagens || [])
+        .filter(m => m.type === '忌')
+        .map(m => ({ star: m.star, palace: m.palace || null, source: '流年化忌' }));
+      for (const dx of dxJiStars) {
+        for (const ly of lyJiStars) {
+          if (dx.star === ly.star) {
+            shuangJiWarnings.push({
+              star: dx.star,
+              palace: dx.palace || ly.palace || '未知宫',
+              dxStem: currentDaXian.daXianStem,
+              lyYear: currentYear,
+              severity: '⚠️ 双化忌 — 重大风险',
+              meaning: `大限${currentDaXian.daXianStem}干化忌与流年${currentYear}化忌同时落在${dx.star}，` +
+                `在${dx.palace||'?'}宫形成双忌。此为重要预警——本年度${dx.palace||'?'}宫相关事务(` +
+                `感情、财务、健康、事业视宫位而定)需格外谨慎，避免重大决策、投资或冲动行为。`
+            });
+          }
+        }
+      }
+    }
+    // Also check ALL da xian periods for future/past 双忌 preview
+    const allShuangJi = [];
+    for (const dx of daXians) {
+      if (!dx.daXianMutagens) continue;
+      const dxJi = (dx.daXianMutagens || []).filter(m => m.type === '忌');
+      if (dxJi.length === 0) continue;
+      // Check each year in this da xian period
+      for (let yr = dx.yearStart; yr <= dx.yearEnd; yr++) {
+        const lyMutagensForYear = getLiuNianMutagens(yr);
+        const lyJi = lyMutagensForYear.filter(m => m.type === '忌');
+        for (const d of dxJi) {
+          for (const l of lyJi) {
+            if (d.star === l.star) {
+              allShuangJi.push({
+                year: yr,
+                star: d.star,
+                palace: d.palace,
+                dxPeriod: `${dx.ageStart}-${dx.ageEnd}岁 (${dx.yearStart}-${dx.yearEnd})`,
+                dxStem: dx.daXianStem,
+                severity: '双化忌',
+              });
+            }
+          }
+        }
+      }
+    }
+    shuangJiWarnings._all = allShuangJi;
+  } catch(e) {
+    shuangJiWarnings._error = e.message;
+  }
+
   // ---- EMPAT TRANSFORMASI (四化) NATAL ----
   const natalMutagens = [];
   palaces.forEach(p => {
@@ -361,7 +421,8 @@ function calculateZwds(params) {
       current: currentDaXian
     },
     liuNian,
-    exportPrompt: buildZwdsExportPrompt({ palaces, fiveElementsStr, natalMutagens, daXians, currentDaXian, liuNian, currentYear })
+    shuangJiWarnings,
+    exportPrompt: buildZwdsExportPrompt({ palaces, fiveElementsStr, natalMutagens, daXians, currentDaXian, liuNian, currentYear, shuangJiWarnings })
   };
 }
 
@@ -475,7 +536,7 @@ function getLiuNianMutagens(year) {
 // ============================================================
 // EXPORT PROMPT UNTUK CLAUDE
 // ============================================================
-function buildZwdsExportPrompt({ palaces, fiveElementsStr, natalMutagens, currentDaXian, liuNian, currentYear }) {
+function buildZwdsExportPrompt({ palaces, fiveElementsStr, natalMutagens, currentDaXian, liuNian, currentYear, shuangJiWarnings }) {
   // iztro returns most palace names WITHOUT 宫 suffix (e.g., '财帛' not '财帛宫'), except '命宫'
   const findPalace = name => palaces.find(p => p.name === name) || palaces.find(p => p.name + '宫' === name);
   const mingStars = findPalace('命宫')?.majorStars?.map(s => s.name).join('、') || '(kosong)';
@@ -512,6 +573,16 @@ ${(currentDaXian.daXianMutagens||[]).map(m => `- ${m.type}化${m.star} → 在${
 
 ## Liu Nian ${currentYear}: ${liuNian?.ganzhi || '—'}, Xiao Xian di ${liuNian?.xiaoxianPalace?.name || '—'}
 四化: ${liuNian?.mutagens?.map(m => `化${m.type}→${m.star}`).join(', ') || 'Tidak ada'}
+
+## ⚠️ 双化忌 Peringatan (Tahun Ini)
+${shuangJiWarnings && shuangJiWarnings.length > 0
+  ? shuangJiWarnings.map(w => `- ${w.severity}: ${w.meaning}`).join('\n')
+  : 'Tidak ada 双忌 tahun ini — tidak ada bintang yang terkena 化忌 ganda.'}
+
+## 双化忌 Preview (Semua Periode)
+${shuangJiWarnings?._all?.length > 0
+  ? shuangJiWarnings._all.slice(0,10).map(w => `${w.year}年: ${w.star} 双忌 di ${w.palace||'?'} (${w.dxPeriod})`).join('\n')
+  : 'Tidak ada 双忌 terdeteksi.'}
 
 Tolong tulis narasi yang mencakup: karakter dari bintang Ming Gong, peluang karir, kehidupan cinta, kondisi keuangan, dan saran untuk tahun ${currentYear}.`;
 }

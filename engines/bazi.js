@@ -549,6 +549,77 @@ function calculateBazi(params) {
   };
 
 
+
+  // ====== v5a: Six-God System (六神体系) — 忌神/仇神 ======
+  // Classical BaZi has 6 categories relative to 用神:
+  // 用神(yong) 喜神(xi) 忌神(ji) 仇神(chou) 原神(yuan) 闲神(xian)
+  const ELEMENT_CONTROLLED_BY = { '木':'金','火':'水','土':'木','金':'火','水':'土' };
+  function computeSixGodSystem(dmEl, yongEl) {
+    const xiShen   = ELEMENT_FEEDS[yongEl];            // what produces 用神
+    const jiShen   = ELEMENT_CONTROLLED_BY[yongEl];   // what attacks 用神 (AVOID)
+    const chouShen = ELEMENT_FEEDS[jiShen];            // what produces 忌神 (ENEMY)
+    const yuanShen = ELEMENT_FEEDS[xiShen];            // what produces 喜神
+    const all5 = ['木','火','土','金','水'];
+    const used = new Set([yongEl, xiShen, jiShen, chouShen, yuanShen]);
+    const xianShen = all5.find(e => !used.has(e)) || null;
+    return { yongShen: yongEl, xiShen, jiShen, chouShen, yuanShen, xianShen };
+  }
+  const sixGods = computeSixGodSystem(dmElement, yongShenFinal);
+
+  // ====== v5b: 成格/破格 Validation ======
+  // Check if the detected 格局 is truly formed (成格) or broken (破格)
+  function validateGeJu(geName, tgAgg) {
+    const count = (g) => (tgAgg[g]?.totalWeight || 0);
+    const hasQiSha   = count('七杀') > 0;
+    const hasZGuan   = count('正官') > 0;
+    const hasPYin    = count('偏印') > 0;
+    const hasShiShen = count('食神') > 0;
+    const hasSangGuan= count('伤官') > 0;
+    const biJie = count('比肩') + count('劫财');
+    const cai   = count('正财') + count('偏财');
+    const yin   = count('正印') + count('偏印');
+    const guan  = count('正官') + count('七杀');
+    let valid = true, reason = '格局成立', note = '';
+    if (geName === '食神格') {
+      if (hasPYin)                         { valid=false; reason='偏印夺食，格局被破'; note='枭神克制食神，化解生财之道'; }
+      else if (hasQiSha && !hasShiShen)    { valid=false; reason='食神格逢七杀无制'; note='七杀乘虚而入，需印星制化'; }
+      else                                 { reason='食神格成立，生财有道'; }
+    } else if (geName === '七杀格') {
+      if (hasShiShen || yin > 0)           { reason='七杀有制(食神/印星)，威权显赫'; }
+      else                                 { valid=false; reason='七杀无制，性情偏激'; note='需食神或印星制化七杀方能成格'; }
+    } else if (geName === '正官格') {
+      if (hasQiSha)                        { valid=false; reason='官杀混杂，功名受阻'; note='正官与七杀并现，浊乱不清'; }
+      else if (guan > 40)                  { valid=false; reason='官多为鬼，压力过重'; note='官星过重反成束缚'; }
+      else                                 { reason='正官格清纯，仕途顺遂'; }
+    } else if (geName === '伤官格') {
+      if (hasZGuan)                        { valid=false; reason='伤官见官(祸患百端)'; note='伤官与正官同现为大忌'; }
+      else if (yin > 0)                    { reason='伤官配印，才华横溢'; }
+      else if (cai > 0)                    { reason='伤官生财，经营有道'; }
+      else                                 { reason='伤官格成立，创意独具'; }
+    } else if (geName === '正财格' || geName === '偏财格') {
+      if (biJie > 40)                      { valid=false; reason='群劫争财，财来财去'; note='比劫过重分夺财星'; }
+      else if (guan > 0)                   { reason='官护财星，财富稳固'; }
+      else                                 { reason='财星有力，物质充裕'; }
+    } else if (geName === '正印格' || geName === '偏印格(枭神格)') {
+      if (cai > 40)                        { valid=false; reason='财多坏印，文印受损'; note='财星过重克制印星'; }
+      else if (guan > 0)                   { reason='官生印，贵人扶持'; }
+      else                                 { reason='印星清纯，贵人扶持'; }
+    } else if (geName === '建禄格') {
+      if (guan > 0 || cai > 0)            { reason='建禄格得官财，仕途财运兼备'; }
+      else                                 { valid=false; reason='建禄无官财，富贵难成'; note='需正官或财星配合'; }
+    } else if (geName === '月刃格') {
+      if (guan > 0)                        { reason='阳刃得官制，威权显赫'; }
+      else                                 { valid=false; reason='阳刃无制，性情刚猛易生是非'; note='需官杀制化阳刃'; }
+    } else {
+      reason = '格局成立';
+    }
+    return { isValid: valid, status: valid ? '成格' : '破格', reason, note };
+  }
+  const geJuValidation = geJuInfo.specialGe
+    ? { isValid: true, status: '成格', reason: geJuInfo.specialGe.type + '已成', note: '' }
+    : validateGeJu(geJuInfo.name, tenGodAggregate);
+
+
   // ---- DA YUN (大运) — Layer 3: 24 Jieqi method ----
   // Menggunakan semua 24 节气 (bukan hanya 12 节) untuk menghitung usia awal Da Yun
   // Referensi: JH-000 manual report, metode mayoritas software modern
@@ -763,7 +834,8 @@ function calculateBazi(params) {
   const interpretation = buildBaziInterpretation({
     dayMasterStem, dayMasterInfo, pillars, wuXingDistribution,
     dominantElement, weakestElement, yongShen, isDMStrong, isDMWeak, isDMBalanced, dmStrengthDetail,
-    dominantTenGod, currentDaYun, shenSha, fengshui, careers
+    dominantTenGod, currentDaYun, shenSha, fengshui, careers,
+    sixGods, geJu: { name: geJuInfo.name, geJuValidation }
   });
 
   // ---- WEALTH PROFILING ----
@@ -807,7 +879,9 @@ function calculateBazi(params) {
       isDMBalanced,
       dmStrengthDetail,
       geJu: geJuInfo,
-      summary: `Day Master Anda (${dayMasterStem}/${dayMasterInfo.element}) ${dmStrengthDetail.dmLevelLabel} — ${dmStrengthDetail.dmLevelEn} (月令${dmStrengthDetail.yueLingLabel}, rasio=${Math.round(dmStrengthDetail.supRatio*100)}%). 格局: ${geJuInfo.name}. Yong Shen (用神): ${yongShenFinal} (${WU_XING[yongShenFinal]?.name_id})${geJuInfo.specialGe?' ['+geJuInfo.specialGe.type+']':''}${tiaoHouYS?' | 调候: '+tiaoHouYS.element:''}` 
+      geJuValidation,
+      sixGods,
+      summary: `Day Master Anda (${dayMasterStem}/${dayMasterInfo.element}) ${dmStrengthDetail.dmLevelLabel} — ${dmStrengthDetail.dmLevelEn} (月令${dmStrengthDetail.yueLingLabel}, rasio=${Math.round(dmStrengthDetail.supRatio*100)}%). 格局: ${geJuInfo.name}[${geJuValidation.status}]. 用神: ${yongShenFinal} (${WU_XING[yongShenFinal]?.name_id}) | 忌神: ${sixGods.jiShen} (${WU_XING[sixGods.jiShen]?.name_id}) | 仇神: ${sixGods.chouShen}${geJuInfo.specialGe?' ['+geJuInfo.specialGe.type+']':''}${tiaoHouYS?' | 调候: '+tiaoHouYS.element:''}` 
     },
     tenGods: {
       byStem: tenGods,
@@ -843,7 +917,7 @@ function calculateBazi(params) {
     yearShio,
     interpretation,
     exportPrompt: buildClaudeExportPrompt({
-      dayMasterStem, pillars, wuXingDistribution, yongShen, dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced, daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat
+      dayMasterStem, pillars, wuXingDistribution, yongShen, dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced, daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat, sixGods, geJuValidation, geJuInfo
     }),
     wealthProfiling: { structures, profiles, aspects, wealthAnalysis }
   };
@@ -1067,7 +1141,7 @@ function computeShenSha(dayMasterStem, yearBranch, dayBranch, allBranches) {
  * Bangun teks interpretasi rule-based
  */
 function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXingDistribution,
-  dominantElement, weakestElement, yongShen, isDMStrong, isDMWeak, isDMBalanced, dmStrengthDetail, dominantTenGod, currentDaYun, shenSha, fengshui, careers }) {
+  dominantElement, weakestElement, yongShen, isDMStrong, isDMWeak, isDMBalanced, dmStrengthDetail, dominantTenGod, currentDaYun, shenSha, fengshui, careers, sixGods, geJu }) {
 
   const dmEl = dayMasterInfo.element || '';
   const sorted = Object.entries(wuXingDistribution).sort((a,b) => b[1].pct - a[1].pct);
@@ -1082,7 +1156,7 @@ function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXing
 
     hiddenStems: `Di balik Earthly Branch (地支) empat pilar Anda, terdapat berbagai energi tersembunyi (藏干). Unsur tersembunyi yang paling dominan berkontribusi pada kedalaman karakter Anda yang mungkin tidak terlihat di permukaan.`,
 
-    wuXing: `Distribusi Wu Xing (五行) Anda: ${sorted.map(([el, d]) => `${WU_XING[el]?.name_id} ${d.pct}%`).join(', ')}. Unsur terkuat: ${WU_XING[dominantElement]?.name_id}. Unsur paling lemah: ${WU_XING[weakestElement]?.name_id}. Day Master Anda tergolong **${dmStrengthDetail?.dmLevelLabel||'?'}** (${isDMStrong?'旺身':isDMWeak?'弱身':'中和'}). Unsur yang paling Anda butuhkan (用神 Yong Shen) adalah ${WU_XING[yongShen]?.name_id} — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.`,
+    wuXing: `Distribusi Wu Xing (五行) Anda: ${sorted.map(([el, d]) => `${WU_XING[el]?.name_id} ${d.pct}%`).join(', ')}. Unsur terkuat: ${WU_XING[dominantElement]?.name_id}. Unsur paling lemah: ${WU_XING[weakestElement]?.name_id}. Day Master Anda tergolong **${dmStrengthDetail?.dmLevelLabel||'?'}** (${isDMStrong?'旺身':isDMWeak?'弱身':'中和'}). Unsur yang paling Anda butuhkan (用神 Yong Shen) adalah ${WU_XING[yongShen]?.name_id} — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda. **忌神 (Ji Shen — HINDARI): ${WU_XING[sixGods?.jiShen]?.name_id||'—'}** — elemen yang melemahkan 用神 dan merugikan chart Anda. **仇神 (Chou Shen — MUSUH): ${WU_XING[sixGods?.chouShen]?.name_id||'—'}** — elemen yang memperkuat 忌神, harus dihindari. 喜神 (pendukung 用神): ${WU_XING[sixGods?.xiShen]?.name_id||'—'}. 格局 ${geJu?.name||'?'}: ${geJu?.geJuValidation?.status||'?'} — ${geJu?.geJuValidation?.reason||'?'}.`,
 
     tenGods: dominantTenGod
       ? `Ten God yang paling dominan dalam chart Anda adalah ${dominantTenGod[0]}. ${TEN_GODS[dominantTenGod[0]]?.meaning || ''} Dalam kehidupan, ini tercermin dalam: ${TEN_GODS[dominantTenGod[0]]?.life_area || ''}.`
@@ -1107,7 +1181,7 @@ function buildBaziInterpretation({ dayMasterStem, dayMasterInfo, pillars, wuXing
  * Generate prompt siap-pakai untuk ekspor ke Claude
  */
 function buildClaudeExportPrompt({ dayMasterStem, pillars, wuXingDistribution, yongShen,
-  dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced,
+  dmStrengthDetail, isDMStrong, isDMWeak, isDMBalanced, sixGods, geJuValidation, geJuInfo,
   daYuns, currentDaYun, shenSha, boneWeight, fengshui, careers, shioCompat }) {
   return `# Data BaZi untuk Interpretasi Naratif
 
@@ -1121,7 +1195,9 @@ Tolong tulis narasi interpretasi personal yang mendalam, hangat, dan mudah dipah
 
 ## Distribusi Wu Xing
 ${Object.entries(wuXingDistribution).map(([el,d]) => `- ${el}: ${d.pct}%`).join('\n')}
-Yong Shen (unsur dibutuhkan): ${yongShen} | Kekuatan DM: ${dmStrengthDetail?.dmLevelLabel} (${dmStrengthDetail?.dmLevelEn}, rasio ${Math.round((dmStrengthDetail?.supRatio||0)*100)}%)
+Yong Shen (用神): ${yongShen} (${WU_XING[yongShen]?.name_id||yongShen}) | 忌神 (HINDARI): ${sixGods?.jiShen||'?'} (${WU_XING[sixGods?.jiShen]?.name_id||'?'}) | 仇神 (MUSUH): ${sixGods?.chouShen||'?'} | 喜神 (PENDUKUNG): ${sixGods?.xiShen||'?'}
+格局: ${geJuInfo?.name||'?'} — ${geJuValidation?.status||'?'}: ${geJuValidation?.reason||'?'}${geJuValidation?.note?' ('+geJuValidation.note+')':''}
+Kekuatan DM: ${dmStrengthDetail?.dmLevelLabel} (${dmStrengthDetail?.dmLevelEn}, rasio ${Math.round((dmStrengthDetail?.supRatio||0)*100)}%)
 
 ## Da Yun Saat Ini
 ${currentDaYun ? `${currentDaYun.ganzhi} (${currentDaYun.yearStart}-${currentDaYun.yearEnd}) — ${currentDaYun.quality.rating}` : 'Tidak tersedia'}
