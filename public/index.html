@@ -1787,6 +1787,19 @@ function render3C(b) {
       <span style="color:var(--muted); font-size:12px"> — ini adalah elemen kunci yang perlu diperkuat dalam kehidupan sehari-hari Anda.</span>
     </div>
   </div>`;
+  // Q&A: Mengapa Yong Shen justru 0%?
+  const ysEl = wx.yongShen;
+  const ysPct = wx.distribution?.[ysEl]?.pct || 0;
+  if (ysEl && ysPct === 0) {
+    html += `<div style="background:rgba(232,184,109,0.08); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; padding:12px 14px; margin-top:16px">
+      <div style="font-weight:700; font-size:12px; color:var(--gold); margin-bottom:6px">❓ Mengapa ${esc(WX_ID[ysEl]||ysEl)} menjadi Yong Shen padahal persentasenya 0%?</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.8">
+        Justru karena <strong>0% itulah</strong> ia paling dibutuhkan. Yong Shen bukan unsur yang sudah melimpah — melainkan unsur yang paling <strong>defisit</strong> dan paling membuat Day Master Anda kehilangan keseimbangan.<br><br>
+        Bayangkan tubuh yang kekurangan air: semakin kering, semakin vital air menjadi. Demikian pula <em>${esc(WX_ID[ysEl]||ysEl)}</em> dalam chart Anda — ketiadaannya menciptakan kekosongan yang perlu diisi dari luar: melalui pilihan lingkungan, pekerjaan, nama, warna, dan periode waktu yang membawa unsur ini.<br><br>
+        <strong style="color:var(--gold2)">Implikasi praktis:</strong> Da Yun dan tahun yang membawa elemen ${esc(WX_ID[ysEl]||ysEl)} akan terasa jauh lebih menguntungkan dari yang lain. Sebaliknya, tahun yang menekan unsur ini akan terasa sangat berat. Pantau seksi 4D untuk menemukan jendela waktu terbaik Anda.
+      </div>
+    </div>`;
+  }
   document.getElementById('sec-3c').innerHTML = uhBanner + html;
 }
 
@@ -1851,6 +1864,24 @@ function render3E(b) {
   if (b.interpretation?.daYun) {
     html += `<div class="summary-box"><strong>Ringkasan Da Yun:</strong> ${esc(b.interpretation.daYun)}</div>`;
   }
+
+  // Q&A: Apa artinya Da Yun saat ini? Apa langkah konkrit?
+  const curDyPeriod = (dy.periods || []).find(p => p.isCurrent);
+  if (curDyPeriod) {
+    const rating = curDyPeriod.quality?.rating || 'Netral';
+    const DA_YUN_GUIDE = {
+      'Sangat Baik': { color:'var(--green)', icon:'🌟', body:`Da Yun ini adalah salah satu periode paling berharga dalam hidup Anda. Energi kosmik sedang berpihak kuat — jangan hanya menunggu. <strong>Langkah konkrit:</strong><br>· Ambil keputusan besar yang selama ini ditunda (investasi, bisnis, karir)<br>· Perluas jaringan secara aktif — pintu lebih mudah terbuka di periode ini<br>· Mulai proyek atau usaha yang butuh momentum awal yang kuat<br>· Tingkatkan aset (properti, bisnis, skill tinggi) — nilai pertumbuhannya terasa nyata<br><br>Periode emas tidak berlangsung selamanya — optimalkan setiap tahunnya dengan panduan di seksi 4D.` },
+      'Baik': { color:'#86efac', icon:'✅', body:`Da Yun ini mendukung pertumbuhan bertahap dan stabil. Arus kosmik berpihak, meski tidak sedramatis periode terbaik. <strong>Langkah konkrit:</strong><br>· Konsolidasi posisi dan perkuat fondasi bisnis atau karir<br>· Tingkatkan keahlian dan kualifikasi profesional<br>· Bangun hubungan jangka panjang yang bermakna<br>· Buat keputusan berukuran sedang — risiko lebih terkendali di periode ini<br><br>Gunakan stabilitas ini untuk mempersiapkan lompatan besar di periode selanjutnya.` },
+      'Netral': { color:'var(--muted)', icon:'⚖️', body:`Da Yun Netral berarti elemen periode ini tidak secara langsung mendukung atau melemahkan Yong Shen Anda — hasilnya sangat bergantung pada <strong>usaha Anda sendiri</strong>, bukan arus kosmik yang kuat.<br><br><strong>Apa artinya ini dalam kehidupan sehari-hari?</strong> Bukan berarti "tidak ada yang terjadi." Artinya: peluang datang, tapi tidak memaksa masuk — Anda harus menjemputnya. Tantangan datang, tapi tidak menghancurkan — Anda bisa mengatasinya.<br><br><strong>Langkah konkrit untuk Da Yun Netral:</strong><br>· Bangun sistem, kebiasaan, dan infrastruktur yang tahan lama<br>· Investasi dalam skill dan pengetahuan jangka panjang<br>· Selesaikan urusan yang tertunda (hutang, konflik, proyek mangkrak)<br>· Perkuat kesehatan dan fondasi finansial<br><br>💡 Pantau Liu Nian di seksi 4D — bahkan dalam Da Yun Netral, tahun-tahun tertentu bisa sangat positif jika elemen tahunannya mendukung Yong Shen Anda.` },
+      'Perlu Waspada': { color:'var(--red)', icon:'⚠️', body:`Da Yun ini membawa tantangan lebih besar — bukan berarti semuanya buruk, tapi arus kosmik lebih menuntut kesabaran dan kehati-hatian. <strong>Langkah konkrit:</strong><br>· Tunda keputusan besar dan investasi skala besar<br>· Perkuat "pertahanan": kesehatan, keuangan darurat, dan hubungan inti<br>· Fokus pada stabilitas daripada ekspansi agresif<br>· Perbanyak aktivitas yang memperkuat Yong Shen (panduan di seksi 5)<br>· Perhatikan tahun-tahun dalam periode ini yang bisa menjadi "jendela positif" walau Da Yun berat (lihat seksi 4D).` },
+    };
+    const guide = DA_YUN_GUIDE[rating] || DA_YUN_GUIDE['Netral'];
+    html += `<div style="background:var(--surface); border-left:3px solid ${guide.color}; border-radius:0 8px 8px 0; padding:12px 14px; margin-top:14px">
+      <div style="font-weight:700; font-size:12px; color:${guide.color}; margin-bottom:8px">${guide.icon} Da Yun Saat Ini (${esc(curDyPeriod.ganzhi||'')}) — ${esc(rating)}: Panduan Nyata</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.85">${guide.body}</div>
+    </div>`;
+  }
+
   document.getElementById('sec-3e').innerHTML = html;
 }
 
@@ -2370,6 +2401,44 @@ function render4A(z) {
     </div>`;
   });
   html += '</div>';
+
+  // Q&A: Apa artinya Ming Gong saya? Spiritual vs bisnis?
+  const mingPalace = (z.palaces||[]).find(p => (p.name||p.palaceName||'').includes('命宫'));
+  if (mingPalace) {
+    const mingStars = (mingPalace.majorStars||[]).map(s=>transZwdsStar(s.name||'')).filter(Boolean);
+    const MING_STAR_MEANING = {
+      '紫微':'Karakter dominan: kepemimpinan, ambisi, dan wibawa alami. Anda cenderung menjadi pusat perhatian di lingkungan Anda — cocok untuk peran pemimpin, pengusaha, atau figur publik. Tantangan: bisa terlalu perfeksionis atau sulit menerima kritik.',
+      '天机':'Karakter dominan: kecerdasan analitis, strategi, dan fleksibilitas. Anda adalah pemikir — cocok di bidang yang butuh inovasi dan pemecahan masalah. Tantangan: overthinking dan sulit mengambil keputusan final.',
+      '太阳':'Karakter dominan: semangat, kemurahan hati, dan orientasi pada orang lain. Anda bersinar paling terang ketika membantu atau memimpin orang lain. Cocok untuk profesi publik, sales, marketing, atau kepemimpinan komunitas.',
+      '武曲':'Karakter dominan: ketegasan, disiplin finansial, dan hasil nyata. Anda berorientasi pada pencapaian konkret — cocok untuk keuangan, militer, atau bisnis yang butuh ketegasan. Tantangan: bisa terkesan keras dan kurang fleksibel secara emosional.',
+      '天同':'Karakter dominan: ketenangan, harmoni, dan kenikmatan hidup. Anda cocok di lingkungan yang mendukung kreativitas dan relasi yang baik. Tantangan: bisa terlalu santai dalam mengejar ambisi.',
+      '廉贞':'Karakter dominan: ambisi tajam, bakat seni, dan kemampuan memanipulasi situasi. Dualitas yang kuat — bisa sangat sukses atau sangat berantakan tergantung pada kontrol diri. Perlu jalur yang jelas dan disiplin tinggi.',
+      '天府':'Karakter dominan: stabilitas, kebijaksanaan, dan kemampuan mengatur sumber daya. Anda adalah "penjaga gudang" — sangat baik dalam manajemen, administrasi, dan mempertahankan apa yang sudah dibangun.',
+      '太阴':'Karakter dominan: intuisi, kehalusan, dan kecerdasan emosional. Anda bekerja paling baik di balik layar atau di lingkungan yang tenang dan estetis. Cocok untuk seni, keuangan investasi, atau pekerjaan analitis yang detail.',
+      '贪狼':'Karakter dominan: karisma, ambisi luas, dan kemampuan menarik orang. Anda memiliki magnet sosial yang kuat — bisa meraih banyak hal, tapi perlu fokus agar tidak tersebar di terlalu banyak arah.',
+      '巨门':'Karakter dominan: kemampuan komunikasi, kecerdasan verbal, dan bakat debat. Anda adalah pemikir kritis — cocok untuk hukum, jurnalisme, atau konsultasi. Tantangan: cenderung curiga dan perlu waktu membangun kepercayaan.',
+      '天相':'Karakter dominan: diplomasi, dukungan, dan loyalitas. Anda adalah "tangan kanan" yang ideal — sangat cocok di peran yang mendukung pemimpin besar atau memimpin tim dengan harmoni.',
+      '天梁':'Karakter dominan: kebijaksanaan, integritas, dan peran sebagai pelindung. Anda cenderung menjadi mentor atau figur yang dihormati karena prinsip dan pengetahuannya. Sangat cocok untuk bidang pendidikan, hukum, atau konsultasi senior.',
+      '七杀':'Karakter dominan: keberanian, ketangguhan, dan kemampuan menghadapi tantangan. Anda adalah pejuang — cocok untuk lingkungan kompetitif, kewirausahaan, atau karir yang penuh tekanan. Tantangan: perlu saluran yang sehat untuk energi agresif ini.',
+      '破军':'Karakter dominan: perubahan radikal, keberanian, dan pembongkaran pola lama. Anda adalah agen perubahan — cocok untuk inovasi, startup, atau reformasi. Hidup Anda kemungkinan melalui banyak transformasi besar.',
+    };
+    if (mingStars.length > 0) {
+      html += `<div style="background:rgba(155,100,200,0.07); border-left:3px solid var(--purple); border-radius:0 8px 8px 0; padding:12px 14px; margin-top:16px">
+        <div style="font-weight:700; font-size:12px; color:var(--purple); margin-bottom:8px">🔮 Apa Artinya Bintang di 命宫 Anda? (${mingStars.join(' · ')})</div>
+        <div style="font-size:12px; color:var(--text); line-height:1.85">
+          ${mingStars.map(star => {
+            const meaning = MING_STAR_MEANING[star];
+            return meaning ? `<strong style="color:var(--gold2)">${esc(star)}:</strong> ${meaning}` : '';
+          }).filter(Boolean).join('<br><br>')}
+          ${mingStars.length > 1 ? `<br><br><span style="color:var(--muted); font-size:11px">💡 Ketika ada dua atau lebih bintang utama di 命宫, karakternya menyatu — bacalah keduanya sebagai satu kesatuan kepribadian yang kompleks, bukan terpisah.</span>` : ''}
+        </div>
+        <div style="font-size:11px; color:var(--muted); margin-top:8px; padding-top:8px; border-top:1px solid var(--border)">
+          ℹ️ 命宫 hanya menggambarkan watak dasar — bukan batas kemampuan. Bintang 化忌 atau mutagen dari Da Xian bisa memoderasi atau memperkuat karakter ini di periode tertentu. Lihat seksi 4B dan 4C.
+        </div>
+      </div>`;
+    }
+  }
+
   document.getElementById('sec-4a').innerHTML = html;
 }
 
@@ -2443,6 +2512,31 @@ function render4B(z) {
       4. Pantau dan rawat istana 化忌 secara proaktif — jangan biarkan masalah di area ini berlarut-larut.
     </span>
   </div>`;
+
+  // Q&A: Apa artinya 化忌 di istana spesifik saya?
+  const jiItems = items.filter(v => (v.type||'').includes('忌'));
+  if (jiItems.length > 0) {
+    const JI_PALACE_MEANING = {
+      '官禄宫': { title:'化忌 di 官禄宫 — Karir Formal Terhambat?', body:'Bukan berarti karir Anda gagal — melainkan <strong>jalur karir konvensional (kerja kantoran, jabatan formal) memerlukan usaha ekstra</strong>. Hambatan birokrasi, atasan yang sulit, atau pengakuan yang tidak setara dengan kerja keras adalah pola yang mungkin sering Anda alami.<br><br>Rekomendasi: pertimbangkan kewirausahaan atau karir freelance di mana Anda menentukan aturan sendiri. Jika tetap di jalur formal, bangun reputasi melalui kualitas kerja — bukan melalui politik kantor.' },
+      '财帛宫': { title:'化忌 di 财帛宫 — Uang Selalu Mudah Keluar?', body:'Ini adalah tanda bahwa arus keluar uang cenderung lebih deras dari yang diinginkan — bukan berarti Anda selalu miskin, tapi ada kecenderungan pengeluaran yang tidak terduga atau investasi yang perlu lebih hati-hati.<br><br>Rekomendasi: disiplin anggaran yang ketat, hindari spekulasi finansial, dan selalu sisihkan dana darurat sebelum mengembangkan uang. Bukan kutukan — ini adalah alarm yang membuat Anda lebih cerdas finansial dari kebanyakan orang.' },
+      '夫妻宫': { title:'化忌 di 夫妻宫 — Hubungan Selalu Berliku?', body:'Pola ini menunjukkan bahwa hubungan romantis atau pernikahan memerlukan usaha dan kesabaran ekstra. Bukan berarti Anda tidak bisa bahagia dalam hubungan — tapi hubungan yang sehat perlu dibangun secara sadar, bukan diasumsikan berjalan otomatis.<br><br>Rekomendasi: komunikasi proaktif, jangan mengandalkan asumsi, dan pilih pasangan yang dewasa secara emosional. Konsultasi pra-nikah atau konseling pasangan bisa sangat membantu.' },
+      '福德宫': { title:'化忌 di 福德宫 — Sulit Merasa Puas?', body:'Ini menunjukkan kecenderungan untuk sulit merasa cukup bahagia atau puas — baik secara batin maupun dalam pencapaian. Anda mungkin sering merasa ada sesuatu yang "kurang" meski secara objektif sudah berhasil.<br><br>Rekomendasi: latih mindfulness dan rasa syukur secara aktif. Pertanyaan "apakah saya sudah cukup?" perlu dijawab dari dalam, bukan dari pencapaian eksternal. Meditasi atau kegiatan spiritual bisa sangat membantu mengelola pola ini.' },
+      '田宅宫': { title:'化忌 di 田宅宫 — Properti Perlu Hati-Hati', body:'Keputusan properti memerlukan kehati-hatian ekstra — risiko kerugian dari pembelian rumah yang terburu-buru, masalah kepemilikan, atau biaya renovasi yang tidak terduga lebih tinggi dari rata-rata.<br><br>Rekomendasi: lakukan due diligence yang sangat teliti sebelum membeli properti, gunakan agen terpercaya, dan hindari investasi properti spekulatif. Menyewa bisa lebih menguntungkan secara jangka pendek.' },
+      '疾厄宫': { title:'化忌 di 疾厄宫 — Kesehatan Perlu Prioritas', body:'Ini adalah pengingat permanen untuk memprioritaskan kesehatan. Bukan berarti Anda selalu sakit — tapi sistem tubuh Anda lebih sensitif dan butuh perawatan lebih proaktif dari rata-rata orang.<br><br>Rekomendasi: pemeriksaan kesehatan rutin minimal setahun sekali, pola hidup sehat yang konsisten, dan jangan abaikan gejala kecil. Investasi dalam kesehatan preventif jauh lebih efisien daripada pengobatan reaktif.' },
+      '兄弟宫': { title:'化忌 di 兄弟宫 — Dinamika Saudara & Mitra', body:'Hubungan dengan saudara kandung atau mitra bisnis memerlukan kehati-hatian. Konflik atau ketidakseimbangan ekspektasi lebih mungkin terjadi di relasi ini.<br><br>Rekomendasi: buat perjanjian tertulis untuk urusan bisnis dengan orang dekat, dan komunikasikan ekspektasi secara eksplisit — jangan asumsikan semua orang memahami maksud Anda.' },
+      '父母宫': { title:'化忌 di 父母宫 — Hubungan dengan Otoritas', body:'Ada ketegangan atau hambatan dalam hubungan dengan orang tua, mentor, atau figur otoritas. Dukungan dari senioritas mungkin tidak datang semudah yang Anda harapkan.<br><br>Rekomendasi: bangun jalur Anda sendiri secara mandiri daripada mengandalkan dukungan senior. Jadikan kemandirian sebagai kekuatan, bukan kekurangan.' },
+    };
+    jiItems.forEach(ji => {
+      const palaceName = ji.palace || ji.palaceName || '';
+      const insight = JI_PALACE_MEANING[palaceName];
+      if (insight) {
+        html += `<div style="background:rgba(239,68,68,0.05); border-left:3px solid var(--red); border-radius:0 8px 8px 0; padding:12px 14px; margin-top:10px">
+          <div style="font-weight:700; font-size:12px; color:var(--red); margin-bottom:6px">⚠️ ${insight.title}</div>
+          <div style="font-size:12px; color:var(--text); line-height:1.85">${insight.body}</div>
+        </div>`;
+      }
+    });
+  }
 
   document.getElementById('sec-4b').innerHTML = html;
 }
@@ -2816,6 +2910,48 @@ function render4D(z) {
     html += `</div></div></div>`;  // close monthly grid, accordion body, accordion wrapper
   }
 
+  // Q&A: Kapan periode terbaik saya? Apa yang harus saya lakukan saat itu?
+  const goodYears = [];
+  for (let y = curYear; y <= curYear + 10; y++) {
+    const yGz = _4d_yearGanzhi(y);
+    const dy2 = dyPeriods.find(d => y >= d.yearStart && y <= d.yearEnd);
+    const dyS2 = dy2?.quality?.score ?? 0;
+    let total2 = 0;
+    for (let m2 = 1; m2 <= 12; m2++) {
+      const mg2 = _4d_monthGanzhi(y, m2);
+      total2 += _4d_evalMonth(mg2.stem, mg2.branch, yongShen);
+    }
+    const avg2 = total2 / 12;
+    if (dyS2 >= 2 || avg2 >= 1.5) {
+      goodYears.push({ year: y, ganzhi: yGz.ganzhi, dyScore: dyS2, dyRating: dy2?.quality?.rating, monthAvg: avg2 });
+    }
+  }
+  if (goodYears.length > 0) {
+    html += `<div style="background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.25); border-radius:8px; padding:14px; margin-top:16px">
+      <div style="font-weight:700; font-size:13px; color:var(--green); margin-bottom:8px">🌟 Window Emas — Tahun Terbaik Anda (${curYear}–${curYear+10})</div>
+      <div style="font-size:12px; color:var(--text); line-height:1.8; margin-bottom:10px">
+        Tahun-tahun berikut adalah <strong>jendela peluang terkuat</strong> berdasarkan kombinasi Da Yun dan tren bulanan BaZi:
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin-bottom:10px">
+        ${goodYears.map(gy => `
+        <div style="background:var(--surface); border:1px solid rgba(34,197,94,0.3); border-radius:6px; padding:10px">
+          <div style="font-size:15px; font-weight:700; color:var(--green)">${gy.year}</div>
+          <div style="font-size:11px; font-family:serif; color:var(--gold); margin-bottom:4px">${esc(gy.ganzhi)}</div>
+          ${gy.dyRating ? `<div style="font-size:10px; color:var(--green)">Da Yun: ${esc(gy.dyRating)}</div>` : ''}
+          ${gy.monthAvg >= 1.5 ? `<div style="font-size:10px; color:var(--gold2)">Tren bulanan: Sangat Positif</div>` : ''}
+        </div>`).join('')}
+      </div>
+      <div style="font-size:12px; color:var(--text); line-height:1.8; border-top:1px solid rgba(34,197,94,0.2); padding-top:10px">
+        <strong>Apa yang harus Anda lakukan di tahun-tahun terbaik ini?</strong><br>
+        · <strong>Keputusan besar</strong>: beli properti, mulai bisnis, atau pindah posisi karir pada tahun-tahun ini<br>
+        · <strong>Investasi</strong>: masuk ke investasi jangka panjang saat window terbuka — bukan menunggu "sampai siap"<br>
+        · <strong>Jaringan</strong>: aktif meluaskan koneksi — pintu terbuka lebih lebar di tahun-tahun ini<br>
+        · <strong>Visibilitas</strong>: publish karya, tampil di platform publik, atau ambil peran kepemimpinan<br>
+        <span style="color:var(--muted); font-size:11px">💡 Tahun baik bukan jaminan sukses otomatis — mereka adalah amplifier. Usaha yang sama menghasilkan lebih banyak di tahun terbaik Anda.</span>
+      </div>
+    </div>`;
+  }
+
   document.getElementById('sec-4d').innerHTML = html;
 }
 
@@ -2999,6 +3135,39 @@ function render5(c, b) {
 
     html += `<div style="font-size:10px; color:var(--muted); margin-top:4px">Sumber: ${esc(fs.source||'')}</div>`;
   }
+
+  // Q&A: BaZi & ZWDS — Sinkron atau Kontradiksi?
+  html += `<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">`;
+  html += `<h3 style="color:var(--gold2); font-size:13px; margin-bottom:8px">🔗 BaZi & ZWDS — Sinkron atau Saling Kontradiksi?</h3>`;
+  html += `<div style="background:var(--surface); border:1px solid rgba(232,184,109,0.3); border-radius:8px; padding:14px">
+    <div style="font-size:12px; color:var(--text); line-height:1.9">
+      Banyak klien bertanya: <em>"Kalau BaZi bilang saya cocok jadi pengusaha, tapi ZWDS bilang karir saya di birokrasi, mana yang benar?"</em><br><br>
+      <strong style="color:var(--gold)">Kedua sistem tidak berkontradiksi — mereka membaca dimensi berbeda:</strong><br><br>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:8px 0 12px">
+        <div style="background:rgba(232,184,109,0.08); border-radius:6px; padding:10px">
+          <div style="font-weight:700; font-size:12px; color:var(--gold); margin-bottom:6px">🎯 BaZi (八字) membaca:</div>
+          <div style="font-size:11px; line-height:1.8">
+            · <strong>Karakter bawaan</strong> — bagaimana Anda secara alami beroperasi<br>
+            · <strong>Yong Shen</strong> — elemen yang mendukung keberuntungan Anda<br>
+            · <strong>Potensi</strong> — apa yang bisa Anda capai jika Anda memaksimalkan diri<br>
+            · <strong>Waktu terbaik</strong> (Da Yun 大运) berdasarkan elemen langit
+          </div>
+        </div>
+        <div style="background:rgba(100,100,200,0.06); border-radius:6px; padding:10px">
+          <div style="font-weight:700; font-size:12px; color:var(--purple); margin-bottom:6px">🌟 ZWDS (紫微) membaca:</div>
+          <div style="font-size:11px; line-height:1.8">
+            · <strong>Peta takdir</strong> — area kehidupan yang "sudah terprogram"<br>
+            · <strong>12 Istana</strong> — bidang spesifik yang kuat vs yang perlu waspada<br>
+            · <strong>Mutagen 四化</strong> — pintu peluang dan area hambatan permanen<br>
+            · <strong>Waktu terbaik</strong> (Da Xian 大限) berdasarkan pergerakan istana
+          </div>
+        </div>
+      </div>
+      <strong style="color:var(--gold2)">Cara membacanya bersama:</strong><br>
+      Ketika BaZi dan ZWDS <em>sepakat</em> pada satu bidang (misalnya keduanya mendukung keuangan), itu adalah sinyal yang sangat kuat — kejar bidang itu. Ketika mereka <em>berbeda</em> (BaZi mendukung bisnis, ZWDS menunjukkan hambatan di 官禄宫), artinya jalur Anda lebih berliku di sana, tapi bukan tidak mungkin — butuh strategi dan timing yang lebih cermat.<br><br>
+      <span style="color:var(--muted); font-size:11px">💡 Untuk sintesis mendetail antara BaZi, ZWDS, dan QMDJ khusus untuk situasi Anda, lihat Seksi 6 — Perbandingan & Sintesis Tiga Sistem.</span>
+    </div>
+  </div>`;
 
   document.getElementById('sec-5').innerHTML = html;
 }
