@@ -354,8 +354,39 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 
 <div class="container">
 
+<!-- ===== LANDING: MODE SELECTOR ===== -->
+<div id="mode-selector" style="margin-bottom:16px; background:var(--surface); border:1px solid rgba(232,184,109,0.3); border-radius:12px; padding:20px 20px 16px">
+  <div style="text-align:center; margin-bottom:14px">
+    <div style="font-size:15px; font-weight:700; color:var(--gold); letter-spacing:0.3px">Pilih Jenis Bacaan</div>
+    <div style="font-size:12px; color:var(--muted); margin-top:3px">Klik salah satu pilihan di bawah untuk memulai</div>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px">
+    <!-- Mode 1: Full Reading -->
+    <div id="mode-card-1" onclick="setMode(1)"
+      style="cursor:pointer; border:2px solid var(--gold); border-radius:10px; padding:16px 14px; text-align:center; background:rgba(232,184,109,0.09); transition:opacity 0.2s">
+      <div style="font-size:26px; margin-bottom:6px">🌟</div>
+      <div style="font-weight:700; font-size:13px; color:var(--gold); margin-bottom:5px">Full Reading</div>
+      <div style="font-size:11px; color:var(--muted); line-height:1.6">BaZi · Zi Wei Dou Shu<br>Qi Men Dun Jia<br><em>Analisa lengkap semua sistem</em></div>
+    </div>
+    <!-- Mode 2: QMDJ 30 Hari -->
+    <div id="mode-card-2" onclick="setMode(2)"
+      style="cursor:pointer; border:2px solid #22c55e; border-radius:10px; padding:16px 14px; text-align:center; background:rgba(34,197,94,0.06); transition:opacity 0.2s">
+      <div style="font-size:26px; margin-bottom:6px">📆</div>
+      <div style="font-weight:700; font-size:13px; color:#22c55e; margin-bottom:5px">Panduan QMDJ 30 Hari</div>
+      <div style="font-size:11px; color:var(--muted); line-height:1.6">Qi Men Dun Jia harian<br>Kegiatan terbaik & hindari<br><em>Tanpa data kelahiran</em></div>
+    </div>
+    <!-- Mode 3: Analisa Relasi -->
+    <div id="mode-card-3" onclick="setMode(3)"
+      style="cursor:pointer; border:2px solid var(--purple,#9b64c8); border-radius:10px; padding:16px 14px; text-align:center; background:rgba(155,100,200,0.06); transition:opacity 0.2s">
+      <div style="font-size:26px; margin-bottom:6px">❤️</div>
+      <div style="font-weight:700; font-size:13px; color:var(--purple,#9b64c8); margin-bottom:5px">Analisa Relasi</div>
+      <div style="font-size:11px; color:var(--muted); line-height:1.6">Pasangan · Keluarga<br>Teman · Rekan Bisnis<br><em>Kompatibilitas dua orang</em></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== SECTION 1: FORM INPUT ===== -->
-<div class="card" id="form-section">
+<div class="card" id="form-section" style="display:none">
   <div class="card-header">
     <div class="section-num">1</div>
     <h2>Data Kelahiran</h2>
@@ -461,24 +492,9 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
         <button type="button" class="btn btn-secondary" style="font-size:11px; padding:4px 10px" onclick="setCoord(116.3912,39.9042,'GMT+8')">📍 Beijing</button>
       </div>
 
-      <!-- Row 4: Options -->
-      <div class="form-grid" style="margin-top:12px">
-        <div class="sep">Opsi Aliran (Sekolah)</div>
-        <div class="form-group">
-          <label><abbr title="Aliran 1: 子时 (23:00-01:00) terbagi dua hari. Aliran 2 (default): 子时 tetap di hari yang sama.">Aliran 子时 (Midnight)</abbr></label>
-          <select name="midnightSect">
-            <option value="2" selected>Aliran 2 — 子时 tetap hari lahir (Rekomendasi)</option>
-            <option value="1">Aliran 1 — 子时 awal di hari sebelumnya</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label><abbr title="Aliran 1: Da Yun per 10 tahun persis. Aliran 2 (default): precision 4320 menit/tahun.">Aliran 大运 (Da Yun)</abbr></label>
-          <select name="dayunSect">
-            <option value="2" selected>Aliran 2 — Presisi 4320 min/tahun (Rekomendasi)</option>
-            <option value="1">Aliran 1 — 10 tahun per periode</option>
-          </select>
-        </div>
-      </div>
+      <!-- Row 4: Options (hidden — defaults preserved for engine) -->
+      <input type="hidden" name="midnightSect" value="2">
+      <input type="hidden" name="dayunSect" value="2">
 
       <!-- Submit -->
       <div class="btn-row" style="margin-top:16px">
@@ -909,6 +925,50 @@ async function loadTimezones() {
 // ============================================================
 // HELPERS
 // ============================================================
+// ── Mode selector (landing page) ──────────────────────────────
+function setMode(m) {
+  // Dim unselected cards
+  [1,2,3].forEach(i => {
+    const c = document.getElementById('mode-card-' + i);
+    if (c) c.style.opacity = (i === m) ? '1' : '0.38';
+  });
+
+  const form  = document.getElementById('form-section');
+  const qmdjCard = document.getElementById('qmdj-calendar-card');
+  const qmdjBody = document.getElementById('qmdj-calendar-card-body');
+  const arrow    = document.getElementById('qmdj-cal-arrow');
+  const s9  = document.getElementById('section-compat-spouse');
+  const s10 = document.getElementById('section-compat-family');
+  const s11 = document.getElementById('section-compat-friend');
+
+  if (m === 1) {
+    // Show full reading form
+    form.style.display = '';
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Collapse QMDJ standalone
+    if (qmdjBody) qmdjBody.style.display = 'none';
+    if (arrow)    arrow.textContent = '▼ Klik untuk buka';
+    // Hide compat sections
+    [s9, s10, s11].forEach(el => { if (el) el.style.display = 'none'; });
+
+  } else if (m === 2) {
+    // QMDJ 30 Hari — no birth data needed
+    form.style.display = 'none';
+    if (qmdjBody) qmdjBody.style.display = 'block';
+    if (arrow)    arrow.textContent = '▲ Klik untuk tutup';
+    qmdjCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    [s9, s10, s11].forEach(el => { if (el) el.style.display = 'none'; });
+
+  } else if (m === 3) {
+    // Analisa Relasi — show compat sections, hide main form
+    form.style.display = 'none';
+    if (qmdjBody) qmdjBody.style.display = 'none';
+    if (arrow)    arrow.textContent = '▼ Klik untuk buka';
+    [s9, s10, s11].forEach(el => { if (el) el.style.display = ''; });
+    if (s9) s9.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function setCoord(lng, lat, tz) {
   document.querySelector('[name=longitude]').value = lng;
   document.querySelector('[name=latitude]').value = lat;
