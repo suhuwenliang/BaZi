@@ -102,13 +102,16 @@ const TEN_GOD_MEANING = {
 
 // Konteks per tipe relasi
 const RELATION_CONTEXT = {
-  spouse:           { label: 'Pasangan (Suami/Istri)', pronoun: 'pasangan', icon: '💑' },
-  child:            { label: 'Anak',                    pronoun: 'anak',     icon: '👶' },
-  parent:           { label: 'Orang Tua',               pronoun: 'orang tua',icon: '👨‍👩‍👧' },
-  sibling_older:    { label: 'Kakak',                   pronoun: 'kakak',    icon: '👥' },
-  sibling_younger:  { label: 'Adik',                    pronoun: 'adik',     icon: '👥' },
-  friend:           { label: 'Teman',                   pronoun: 'teman',    icon: '🤝' },
-  colleague:        { label: 'Rekan Kerja',             pronoun: 'rekan',    icon: '💼' }
+  spouse:           { label: 'Pasangan (Suami/Istri)', pronoun: 'pasangan',     icon: '💑' },
+  child:            { label: 'Anak',                    pronoun: 'anak',         icon: '👶' },
+  parent:           { label: 'Orang Tua',               pronoun: 'orang tua',    icon: '👨‍👩‍👧' },
+  sibling_older:    { label: 'Kakak',                   pronoun: 'kakak',        icon: '👥' },
+  sibling_younger:  { label: 'Adik',                    pronoun: 'adik',         icon: '👥' },
+  friend:           { label: 'Teman',                   pronoun: 'teman',        icon: '🤝' },
+  colleague:        { label: 'Rekan Kerja',             pronoun: 'rekan kerja',  icon: '💼' },
+  rekan_bisnis:     { label: 'Rekan Bisnis',            pronoun: 'rekan bisnis', icon: '🤝💰' },
+  atasan:           { label: 'Atasan / Bos',            pronoun: 'atasan',       icon: '👔' },
+  bawahan:          { label: 'Bawahan / Staf',          pronoun: 'bawahan',      icon: '👷' }
 };
 
 // ============================================================
@@ -440,7 +443,16 @@ function generateFutureProspect(score, interact, relType, nameA, nameB, rel) {
     sibling_older: `Hubungan dengan kakak membawa pelajaran tentang hierarki, perlindungan, dan berbagi. Potensi hubungan ini sangat bergantung pada seberapa baik kedua pihak bisa saling menghormati peran masing-masing.`,
     sibling_younger: `Hubungan dengan adik mengajarkan tentang tanggung jawab, pengasuhan, dan keikhlasan berbagi. Interaksi elemental ini menentukan seberapa natural peran kakak-adik ini mengalir.`,
     friend: `Persahabatan antara ${nameA} dan ${nameB} memiliki kualitas yang ${score >= 3 ? 'alami dan mengalir' : 'membutuhkan investasi waktu lebih besar'}. Persahabatan terkuat sering lahir dari mereka yang melengkapi, bukan yang selalu setuju.`,
-    colleague: `Kolaborasi profesional antara ${nameA} dan ${nameB} ${score >= 3 ? 'memiliki potensi sinergi yang kuat — keduanya bisa saling melengkapi dalam tim' : 'membutuhkan komunikasi yang lebih eksplisit dan pembagian peran yang jelas untuk mencapai hasil optimal'}.`
+    colleague: `Kolaborasi profesional antara ${nameA} dan ${nameB} ${score >= 3 ? 'memiliki potensi sinergi yang kuat — keduanya bisa saling melengkapi dalam tim' : 'membutuhkan komunikasi yang lebih eksplisit dan pembagian peran yang jelas untuk mencapai hasil optimal'}.`,
+    rekan_bisnis: score >= 3
+      ? `Kemitraan bisnis antara ${nameA} dan ${nameB} memiliki fondasi elemental yang menguntungkan. Interaksi elemen ini menunjukkan bahwa keduanya bisa saling melengkapi dalam menghasilkan nilai — satu pihak mungkin kuat dalam visi, yang lain dalam eksekusi. Dalam jangka panjang, bisnis ini memiliki potensi untuk bertumbuh secara organik selama komunikasi dan kesepakatan tertulis dijaga dengan ketat.`
+      : `Kemitraan bisnis antara ${nameA} dan ${nameB} membutuhkan struktur yang jelas dari awal. Perbedaan elemental yang ada justru bisa menjadi kekuatan jika dipetakan dengan baik — siapa yang mengambil keputusan di area mana, bagaimana profit dibagi, dan apa jalur keluar jika diperlukan. Kesepakatan eksplisit adalah fondasi wajib untuk kemitraan ini.`,
+    atasan: score >= 3
+      ? `Dinamika antara ${nameA} dan ${nameB} sebagai atasan menunjukkan potensi hubungan kerja yang produktif dan saling mendukung. Energi elemen yang harmonis memudahkan ${nameB} memahami cara Anda bekerja dan memberikan arahan yang terasa tepat sasaran. Ini adalah tipe atasan yang bisa membawa keluar terbaik dari diri Anda — jika Anda proaktif dan transparan.`
+      : `Hubungan dengan ${nameB} sebagai atasan memerlukan pemahaman yang lebih dalam tentang cara kerjanya. Perbedaan elemental ini menunjukkan bahwa gaya kepemimpinan ${nameB} mungkin berbeda signifikan dari cara Anda bekerja secara alami. Kunci sukses: pelajari apa yang benar-benar dihargai ${nameB}, dan komunikasikan kontribusi Anda dalam bahasa yang ia pahami.`,
+    bawahan: score >= 3
+      ? `${nameB} sebagai bawahan memiliki energi yang kompatibel dengan gaya kepemimpinan Anda. Interaksi elemen ini menunjukkan bahwa ${nameB} bisa menerima arahan Anda dengan baik dan mengeksekusinya dengan efektif. Dengan bimbingan yang tepat, ${nameB} berpotensi berkembang menjadi aset berharga dalam tim Anda.`
+      : `Mengelola ${nameB} membutuhkan pendekatan yang lebih personal dan sabar. Perbedaan elemental menunjukkan bahwa cara berpikir dan bekerja ${nameB} mungkin berbeda dari ekspektasi alami Anda. Investasikan waktu untuk memahami motivasi dasarnya — cara terbaik memimpin ${nameB} adalah dengan menemukan apa yang membuat energinya hidup, bukan memaksanya masuk ke dalam sistem Anda.`
   };
 
   return `**Potensi Hubungan ke Depan**
@@ -470,7 +482,10 @@ function generateHowToHandle(elemA, elemB, interact, tenGodAB, relType, nameA, n
     sibling_older: `Dengan kakak, tunjukkan bahwa Anda menghargai pengalaman dan perspektifnya — bahkan ketika Anda tidak setuju. Rasa dihargai adalah fondasi dari hubungan saudara yang sehat.`,
     sibling_younger: `Dengan adik, jadilah teladan yang konsisten — bukan sempurna. Keterbukaan tentang kesalahan dan cara Anda belajar darinya lebih berharga daripada terlihat selalu benar.`,
     friend:   `Persahabatan yang langgeng dibangun dari kejujuran yang aman. Ciptakan ruang di mana ${nameB} merasa bisa jujur tanpa takut dihakimi — dan pastikan Anda pun merasakannya.`,
-    colleague:`Di lingkungan kerja, kejelasan ekspektasi adalah investasi terbaik. Diskusikan secara eksplisit bagaimana Anda berdua paling efektif bekerja bersama — jangan asumsikan cara kerja yang sama.`
+    colleague:`Di lingkungan kerja, kejelasan ekspektasi adalah investasi terbaik. Diskusikan secara eksplisit bagaimana Anda berdua paling efektif bekerja bersama — jangan asumsikan cara kerja yang sama.`,
+    rekan_bisnis:`Dalam kemitraan bisnis, **kesepakatan tertulis adalah bentuk kasih sayang terbaik**. Jangan biarkan asumsi mengisi ruang yang seharusnya diisi oleh perjanjian yang jelas. Buat mekanisme komunikasi reguler — misalnya review bulanan — di mana keduanya bisa mengungkapkan concern sebelum menjadi konflik. Bisnis terbaik dibangun di atas kepercayaan PLUS struktur.`,
+    atasan:`Dengan atasan, seni terpenting adalah **managing up** — memahami apa yang paling dipedulikan ${nameB} dan bagaimana Anda bisa memberikannya secara konsisten. Laporkan perkembangan pekerjaan secara proaktif sebelum diminta. Ketika ada masalah, hadirkan juga solusinya. Ini membangun kepercayaan yang membuka peluang.`,
+    bawahan:`Sebagai pemimpin dari ${nameB}, kualitas paling berharga yang bisa Anda berikan adalah **konsistensi dan kejelasan**. Pastikan ekspektasi tidak hanya disampaikan sekali, tapi dikonfirmasi dan ditindaklanjuti. Tanyakan secara rutin: "Apa yang bisa saya lakukan untuk memudahkan pekerjaanmu?" — dan sungguh-sungguh dengarkan jawabannya.`
   };
 
   return `**Cara Menghandle ${rel.label} Anda**
