@@ -273,8 +273,12 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   .qmdj-day-detail { display: block !important; }
   /* ── QMDJ Natal Hari: tampilkan saat print full reading ── */
   #qmdj-destiny-section { display: block !important; }
-  /* ── Mode selector 3 pilihan: sembunyikan saat print ── */
+  /* ── Mode selector: sembunyikan saat print ── */
   #mode-selector { display: none !important; }
+  /* ── Form input: sembunyikan saat print ── */
+  #form-section { display: none !important; }
+  /* ── QMDJ mode2 nav: sembunyikan saat print ── */
+  #qmdj-mode2-nav { display: none !important; }
 }
 /* Responsive — mobile (screen only — does NOT apply to print) */
 @media screen and (max-width: 768px) {
@@ -541,6 +545,14 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
     </div>
     <div id="qmdj-calendar-standalone-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)">⏳ Memuat kalender QMDJ...</div>
     <div id="qmdj-calendar-standalone-content"></div>
+    <div id="qmdj-mode2-nav" class="no-print" style="display:none; margin-top:20px; border-top:1px solid var(--border); padding-top:18px; text-align:center">
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="printQmdjCalendar()" style="font-size:14px; padding:12px 28px">🖨️ Print / Simpan PDF</button>
+        <button class="btn btn-secondary" onclick="resetAll()" style="font-size:14px; padding:12px 28px; border:1px solid var(--gold); color:var(--gold2)">✨ Mulai Baru</button>
+        <button class="btn btn-secondary" onclick="navTo(1)" style="font-size:14px; padding:12px 28px; border:1px solid var(--gold); color:var(--gold2)">🌟 Full Reading</button>
+        <button class="btn btn-secondary" onclick="navTo(3)" style="font-size:14px; padding:12px 28px; border:1px solid #9b64c8; color:#9b64c8">❤️ Analisa Relasi</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -748,6 +760,39 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   </div>
 </div>
 
+<!-- ===== SECTION 2R: REKOMENDASI NAMA MANDARIN ===== -->
+<div class="card" id="name-rec-section" style="display:none">
+  <div class="card-header">
+    <div class="section-num" style="background:linear-gradient(135deg,#2a7a4a,#1a5a35);color:#fff;font-size:9px;letter-spacing:0;padding:2px 3px">2R</div>
+    <h2>Rekomendasi Nama Mandarin 中文名推荐 — Berdasarkan Yong Shen</h2>
+  </div>
+  <div class="card-body" id="sec-name-rec"></div>
+</div>
+
+<!-- compat-triggers: tersembunyi di flow baru -->
+<div class="no-print" id="compat-triggers" style="display:none"></div>
+
+<!-- ===== EXPORT: Mode 1 Nav Buttons (Full Reading) ===== -->
+<div id="export-section" style="border-top:1px solid var(--border); margin-top:16px; padding:24px 16px; text-align:center">
+  <div class="no-print" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="window.print()" style="font-size:14px; padding:12px 28px">
+      🖨️ Print / Simpan PDF
+    </button>
+    <button class="btn btn-secondary" onclick="resetAll()" style="font-size:14px; padding:12px 28px; border:1px solid var(--gold); color:var(--gold2)">
+      ✨ Mulai Baru
+    </button>
+    <button id="nav-to-qmdj" class="btn btn-secondary" onclick="navTo(2)" style="font-size:14px; padding:12px 28px; border:1px solid #22c55e; color:#22c55e; display:none">
+      📆 Panduan QMDJ
+    </button>
+    <button id="nav-to-relasi" class="btn btn-secondary" onclick="navTo(3)" style="font-size:14px; padding:12px 28px; border:1px solid #9b64c8; color:#9b64c8; display:none">
+      ❤️ Analisa Relasi
+    </button>
+  </div>
+</div>
+
+</div><!-- #results -->
+
+<!-- ===== SECTION 9: ANALISA RELASI — OUTSIDE #results ===== -->
 <!-- ===== SECTION 9: ANALISA RELASI (UNIFIED) ===== -->
 <div class="card no-print" id="section-compat-relasi" style="display:none">
   <div class="card-header">
@@ -796,44 +841,15 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
         <button class="btn btn-primary" onclick="submitCompatUnified()" style="font-size:14px;padding:10px 24px">
           🔮 Analisa Relasi Sekarang
         </button>
-        <button class="btn btn-secondary" onclick="hideRelasi()">✕ Tutup</button>
-        <span style="font-size:11px;color:var(--muted);margin-left:auto">Tidak perlu membaca chart utama terlebih dahulu</span>
+        <button class="btn btn-secondary" onclick="resetAll()">✕ Kembali ke Menu</button>
+        <span style="font-size:11px;color:var(--muted);margin-left:auto">Masukkan data diri dan data orang yang ingin dianalisa</span>
       </div>
     </div>
     <div id="compat-relasi-result" style="display:none"></div>
   </div>
 </div>
 
-<!-- ===== SECTION 2R: REKOMENDASI NAMA MANDARIN ===== -->
-<div class="card" id="name-rec-section" style="display:none">
-  <div class="card-header">
-    <div class="section-num" style="background:linear-gradient(135deg,#2a7a4a,#1a5a35);color:#fff;font-size:9px;letter-spacing:0;padding:2px 3px">2R</div>
-    <h2>Rekomendasi Nama Mandarin 中文名推荐 — Berdasarkan Yong Shen</h2>
-  </div>
-  <div class="card-body" id="sec-name-rec"></div>
-</div>
 
-<!-- ===== TOMBOL TRIGGER ANALISA TAMBAHAN ===== -->
-<div class="no-print" id="compat-triggers" style="margin:20px 0 8px; display:none; gap:10px; flex-wrap:wrap; justify-content:center">
-  <button class="btn btn-secondary" onclick="showRelasi()" style="border:1px solid var(--gold);color:var(--gold2);font-size:13px;padding:8px 20px">
-    🔗 + Analisa Relasi Antar Manusia
-  </button>
-</div>
-
-<!-- ===== EXPORT: Print & Mulai Baru ===== -->
-<!-- Action buttons — Print & Mulai Baru -->
-<div id="export-section" style="border-top:1px solid var(--border); margin-top:16px; padding:24px 16px; text-align:center">
-  <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap">
-    <button class="btn btn-primary" onclick="window.print()" style="font-size:14px; padding:12px 36px; min-width:180px">
-      🖨️ Print / Simpan PDF
-    </button>
-    <button class="btn btn-secondary no-print" onclick="resetForm()" style="font-size:14px; padding:12px 36px; min-width:180px; border:1px solid var(--gold); color:var(--gold2)">
-      ✨ Mulai Baru
-    </button>
-  </div>
-</div>
-
-</div><!-- #results -->
 </div><!-- .container -->
 
 <script>
@@ -887,6 +903,7 @@ function transMutagen(type) { return MUTAGEN_ID[type] || type; }
 let _result = null;
 let _lastInput = null;
 let _tzList = [];
+let _currentMode = 0; // 0=landing, 1=reading, 2=qmdj, 3=relasi
 
 // ============================================================
 // INIT: Load timezones into select
@@ -911,44 +928,43 @@ async function loadTimezones() {
 // ============================================================
 // ── Mode selector (landing page) ──────────────────────────────
 function setMode(m) {
+  _currentMode = m;
   // Dim unselected cards
   [1,2,3].forEach(i => {
     const c = document.getElementById('mode-card-' + i);
     if (c) c.style.opacity = (i === m) ? '1' : '0.38';
   });
 
-  const form  = document.getElementById('form-section');
+  // Hide landing page
+  const modeSelector = document.getElementById('mode-selector');
+  if (modeSelector) modeSelector.style.display = 'none';
+
+  const form     = document.getElementById('form-section');
+  const results  = document.getElementById('results');
   const qmdjCard = document.getElementById('qmdj-calendar-card');
-  const qmdjBody = document.getElementById('qmdj-calendar-card-body');
-  const arrow    = document.getElementById('qmdj-cal-arrow');
-  const s9  = document.getElementById('section-compat-relasi');
-  const s10 = null; // unified into s9
-  const s11 = null; // unified into s9
+  const relasi   = document.getElementById('section-compat-relasi');
+  const calcBtn  = document.getElementById('calc-btn');
+
+  // Reset sections
+  form.style.display = 'none';
+  results.classList.add('hidden');
+  if (qmdjCard) qmdjCard.style.display = 'none';
+  if (relasi)   relasi.style.display = 'none';
+  const m2nav = document.getElementById('qmdj-mode2-nav');
+  if (m2nav) m2nav.style.display = 'none';
 
   if (m === 1) {
-    // Show full reading form
     form.style.display = '';
+    if (calcBtn) calcBtn.innerHTML = '✨ Hitung Sekarang';
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Collapse QMDJ standalone
-    if (qmdjBody) qmdjBody.style.display = 'none';
-    if (arrow)    arrow.textContent = '▼ Klik untuk buka';
-    // Hide compat sections
-    [s9, s10, s11].forEach(el => { if (el) el.style.display = 'none'; });
 
   } else if (m === 2) {
-    // QMDJ 30 Hari — no birth data needed
-    form.style.display = 'none';
-    if (qmdjBody) qmdjBody.style.display = 'block';
-    if (arrow)    arrow.textContent = '▲ Klik untuk tutup';
-    qmdjCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    [s9, s10, s11].forEach(el => { if (el) el.style.display = 'none'; });
+    form.style.display = '';
+    if (calcBtn) calcBtn.innerHTML = '📆 Lihat Panduan QMDJ 30 Hari';
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   } else if (m === 3) {
-    // Analisa Relasi — show unified section, hide main form
-    form.style.display = 'none';
-    if (qmdjBody) qmdjBody.style.display = 'none';
-    if (arrow)    arrow.textContent = '▼ Klik untuk buka';
-    // showRelasi() builds the forms and scrolls
+    if (relasi) relasi.style.display = 'block';
     showRelasi();
   }
 }
@@ -1028,6 +1044,23 @@ function colorHex(name) { return COLOR_MAP[name] || '#555'; }
 
 document.getElementById('calc-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+
+  // ── MODE 2: Panduan QMDJ 30 Hari ──────────────────────
+  if (_currentMode === 2) {
+    const qmdjCard = document.getElementById('qmdj-calendar-card');
+    const qmdjBody = document.getElementById('qmdj-calendar-card-body');
+    const arrow    = document.getElementById('qmdj-cal-arrow');
+    const m2nav    = document.getElementById('qmdj-mode2-nav');
+    if (qmdjCard) qmdjCard.style.display = '';
+    if (qmdjBody) qmdjBody.style.display = 'block';
+    if (arrow)    arrow.textContent = '▲ Klik untuk tutup';
+    await loadQmdjCalendar();
+    if (m2nav) m2nav.style.display = 'block';
+    if (qmdjCard) qmdjCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  // ───────────────────────────────────────────────
+
   const fd = new FormData(e.target);
   const data = {};
   fd.forEach((v,k) => { data[k] = v; });
@@ -1069,7 +1102,11 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
     loadQmdjDestiny();
     document.getElementById('results').classList.remove('hidden');
     document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
-    showCompatTriggers();
+    // Show mode 1 nav buttons
+    const _nq = document.getElementById('nav-to-qmdj');
+    const _nr = document.getElementById('nav-to-relasi');
+    if (_nq) _nq.style.display = '';
+    if (_nr) _nr.style.display = '';
   } catch(err) {
     document.getElementById('error-box').textContent = '❌ ' + err.message;
     document.getElementById('error-box').classList.remove('hidden');
@@ -4527,45 +4564,90 @@ function copyClaudePromptZwds() {
 }
 
 // ============================================================
-// RESET FORM
+// RESET ALL — Kembali ke landing page
 // ============================================================
-function resetForm() {
-  // Kosongkan semua input teks/number
-  document.querySelectorAll('#calcForm input[type="text"], #calcForm input[type="number"], #calcForm input[type="date"], #calcForm input[type="time"]').forEach(el => { el.value = ''; });
-  // Reset select ke nilai default
-  document.querySelectorAll('#calcForm select').forEach(el => { el.selectedIndex = 0; });
-  // Sembunyikan semua section hasil
-  [2,3,4,5,6,7].forEach(n => {
-    const el = document.getElementById(`sec-${n}`);
-    if (el) el.innerHTML = '';
-    const card = el?.closest?.('.card');
-    if (card) card.style.display = 'none';
+function resetAll(returnToLanding) {
+  if (returnToLanding === undefined) returnToLanding = true;
+  _currentMode = 0;
+  _result      = null;
+  _lastInput   = null;
+  if (typeof _qmdjData !== 'undefined') _qmdjData = {};
+
+  document.querySelectorAll('#calc-form input[type="text"], #calc-form input[type="number"]')
+    .forEach(function(el) { el.value = ''; });
+  document.querySelectorAll('#calc-form select').forEach(function(el) { el.selectedIndex = 0; });
+  var uhCheck = document.getElementById('unknownHourCheck');
+  if (uhCheck) uhCheck.checked = false;
+
+  var results = document.getElementById('results');
+  if (results) results.classList.add('hidden');
+  document.getElementById('form-section').style.display = 'none';
+
+  var qmdjCard = document.getElementById('qmdj-calendar-card');
+  if (qmdjCard) qmdjCard.style.display = 'none';
+  var qmdjBody = document.getElementById('qmdj-calendar-card-body');
+  if (qmdjBody) qmdjBody.style.display = 'none';
+  var arrow = document.getElementById('qmdj-cal-arrow');
+  if (arrow) arrow.textContent = '▼ Klik untuk buka';
+  var relasi = document.getElementById('section-compat-relasi');
+  if (relasi) relasi.style.display = 'none';
+
+  var qCont = document.getElementById('qmdj-calendar-standalone-content');
+  if (qCont) qCont.innerHTML = '';
+  var qLoad = document.getElementById('qmdj-calendar-standalone-loading');
+  if (qLoad) qLoad.style.display = 'none';
+  var btnCalPrint = document.getElementById('btn-qmdj-cal-print');
+  if (btnCalPrint) btnCalPrint.style.display = 'none';
+  var m2nav = document.getElementById('qmdj-mode2-nav');
+  if (m2nav) m2nav.style.display = 'none';
+
+  ['qmdj-section','qmdj-content','qmdj-destiny-section'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.style.display = 'none';
   });
+  var destPanel = document.getElementById('qmdj-destiny-panel');
+  if (destPanel) destPanel.innerHTML = '';
+
   ['sec-3a','sec-3b','sec-3c','sec-3d','sec-3e','sec-3f','sec-3g',
    'sec-structures','sec-profiles','sec-aspects','sec-wealth','sec-wealth-extra',
-   'sec-4a','sec-4b','sec-4c','sec-4d'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '';
+   'sec-4a','sec-4b','sec-4c','sec-4d','sec-name-rec'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.innerHTML = '';
   });
-  const wpSec = document.getElementById('wealth-profiling-section');
+  var wpSec = document.getElementById('wealth-profiling-section');
   if (wpSec) wpSec.style.display = 'none';
-  const nrSec = document.getElementById('name-rec-section');
-  if (nrSec) { nrSec.style.display = 'none'; document.getElementById('sec-name-rec').innerHTML = ''; }
-  _result = null;
-  _lastInput = null;
-  _qmdjData = {};
-  document.getElementById('qmdj-section').style.display = 'none';
-  document.getElementById('qmdj-content').style.display = 'none';
-  document.getElementById('qmdj-destiny-section').style.display = 'none';
-  document.getElementById('qmdj-destiny-panel').innerHTML = '';
-  // Hide compat sections & triggers
-  const _relasiSec = document.getElementById('section-compat-relasi');
-  if (_relasiSec) _relasiSec.style.display = 'none';
-  const triggers = document.getElementById('compat-triggers');
-  if (triggers) triggers.style.display = 'none';
-  // Scroll ke atas form
-  document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+  var nrSec = document.getElementById('name-rec-section');
+  if (nrSec) nrSec.style.display = 'none';
+  var cts = document.getElementById('compat-triggers');
+  if (cts) cts.style.display = 'none';
+
+  var relasiResult = document.getElementById('compat-relasi-result');
+  if (relasiResult) { relasiResult.innerHTML = ''; relasiResult.style.display = 'none'; }
+  var relasiForm = document.getElementById('compat-relasi-form');
+  if (relasiForm) relasiForm.style.display = 'block';
+
+  var navQmdj = document.getElementById('nav-to-qmdj');
+  if (navQmdj) navQmdj.style.display = 'none';
+  var navRelasi = document.getElementById('nav-to-relasi');
+  if (navRelasi) navRelasi.style.display = 'none';
+
+  var calcBtn = document.getElementById('calc-btn');
+  if (calcBtn) calcBtn.innerHTML = '✨ Hitung Sekarang';
+
+  if (returnToLanding) {
+    var modeSelector = document.getElementById('mode-selector');
+    if (modeSelector) modeSelector.style.display = '';
+    [1,2,3].forEach(function(i) {
+      var c = document.getElementById('mode-card-' + i);
+      if (c) c.style.opacity = '1';
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
+
+// Legacy alias
+function resetForm() { resetAll(); }
+
+// Navigate to mode without landing page
+function navTo(m) { resetAll(false); setMode(m); }
 
 // ============================================================
 // QMDJ DESTINY CHART (本命盤) RENDERER
@@ -5090,7 +5172,8 @@ function showRelasi() {
   sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function hideRelasi() {
+function hideRelasi() { resetAll(); }
+function _oldHideRelasi() {
   const sec = document.getElementById('section-compat-relasi');
   if (sec) sec.style.display = 'none';
   const resDiv = document.getElementById('compat-relasi-result');
@@ -5207,9 +5290,14 @@ function renderCompatResult(c, container, type) {
         <div class="compat-narasi">${mdToHtml(sec.body)}</div>
       </div>` : '').join('')}
 
-    <div class="compat-print-btn no-print">
-      <button class="btn btn-primary" onclick="printCompatSection('${type}')">🖨️ Print / Simpan PDF</button>
-      <button class="btn btn-secondary" onclick="resetCompatUnified()">🔄 Analisa Relasi Lain</button>
+    <div class="no-print" style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px; text-align:center">
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="printCompatSection('\${type}')" style="font-size:14px; padding:12px 24px">🖨️ Print / Simpan PDF</button>
+        <button class="btn btn-secondary" onclick="resetAll()" style="font-size:14px; padding:12px 24px; border:1px solid var(--gold); color:var(--gold2)">✨ Mulai Baru</button>
+        <button class="btn btn-secondary" onclick="navTo(1)" style="font-size:14px; padding:12px 24px; border:1px solid var(--gold); color:var(--gold2)">🌟 Full Reading</button>
+        <button class="btn btn-secondary" onclick="navTo(2)" style="font-size:14px; padding:12px 24px; border:1px solid #22c55e; color:#22c55e">📆 Panduan QMDJ</button>
+        <button class="btn btn-secondary" onclick="resetCompatUnified()" style="font-size:14px; padding:12px 24px; border:1px solid #9b64c8; color:#9b64c8">🔄 Analisa Lain</button>
+      </div>
     </div>`;
 
   container.innerHTML = html;
