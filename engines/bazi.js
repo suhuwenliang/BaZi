@@ -423,10 +423,13 @@ function calculateBazi(params) {
   if (isDMStrong) {
     yongShen = ELEMENT_PRODUCES[dmElement]; // 食伤: DM generates
   } else if (isDMBalanced) {
-    // 中和: chart is self-sustaining. Yong Shen = 官 (element that controls DM) for structure
-    // or 财 (element DM controls) — pick whichever is weaker in chart
-    const guanEl = ELEMENT_CONTROLS[dmElement];   // what controls DM = 官
-    const caiEl  = ELEMENT_PRODUCES[ELEMENT_PRODUCES[dmElement]]; // 食伤 generates 财
+    // 中和: chart is self-sustaining. Yong Shen = 官 (element that CONTROLS DM = structure)
+    // 官 = ELEMENT_CONTROLLED_BY[dmElement] (e.g. 土 for 水DM — Earth controls Water)
+    // NOT ELEMENT_CONTROLS[dmElement] which gives 财 (what DM controls)
+    // 官 = element that controls DM: reverse-lookup ELEMENT_CONTROLS to find which element 克s DM
+    // e.g. ELEMENT_CONTROLS['土']='水' → Earth controls Water → 官 for 水DM = 土
+    const guanEl = Object.entries(ELEMENT_CONTROLS).find(([k,v]) => v === dmElement)?.[0]
+                   || ELEMENT_FEEDS[dmElement]; // fallback to 印 if lookup fails
     yongShen = guanEl; // 中和 prefers 官 for life structure
   } else {
     yongShen = ELEMENT_FEEDS[dmElement]; // 印: feeds/generates DM
@@ -534,9 +537,21 @@ function calculateBazi(params) {
       yongShen: ELEMENT_PRODUCES[dmElement], label: `DM极旺，专旺格 → 用神食伤泄秀` };
   }
 
-  // Override yongShen if special 格局 detected
+  // Override yongShen priority:
+  //   1. DM-strength base (yongShen)
+  //   2. 调候 override for extreme season months (when classically authoritative)
+  //      — skipped only if 调候 element CONTROLS the DM AND DM is weak (would harm weak DM)
+  //   3. specialGe (从格/专旺格) takes absolute final priority
+  const EXTREME_SEASON_MONTHS = ['巳','午','未','子','丑','亥']; // full summer + deep winter
+  const tiaoHouControlsDM = tiaoHouYS
+    ? (ELEMENT_CONTROLS[tiaoHouYS.element] === dmElement)  // tiaoHouYS element 克s DM
+    : false;
+  const applyTiaoHou = tiaoHouYS
+    && EXTREME_SEASON_MONTHS.includes(monthBranch)
+    && !(tiaoHouControlsDM && isDMWeak);  // don't harm already-weak DM with its controller
   let yongShenFinal = yongShen;
-  if (specialGe) yongShenFinal = specialGe.yongShen || yongShen;
+  if (applyTiaoHou)  yongShenFinal = tiaoHouYS.element;         // 调候 seasonal override
+  if (specialGe)     yongShenFinal = specialGe.yongShen || yongShenFinal; // 格局 final priority
 
   const geJuInfo = {
     name: specialGe ? specialGe.name : (geJuName || '普通格'),
