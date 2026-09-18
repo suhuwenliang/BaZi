@@ -6009,7 +6009,7 @@ function renderCompatResult(c, container, type) {
 
     <div class="no-print" style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px; text-align:center">
       <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="printCompatSection('\${type}')" style="font-size:14px; padding:12px 24px">🖨️ Print / Simpan PDF</button>
+        <button class="btn btn-primary" onclick="printCompatSection('${type}')" style="font-size:14px; padding:12px 24px">🖨️ Print / Simpan PDF</button>
         <button class="btn btn-secondary" onclick="resetAll()" style="font-size:14px; padding:12px 24px; border:1px solid var(--gold); color:var(--gold2)">✨ Mulai Baru</button>
         <button class="btn btn-secondary" onclick="navTo(1)" style="font-size:14px; padding:12px 24px; border:1px solid var(--gold); color:var(--gold2)">🌟 Full Reading</button>
         <button class="btn btn-secondary" onclick="navTo(2)" style="font-size:14px; padding:12px 24px; border:1px solid #22c55e; color:#22c55e">📆 Panduan QMDJ</button>
@@ -6128,6 +6128,46 @@ function resetCompatUnified() {
   // Keep Person A & B data intact — user only wants to change relationship type
   const sec = document.getElementById('section-compat-relasi');
   if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function printCompatSection(type) {
+  var sec = document.getElementById('section-compat-relasi');
+  if (!sec) { window.print(); return; }
+
+  // 1. Temporarily remove no-print so the section is visible during print
+  sec.classList.remove('no-print');
+
+  // 2. Convert Chart.js canvases to <img> so they print in all browsers
+  var canvasList = sec.querySelectorAll('canvas');
+  var replacements = [];
+  canvasList.forEach(function(canvas) {
+    try {
+      var img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.style.width = canvas.offsetWidth + 'px';
+      img.style.height = canvas.offsetHeight + 'px';
+      img.style.display = 'block';
+      canvas.parentNode.insertBefore(img, canvas);
+      canvas.style.display = 'none';
+      replacements.push({ canvas: canvas, img: img });
+    } catch(e) {}
+  });
+
+  // 3. Print
+  window.print();
+
+  // 4. Restore after print dialog closes
+  function restore() {
+    sec.classList.add('no-print');
+    replacements.forEach(function(r) {
+      r.canvas.style.display = '';
+      if (r.img.parentNode) r.img.parentNode.removeChild(r.img);
+    });
+    window.removeEventListener('afterprint', restore);
+  }
+  window.addEventListener('afterprint', restore);
+  // Fallback timeout in case afterprint doesn't fire
+  setTimeout(restore, 5000);
 }
 
 function showCompatTriggers() {
