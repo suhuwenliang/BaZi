@@ -1189,15 +1189,11 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
     loadQmdjDestiny();
     document.getElementById('results').classList.remove('hidden');
     document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
-    // Show mode 1 nav buttons
+    // Show mode 1 nav buttons (nav-to-nama & nav-to-cheatsheet shown inside renderAll only when yongShen available)
     const _nq = document.getElementById('nav-to-qmdj');
     const _nr = document.getElementById('nav-to-relasi');
-    const _nn = document.getElementById('nav-to-nama');
-    const _nc = document.getElementById('nav-to-cheatsheet');
     if (_nq) _nq.style.display = '';
     if (_nr) _nr.style.display = '';
-    if (_nn) _nn.style.display = '';
-    if (_nc) _nc.style.display = '';
   } catch(err) {
     document.getElementById('error-box').textContent = '❌ ' + err.message;
     document.getElementById('error-box').classList.remove('hidden');
@@ -1215,6 +1211,10 @@ function renderAll(d, input) {
   if (d.bazi?.yongShen) {
     renderNameRecommendation(d.nameAnalysis?.chinese || null, d.bazi.yongShen, input);
     renderCheatSheetArahDuduk(d.bazi.yongShen, d.comprehensive?.fengshui || null);
+    var _nn2 = document.getElementById('nav-to-nama');
+    var _nc2 = document.getElementById('nav-to-cheatsheet');
+    if (_nn2) _nn2.style.display = '';
+    if (_nc2) _nc2.style.display = '';
   }
   if (d.bazi && !d.bazi.error) {
     render3A(d.bazi);
@@ -5290,7 +5290,14 @@ function prefillForm(data) {
 
 function navToSection(id) {
   var el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!el) return;
+  // Force section visible if hidden (display:none blocks scrollIntoView)
+  if (el.style.display === 'none' || el.style.display === '') {
+    el.style.display = 'block';
+  }
+  setTimeout(function() {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
 }
 
 function navTo(m) {
