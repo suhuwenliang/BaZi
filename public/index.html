@@ -2046,66 +2046,51 @@ function renderCheatSheetArahDuduk(yongShen, fs) {
       good: ['E','SE'], avoid: ['W','NW'],
       goodLabel: 'Timur (E) · Tenggara (SE)',
       avoidLabel: 'Barat (W) · Barat Laut (NW)',
-      hindari: '金 (Barat/Barat Laut) — 金克木',
-      situations: [
-        { icon:'🤝', label:'Meeting',    dir:'Timur (E)',      note:'Energi pertumbuhan & ide mengalir' },
-        { icon:'💬', label:'Negosiasi',  dir:'Tenggara (SE)',  note:'Kemakmuran & persuasi kayu' },
-        { icon:'🍽️', label:'Makan',      dir:'Timur (E)',      note:'Vitalitas & nafsu makan optimal' },
-        { icon:'📖', label:'Belajar',    dir:'Tenggara (SE)',  note:'Pikiran terbuka & mudah menyerap' },
-        { icon:'🙏', label:'Berdoa',     dir:'Timur (E)',      note:'Koneksi spiritual elemen kayu' },
-      ],
+      karir:    { dir:'Timur (E)',         reason:'木 = pertumbuhan & kreativitas' },
+      kekayaan: { dir:'Tenggara (SE)',     reason:'Zona kemakmuran kayu' },
+      relasi:   { dir:'Timur (E)',         reason:'Energi ekspansif, mudah terhubung' },
+      kesehatan:{ dir:'Tenggara (SE)',     reason:'Vitalitas hijau, udara segar' },
+      hindari:  '金 (Barat/Barat Laut) — 金克木',
     },
     '火': {
       good: ['S','E'], avoid: ['N'],
       goodLabel: 'Selatan (S) · Timur (E)',
       avoidLabel: 'Utara (N)',
-      hindari: '水 (Utara) — 水克火',
-      situations: [
-        { icon:'🤝', label:'Meeting',    dir:'Selatan (S)',    note:'Kepemimpinan & ekspresi kuat' },
-        { icon:'💬', label:'Negosiasi',  dir:'Selatan (S)',    note:'Api menarik perhatian & peluang' },
-        { icon:'🍽️', label:'Makan',      dir:'Timur (E)',      note:'木生火 — energi makan meningkat' },
-        { icon:'📖', label:'Belajar',    dir:'Timur (E)',      note:'Inspirasi & kreativitas menyala' },
-        { icon:'🙏', label:'Berdoa',     dir:'Selatan (S)',    note:'Cahaya & koneksi spiritual api' },
-      ],
+      karir:    { dir:'Selatan (S)',       reason:'火 = ekspresi & kepemimpinan' },
+      kekayaan: { dir:'Selatan (S)',       reason:'Api menarik perhatian & peluang' },
+      relasi:   { dir:'Timur (E)',         reason:'木生火 — kehangatan tumbuh' },
+      kesehatan:{ dir:'Selatan (S)',       reason:'Sinar matahari, semangat vital' },
+      hindari:  '水 (Utara) — 水克火',
     },
     '土': {
       good: ['NE','SW'], avoid: ['E','SE'],
       goodLabel: 'Timur Laut (NE) · Barat Daya (SW)',
       avoidLabel: 'Timur (E) · Tenggara (SE)',
-      hindari: '木 (Timur/Tenggara) — 木克土',
-      situations: [
-        { icon:'🤝', label:'Meeting',    dir:'Timur Laut (NE)', note:'Stabilitas & kepercayaan dibangun' },
-        { icon:'💬', label:'Negosiasi',  dir:'Barat Daya (SW)', note:'Grounding & integritas menguat' },
-        { icon:'🍽️', label:'Makan',      dir:'Barat Daya (SW)', note:'Sistem pencernaan & grounding' },
-        { icon:'📖', label:'Belajar',    dir:'Timur Laut (NE)', note:'Fokus, ketelitian & ketekunan' },
-        { icon:'🙏', label:'Berdoa',     dir:'Timur Laut (NE)', note:'Kebijaksanaan bumi & koneksi' },
-      ],
+      karir:    { dir:'Timur Laut (NE)',   reason:'土 = stabilitas & kepercayaan' },
+      kekayaan: { dir:'Barat Daya (SW)',   reason:'Zona akumulasi & kestabilan' },
+      relasi:   { dir:'Timur Laut (NE)',   reason:'Membangun loyalitas & kepercayaan' },
+      kesehatan:{ dir:'Barat Daya (SW)',   reason:'Grounding, sistem pencernaan kuat' },
+      hindari:  '木 (Timur/Tenggara) — 木克土',
     },
     '金': {
       good: ['W','NW'], avoid: ['S'],
       goodLabel: 'Barat (W) · Barat Laut (NW)',
       avoidLabel: 'Selatan (S)',
-      hindari: '火 (Selatan) — 火克金',
-      situations: [
-        { icon:'🤝', label:'Meeting',    dir:'Barat Laut (NW)', note:'Otoritas & kepemimpinan menonjol' },
-        { icon:'💬', label:'Negosiasi',  dir:'Barat (W)',       note:'Ketegasan & presisi logam' },
-        { icon:'🍽️', label:'Makan',      dir:'Barat (W)',       note:'Paru-paru & sistem imun kuat' },
-        { icon:'📖', label:'Belajar',    dir:'Barat Laut (NW)', note:'Ketajaman pikiran & analitis' },
-        { icon:'🙏', label:'Berdoa',     dir:'Barat Laut (NW)', note:'Koneksi langit & spiritual logam' },
-      ],
+      karir:    { dir:'Barat (W)',         reason:'金 = ketegasan, presisi & efisiensi' },
+      kekayaan: { dir:'Barat Laut (NW)',   reason:'NW = zona pemimpin & kekayaan' },
+      relasi:   { dir:'Barat (W)',         reason:'Komunikasi asertif & jujur' },
+      kesehatan:{ dir:'Barat Laut (NW)',   reason:'Paru-paru & sistem imun menguat' },
+      hindari:  '火 (Selatan) — 火克金',
     },
     '水': {
       good: ['N','W'], avoid: ['NE','SW'],
       goodLabel: 'Utara (N) · Barat (W)',
       avoidLabel: 'Timur Laut (NE) · Barat Daya (SW)',
-      hindari: '土 (Timur Laut/Barat Daya) — 土克水',
-      situations: [
-        { icon:'🤝', label:'Meeting',    dir:'Utara (N)',      note:'Kebijaksanaan & strategi mengalir' },
-        { icon:'💬', label:'Negosiasi',  dir:'Barat (W)',      note:'Logika dingin & analitis tajam' },
-        { icon:'🍽️', label:'Makan',      dir:'Utara (N)',      note:'Ginjal & vitalitas terjaga' },
-        { icon:'📖', label:'Belajar',    dir:'Utara (N)',      note:'Kedalaman & konsentrasi penuh' },
-        { icon:'🙏', label:'Berdoa',     dir:'Barat (W)',      note:'Intuisi & koneksi spiritual air' },
-      ],
+      karir:    { dir:'Utara (N)',         reason:'水 = kebijaksanaan & fleksibilitas' },
+      kekayaan: { dir:'Barat (W)',         reason:'金生水 — sumber daya mengalir' },
+      relasi:   { dir:'Utara (N)',         reason:'Intuisi sosial & empati mendalam' },
+      kesehatan:{ dir:'Barat (W)',         reason:'Ginjal & sistem detoksifikasi kuat' },
+      hindari:  '土 (Timur Laut/Barat Daya) — 土克水',
     },
   };
 
@@ -2166,7 +2151,13 @@ function renderCheatSheetArahDuduk(yongShen, fs) {
     return `<svg viewBox="0 0 220 220" width="200" height="200" style="display:block">${paths}</svg>`;
   }
 
-  // (situations defined per element in ARAH above)
+  // Life-area rows
+  const cats = [
+    { key:'karir',    icon:'💼', label:'Karir / Pekerjaan' },
+    { key:'kekayaan', icon:'💰', label:'Kekayaan / Finansial' },
+    { key:'relasi',   icon:'❤️', label:'Relasi / Pasangan' },
+    { key:'kesehatan',icon:'🌿', label:'Kesehatan / Vitalitas' },
+  ];
 
   let html = `
   <!-- Cheat Sheet smartphone card (390px) -->
@@ -2200,35 +2191,32 @@ function renderCheatSheetArahDuduk(yongShen, fs) {
       </div>
     </div>
 
-    <!-- Situational rows -->
+    <!-- Per-category rows -->
     <div style="background:#0f1923; border:1px solid #1e3a4a; border-top:none">
-      ${data.situations.map((sit, i) => {
-        const isLast = i === data.situations.length - 1;
-        return `<div style="display:flex; align-items:center; gap:12px; padding:11px 16px; ${isLast ? '' : 'border-bottom:1px solid #1e3a4a'}">
-          <div style="font-size:20px; width:28px; text-align:center; flex-shrink:0">${sit.icon}</div>
+      ${cats.map(cat => {
+        const catData = data[cat.key];
+        return `<div style="display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px solid #1e3a4a">
+          <div style="font-size:20px; width:28px; text-align:center; flex-shrink:0">${cat.icon}</div>
           <div style="flex:1; min-width:0">
-            <div style="font-size:10px; color:#7eb5d4; letter-spacing:0.5px; text-transform:uppercase">Duduk saat ${sit.label}</div>
-            <div style="font-size:14px; font-weight:700; color:#22c55e; margin-top:2px">Hadap ${esc(sit.dir)}</div>
-            <div style="font-size:10px; color:#888; margin-top:1px">${esc(sit.note)}</div>
+            <div style="font-size:10px; color:#7eb5d4; letter-spacing:0.5px; text-transform:uppercase">${cat.label}</div>
+            <div style="font-size:14px; font-weight:700; color:#22c55e; margin-top:2px">${esc(catData.dir)}</div>
+            <div style="font-size:10px; color:#888; margin-top:1px">${esc(catData.reason)}</div>
           </div>
-          <div style="font-size:18px; color:#22c55e; font-weight:700; flex-shrink:0">→</div>
+          <div style="font-size:22px; color:#22c55e; font-weight:700; flex-shrink:0">→</div>
         </div>`;
       }).join('')}
 
       <!-- Avoid row -->
-      <div style="display:flex; align-items:center; gap:12px; padding:11px 16px; border-top:1px solid #1e3a4a; background:#130d0d">
+      <div style="display:flex; align-items:center; gap:12px; padding:11px 16px; background:#130d0d; border-radius:0 0 14px 14px">
         <div style="font-size:20px; width:28px; text-align:center; flex-shrink:0">🚫</div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:10px; color:#f87171; letter-spacing:0.5px; text-transform:uppercase">Hindari semua situasi</div>
+          <div style="font-size:10px; color:#f87171; letter-spacing:0.5px; text-transform:uppercase">Hindari</div>
           <div style="font-size:14px; font-weight:700; color:#ef4444; margin-top:2px">${esc(data.avoidLabel)}</div>
           <div style="font-size:10px; color:#888; margin-top:1px">${esc(data.hindari)}</div>
         </div>
-        <div style="font-size:18px; color:#ef4444; font-weight:700; flex-shrink:0">✕</div>
+        <div style="font-size:22px; color:#ef4444; font-weight:700; flex-shrink:0">✕</div>
       </div>
     </div>
-
-    <!-- Bottom rounded cap -->
-    <div style="background:#0f1923; border:1px solid #1e3a4a; border-top:none; border-radius:0 0 14px 14px; height:8px"></div>
 
     <!-- Download button -->
     <div class="no-print" style="margin-top:12px; text-align:center">
