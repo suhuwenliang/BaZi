@@ -264,6 +264,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   #sec-wealth > div { page-break-inside: avoid; }
   /* Name Recommendation print */
   #name-rec-section { display: block !important; }
+  #arah-duduk-section { display: block !important; }
   #sec-profiles, #sec-aspects, #sec-structures, #sec-wealth { display: block !important; }
   .pillar-card .ganzhi { color: #5a3a00 !important; }
   .pillar-card .ganzhi-detail { color: #555 !important; }
@@ -355,6 +356,7 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
 .remedy-item .r-val { font-size: 12px; color: var(--text); margin-top: 2px; }
 .hidden-stems-table td:first-child { color: var(--gold); font-size: 16px; font-family: serif; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 <body>
 
@@ -812,6 +814,15 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
   <div class="card-body" id="sec-name-rec"></div>
 </div>
 
+<!-- ===== SECTION CS: CHEAT SHEET ARAH DUDUK ===== -->
+<div class="card" id="arah-duduk-section" style="display:none">
+  <div class="card-header">
+    <div class="section-num" style="background:linear-gradient(135deg,#1a5a8a,#0d3a5a);color:#fff;font-size:9px;letter-spacing:0;padding:2px 3px">CS</div>
+    <h2>Cheat Sheet Arah Duduk 坐向指南 — Berdasarkan Yong Shen</h2>
+  </div>
+  <div class="card-body" id="sec-arah-duduk"></div>
+</div>
+
 <!-- compat-triggers: tersembunyi di flow baru -->
 <div class="no-print" id="compat-triggers" style="display:none"></div>
 
@@ -1165,8 +1176,9 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
 // ============================================================
 function renderAll(d, input) {
   renderName(d.nameAnalysis, input);
-  if (d.nameAnalysis?.chinese && d.bazi?.yongShen) {
-    renderNameRecommendation(d.nameAnalysis.chinese, d.bazi.yongShen, input);
+  if (d.bazi?.yongShen) {
+    renderNameRecommendation(d.nameAnalysis?.chinese || null, d.bazi.yongShen, input);
+    renderCheatSheetArahDuduk(d.bazi.yongShen, d.comprehensive?.fengshui || null);
   }
   if (d.bazi && !d.bazi.error) {
     render3A(d.bazi);
@@ -1395,7 +1407,7 @@ function renderName(na, input) {
             }${esc(dailyMsg)}
           </div>
           ${pct < 70 ? `<div style="margin-top:10px; font-size:12px; color:var(--blue); padding:8px 12px; background:rgba(26,95,168,0.06); border-radius:6px">
-            💡 <strong>Tips:</strong> Lihat Section 2R (Rekomendasi Nama) di bawah untuk pilihan nama dengan keselarasan Yong Shen yang lebih tinggi — tetap menggunakan marga yang sama.
+            💡 <strong>Tips:</strong> Lihat Section 2R (Rekomendasi Nama) di bawah — jika belum punya nama Mandarin, akan ada panduan membuat nama baru (Mode A); jika sudah punya, kami sarankan karakter pengganti yang selaras dengan Yong Shen (Mode B).
           </div>` : ''}
         </div>
       </div>`;
@@ -1422,10 +1434,102 @@ function elementFromStrokeNum(n) {
 // ============================================================
 // SECTION 2R: REKOMENDASI NAMA MANDARIN
 // ============================================================
+
+// Latin surname → Chinese marga lookup table
+const LATIN_TO_MARGA = {
+  // By last word of Latin name (Indonesian common)
+  'tan':    { char:'陈', pinyin:'Chén', strokes:7 },
+  'chen':   { char:'陈', pinyin:'Chén', strokes:7 },
+  'lim':    { char:'林', pinyin:'Lín',  strokes:8 },
+  'lin':    { char:'林', pinyin:'Lín',  strokes:8 },
+  'lie':    { char:'李', pinyin:'Lǐ',   strokes:7 },
+  'lee':    { char:'李', pinyin:'Lǐ',   strokes:7 },
+  'li':     { char:'李', pinyin:'Lǐ',   strokes:7 },
+  'goh':    { char:'吴', pinyin:'Wú',   strokes:7 },
+  'wu':     { char:'吴', pinyin:'Wú',   strokes:7 },
+  'ng':     { char:'黄', pinyin:'Huáng',strokes:11 },
+  'wong':   { char:'王', pinyin:'Wáng', strokes:4 },
+  'wang':   { char:'王', pinyin:'Wáng', strokes:4 },
+  'husin':  { char:'胡', pinyin:'Hú',   strokes:9 },
+  'hu':     { char:'胡', pinyin:'Hú',   strokes:9 },
+  'koh':    { char:'许', pinyin:'Xǔ',   strokes:6 },
+  'xu':     { char:'许', pinyin:'Xǔ',   strokes:6 },
+  'kwok':   { char:'郭', pinyin:'Guō',  strokes:10 },
+  'guo':    { char:'郭', pinyin:'Guō',  strokes:10 },
+  'tjoa':   { char:'蔡', pinyin:'Cài',  strokes:14 },
+  'cai':    { char:'蔡', pinyin:'Cài',  strokes:14 },
+  'soe':    { char:'苏', pinyin:'Sū',   strokes:7 },
+  'su':     { char:'苏', pinyin:'Sū',   strokes:7 },
+  'tio':    { char:'郑', pinyin:'Zhèng',strokes:8 },
+  'zheng':  { char:'郑', pinyin:'Zhèng',strokes:8 },
+  'tjio':   { char:'赵', pinyin:'Zhào', strokes:9 },
+  'zhao':   { char:'赵', pinyin:'Zhào', strokes:9 },
+  'gunawan':{ char:'关', pinyin:'Guān', strokes:6 },
+  'guan':   { char:'关', pinyin:'Guān', strokes:6 },
+  'wijaya': { char:'黄', pinyin:'Huáng',strokes:11 },
+  'huang':  { char:'黄', pinyin:'Huáng',strokes:11 },
+  'halim':  { char:'林', pinyin:'Lín',  strokes:8 },
+  'santoso':{ char:'陈', pinyin:'Chén', strokes:7 },
+  'ko':     { char:'顾', pinyin:'Gù',   strokes:10 },
+  'gu':     { char:'顾', pinyin:'Gù',   strokes:10 },
+  'pang':   { char:'庞', pinyin:'Páng', strokes:9 },
+  'lau':    { char:'刘', pinyin:'Liú',  strokes:6 },
+  'liu':    { char:'刘', pinyin:'Liú',  strokes:6 },
+  'chandra':{ char:'陈', pinyin:'Chén', strokes:7 },
+  'zhou':   { char:'周', pinyin:'Zhōu', strokes:8 },
+  'chou':   { char:'周', pinyin:'Zhōu', strokes:8 },
+  'yang':   { char:'杨', pinyin:'Yáng', strokes:7 },
+  'zhang':  { char:'张', pinyin:'Zhāng',strokes:7 },
+  'chang':  { char:'张', pinyin:'Zhāng',strokes:7 },
+  'sun':    { char:'孙', pinyin:'Sūn',  strokes:6 },
+  'gao':    { char:'高', pinyin:'Gāo',  strokes:10 },
+};
+
+// Optimal marga by Yong Shen element (prioritize marga whose stroke element = Yong Shen)
+const MARGA_BY_YS = {
+  '木': [
+    { char:'黄', pinyin:'Huáng', strokes:11, meaning:'Kemuliaan & kemakmuran', el:'木' },
+    { char:'曹', pinyin:'Cáo',   strokes:11, meaning:'Bijaksana & berbudaya',  el:'木' },
+  ],
+  '火': [
+    { char:'王', pinyin:'Wáng',  strokes:4,  meaning:'Raja, pemimpin & mulia', el:'火' },
+    { char:'蔡', pinyin:'Cài',   strokes:14, meaning:'Budaya & keanggunan',    el:'火' },
+  ],
+  '土': [
+    { char:'郭', pinyin:'Guō',   strokes:10, meaning:'Besar & kokoh',          el:'土' },
+    { char:'孙', pinyin:'Sūn',   strokes:10, meaning:'Turunan mulia',          el:'土' },
+    { char:'高', pinyin:'Gāo',   strokes:10, meaning:'Tinggi & terhormat',     el:'土' },
+  ],
+  '金': [
+    { char:'李', pinyin:'Lǐ',    strokes:7,  meaning:'Pohon plum, keanggunan', el:'金' },
+    { char:'吴', pinyin:'Wú',    strokes:7,  meaning:'Kerajaan kuno yang besar',el:'金' },
+    { char:'张', pinyin:'Zhāng', strokes:7,  meaning:'Membentang luas',        el:'金' },
+    { char:'刘', pinyin:'Liú',   strokes:6,  meaning:'Dinasti agung',          el:'金' },
+  ],
+  '水': [
+    { char:'林', pinyin:'Lín',   strokes:8,  meaning:'Hutan, kebijaksanaan alami', el:'水' },
+    { char:'周', pinyin:'Zhōu',  strokes:8,  meaning:'Siklus & kelengkapan',  el:'水' },
+    { char:'胡', pinyin:'Hú',    strokes:9,  meaning:'Barat kuno, penjelajah', el:'水' },
+  ],
+};
+
 function renderNameRecommendation(cn, yongShen, input) {
   const sec = document.getElementById('name-rec-section');
   const container = document.getElementById('sec-name-rec');
-  if (!cn || !yongShen || !sec || !container) return;
+  if (!yongShen || !sec || !container) return;
+
+  // Detect mode: A (no Chinese name) vs B (has Chinese name)
+  const hasChinese = !!(input?.chineseName && input.chineseName.trim().length > 0);
+  const hasCn = !!(cn && (cn.chars || cn.characters || []).length > 0);
+
+  if (!hasChinese && !hasCn) {
+    // === MODE A: No Chinese name yet ===
+    renderNameModeA(sec, container, yongShen, input);
+    return;
+  }
+
+  // === MODE B: Already has Chinese name — existing behavior ===
+  if (!cn) { sec.style.display='none'; return; }
 
   // Extract marga (surname = first char)
   const fullName = cn.fullName || '';
@@ -1687,9 +1791,440 @@ function renderNameRecommendation(cn, yongShen, input) {
   container.innerHTML = html;
   sec.style.display = 'block';
 }
+
+// ============================================================
+// MODE A: User has NO Chinese name yet — suggest from scratch
+// ============================================================
+function renderNameModeA(sec, container, yongShen, input) {
+  sec.style.display = 'block';
+
+  const YS_COLOR = {'木':'#4caf7d','火':'#e57373','土':'#c8960d','金':'#9e9e9e','水':'#4a90d9'};
+  const YS_NAME  = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+  const ysColor  = YS_COLOR[yongShen] || 'var(--gold)';
+  const ysName   = YS_NAME[yongShen] || yongShen;
+  const YS_EL_HELP = {'木':['木','水'],'火':['火','木'],'土':['土','火'],'金':['金','土'],'水':['水','金']};
+  const ysHelps  = YS_EL_HELP[yongShen] || [];
+
+  // Extract last word of Latin name as probable surname
+  const latinName  = (input?.name || '').trim();
+  const nameParts  = latinName.split(/\s+/).filter(Boolean);
+  const probableSurname = nameParts.length > 0 ? nameParts[nameParts.length-1].toLowerCase() : '';
+  const probableFirst   = nameParts.length > 1 ? nameParts[0].toLowerCase() : '';
+
+  // Try to find a matching marga (check last word, then first word)
+  const margaMatch1 = LATIN_TO_MARGA[probableSurname];
+  const margaMatch2 = LATIN_TO_MARGA[probableFirst];
+  const hasA1 = !!(margaMatch1 || margaMatch2);
+  const a1Marga = margaMatch1 || margaMatch2 || null;
+
+  // Optimal marga by Yong Shen (A2)
+  const a2Margas = MARGA_BY_YS[yongShen] || MARGA_BY_YS['金'];
+
+  // ---- Shared given-name generator ----
+  function suggestGivenNames(margaStrokes) {
+    const JI_SET = new Set([1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,38,39,41,45,47,48,52,57,61,63,65,67,68,81]);
+    function isJi(n) { const n81=n<1?1:n>81?((n-1)%81)+1:n; return JI_SET.has(n81); }
+    const NAME_DB_local = {
+      '木':[{char:'棋',pinyin:'Qí',strokes:12,meaning:'Strategi & kecerdasan'},{char:'智',pinyin:'Zhì',strokes:12,meaning:'Kebijaksanaan tinggi'},{char:'景',pinyin:'Jǐng',strokes:12,meaning:'Kemakmuran, cahaya'},{char:'博',pinyin:'Bó',strokes:12,meaning:'Pengetahuan luas'},{char:'棠',pinyin:'Táng',strokes:12,meaning:'Pohon mulia'},{char:'然',pinyin:'Rán',strokes:12,meaning:'Alami, integritas'},{char:'梓',pinyin:'Zǐ',strokes:11,meaning:'Keteguhan'},{char:'彬',pinyin:'Bīn',strokes:11,meaning:'Berbudi pekerti'},{char:'晨',pinyin:'Chén',strokes:11,meaning:'Fajar cerah'},{char:'涵',pinyin:'Hán',strokes:11,meaning:'Lapang dada'}],
+      '火':[{char:'昭',pinyin:'Zhāo',strokes:9,meaning:'Bersinar, mulia'},{char:'烨',pinyin:'Yè',strokes:13,meaning:'Berkobar terang'},{char:'炜',pinyin:'Wěi',strokes:8,meaning:'Api bersinar'},{char:'熙',pinyin:'Xī',strokes:14,meaning:'Bahagia, makmur'},{char:'焱',pinyin:'Yàn',strokes:12,meaning:'Api membara'}],
+      '土':[{char:'城',pinyin:'Chéng',strokes:9,meaning:'Benteng, perlindungan'},{char:'培',pinyin:'Péi',strokes:11,meaning:'Menumbuhkan'},{char:'坤',pinyin:'Kūn',strokes:8,meaning:'Bumi, kelembutan'},{char:'垚',pinyin:'Yáo',strokes:12,meaning:'Tanah kuat & kokoh'}],
+      '金':[{char:'锐',pinyin:'Ruì',strokes:11,meaning:'Tajam, cerdas'},{char:'铭',pinyin:'Míng',strokes:14,meaning:'Kenangan abadi'},{char:'钧',pinyin:'Jūn',strokes:9,meaning:'Kekuasaan besar'},{char:'铠',pinyin:'Kǎi',strokes:13,meaning:'Perlindungan kuat'}],
+      '水':[{char:'泽',pinyin:'Zé',strokes:8,meaning:'Kemurahan hati'},{char:'涛',pinyin:'Tāo',strokes:10,meaning:'Ombak, keberanian'},{char:'涵',pinyin:'Hán',strokes:11,meaning:'Kedalaman batin'},{char:'澄',pinyin:'Chéng',strokes:15,meaning:'Jernih, murni'}],
+    };
+    const ysChars = NAME_DB_local[yongShen] || NAME_DB_local['木'];
+    function scoreCombo(s,c1,c2) {
+      const g={tian:s+1,ren:s+c1,di:c1+c2,wai:c2+1,zong:s+c1+c2};
+      let sc=0;
+      if(isJi(g.ren))sc+=3; if(isJi(g.zong))sc+=3; if(isJi(g.di))sc+=2; if(isJi(g.wai))sc+=1;
+      if(elementFromStrokeNum(c1)===yongShen)sc+=2; if(elementFromStrokeNum(c2)===yongShen)sc+=2;
+      return sc;
+    }
+    const candidates=[];
+    for(let i=0;i<ysChars.length;i++) for(let j=0;j<ysChars.length;j++) {
+      if(i===j)continue;
+      const c1=ysChars[i],c2=ysChars[j],sc=scoreCombo(margaStrokes,c1.strokes,c2.strokes);
+      if(sc>=6)candidates.push({c1,c2,score:sc,grids:{tian:margaStrokes+1,ren:margaStrokes+c1.strokes,di:c1.strokes+c2.strokes,wai:c2.strokes+1,zong:margaStrokes+c1.strokes+c2.strokes}});
+    }
+    candidates.sort((a,b)=>b.score-a.score);
+    const seen=new Set(), recs=[];
+    for(const c of candidates){const k=c.c1.char+c.c2.char; if(!seen.has(k)){seen.add(k);recs.push(c);} if(recs.length>=2)break;}
+    return recs;
+  }
+
+  // ---- Render given-name card ----
+  function givenNameCard(margaChar, margaStrokes, rec, idx) {
+    if(!rec) return '';
+    const {c1,c2,grids}=rec;
+    const JI_SET2=new Set([1,3,5,6,7,8,11,13,15,16,17,18,21,23,24,25,29,31,32,33,35,37,38,39,41,45,47,48,52,57,61,63,65,67,68,81]);
+    function isJi2(n){const n81=n<1?1:n>81?((n-1)%81)+1:n; return JI_SET2.has(n81);}
+    function sq(n){return isJi2(n)?{icon:'吉',color:'#22c55e'}:{icon:'凶',color:'#ef4444'};}
+    const el1=elementFromStrokeNum(c1.strokes), el2=elementFromStrokeNum(c2.strokes);
+    const ys1c=ysHelps.includes(el1)||el1===yongShen?'var(--green)':'var(--muted)';
+    const ys2c=ysHelps.includes(el2)||el2===yongShen?'var(--green)':'var(--muted)';
+    const jiCnt=['ren','di','wai','zong'].filter(k=>isJi2(grids[k])).length;
+    const badgeCol=jiCnt>=4?'var(--green)':jiCnt>=3?'var(--gold)':'var(--red)';
+    return `<div style="border:1.5px solid rgba(160,120,20,0.25);border-radius:9px;margin-bottom:12px;overflow:hidden;page-break-inside:avoid">
+      <div style="background:linear-gradient(135deg,rgba(160,120,20,0.12),rgba(160,120,20,0.06));padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="font-size:38px;font-family:serif;color:var(--gold2);letter-spacing:4px;line-height:1">${esc(margaChar+c1.char+c2.char)}</div>
+        <div style="flex:1">
+          <div style="font-size:15px;color:var(--text);font-weight:600">Opsi ${idx+1}</div>
+          <div style="font-size:12px;color:var(--muted)">${esc(c1.pinyin)} ${esc(c2.pinyin)}</div>
+          <div style="margin-top:5px"><span style="background:${badgeCol}22;color:${badgeCol};border:1px solid ${badgeCol}44;border-radius:4px;font-size:11px;padding:2px 7px;font-weight:700">${jiCnt}/4 Grid 吉</span>
+          <span style="margin-left:6px;background:rgba(42,122,74,0.1);color:var(--green);border:1px solid rgba(42,122,74,0.3);border-radius:4px;font-size:11px;padding:2px 7px;font-weight:700">YS ${esc(yongShen)} ✓</span></div>
+        </div>
+      </div>
+      <div style="padding:10px 16px;font-size:12px;color:var(--text);display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--surface2);border-radius:6px;padding:8px;border:1.5px solid ${ysColor}44">
+          <div style="font-size:24px;font-family:serif;color:var(--gold);text-align:center">${esc(c1.char)}</div>
+          <div style="text-align:center;color:var(--muted);font-size:11px">${esc(c1.pinyin)} · ${c1.strokes} goresan</div>
+          <div style="text-align:center;margin-top:3px">${esc(c1.meaning)}</div>
+          <div style="text-align:center;font-size:11px;color:${ys1c};font-weight:600;margin-top:2px">Unsur: ${esc(el1)}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:6px;padding:8px;border:1.5px solid ${ysColor}44">
+          <div style="font-size:24px;font-family:serif;color:var(--gold);text-align:center">${esc(c2.char)}</div>
+          <div style="text-align:center;color:var(--muted);font-size:11px">${esc(c2.pinyin)} · ${c2.strokes} goresan</div>
+          <div style="text-align:center;margin-top:3px">${esc(c2.meaning)}</div>
+          <div style="text-align:center;font-size:11px;color:${ys2c};font-weight:600;margin-top:2px">Unsur: ${esc(el2)}</div>
+        </div>
+      </div>
+      <div style="padding:0 16px 12px;font-size:11px;color:var(--muted)">
+        人格 ${grids.ren}<span style="color:${isJi2(grids.ren)?'#22c55e':'#ef4444'};font-weight:700">${isJi2(grids.ren)?'吉':'凶'}</span>
+        · 总格 ${grids.zong}<span style="color:${isJi2(grids.zong)?'#22c55e':'#ef4444'};font-weight:700">${isJi2(grids.zong)?'吉':'凶'}</span>
+        · 地格 ${grids.di}<span style="color:${isJi2(grids.di)?'#22c55e':'#ef4444'};font-weight:700">${isJi2(grids.di)?'吉':'凶'}</span>
+        · 外格 ${grids.wai}<span style="color:${isJi2(grids.wai)?'#22c55e':'#ef4444'};font-weight:700">${isJi2(grids.wai)?'吉':'凶'}</span>
+      </div>
+    </div>`;
+  }
+
+  // Build Mode A HTML
+  let html = `
+  <!-- Mode A banner -->
+  <div style="background:rgba(26,90,138,0.1);border:1px solid rgba(26,90,138,0.3);border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;line-height:1.7">
+    <strong style="color:#4a90d9">🆕 Mode: Buat Nama Mandarin Baru</strong><br>
+    Anda belum memiliki nama Mandarin. Berikut dua jalur rekomendasi berdasarkan <strong style="color:${ysColor}">Yong Shen ${esc(yongShen)} (${esc(ysName)})</strong>:
+    <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+      <div style="background:rgba(42,122,74,0.08);border:1px solid rgba(42,122,74,0.2);border-radius:6px;padding:8px">
+        <strong style="color:var(--green)">Opsi A1: Transliterasi</strong><br>
+        Gunakan marga Mandarin sesuai marga Latin Anda (${esc(latinName||'?')})
+      </div>
+      <div style="background:rgba(160,120,20,0.08);border:1px solid rgba(160,120,20,0.2);border-radius:6px;padding:8px">
+        <strong style="color:var(--gold)">Opsi A2: Optimal Baru</strong><br>
+        Pilih marga Mandarin baru yang unsurnya selaras dengan Yong Shen ${esc(yongShen)}
+      </div>
+    </div>
+  </div>`;
+
+  // ==== A1: Transliterate ====
+  html += `<div style="border:2px solid rgba(42,122,74,0.4);border-radius:10px;margin-bottom:20px;overflow:hidden">
+    <div style="background:rgba(42,122,74,0.12);padding:12px 16px">
+      <div style="font-weight:700;font-size:14px;color:var(--green)">A1 · Transliterasi dari Marga Latin</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">Nama Latin: <strong>${esc(latinName||'—')}</strong></div>
+    </div>
+    <div style="padding:14px 16px">`;
+
+  if (hasA1 && a1Marga) {
+    const a1Strokes = a1Marga.strokes;
+    const a1El      = elementFromStrokeNum(a1Strokes);
+    const a1Recs    = suggestGivenNames(a1Strokes);
+    const a1ysMatch = ysHelps.includes(a1El) || a1El===yongShen;
+    html += `<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:8px">
+      <div style="font-size:44px;font-family:serif;color:var(--gold2)">${esc(a1Marga.char)}</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text)">${esc(a1Marga.char)} (${esc(a1Marga.pinyin)})</div>
+        <div style="font-size:12px;color:var(--muted)">${a1Strokes} goresan · Unsur: <span style="color:${colorForElement(a1El)};font-weight:700">${esc(a1El)}</span></div>
+        <div style="font-size:12px;color:${a1ysMatch?'var(--green)':'var(--muted)'};margin-top:2px">${a1ysMatch?'✅ Unsur mendukung Yong Shen '+yongShen:'○ Unsur netral terhadap Yong Shen '+yongShen}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600">Nama lengkap yang direkomendasikan:</div>`;
+    if (a1Recs.length > 0) {
+      a1Recs.forEach((rec,i) => { html += givenNameCard(a1Marga.char, a1Strokes, rec, i); });
+    } else {
+      html += `<div style="font-size:12px;color:var(--muted);padding:8px;text-align:center">Kombinasi terbatas — coba tambahkan karakter nama di database.</div>`;
+    }
+  } else {
+    html += `<div style="font-size:13px;color:var(--muted);padding:12px;background:var(--surface2);border-radius:8px;text-align:center">
+      Marga Latin "<strong>${esc(probableSurname || latinName)}</strong>" tidak ditemukan di database transliterasi.<br>
+      <span style="font-size:11px">Coba Opsi A2 (marga optimal) di bawah, atau masukkan nama Mandarin Anda di form jika sudah ada.</span>
+    </div>`;
+  }
+
+  html += `</div></div>`;
+
+  // ==== A2: Optimal Marga by Yong Shen ====
+  html += `<div style="border:2px solid rgba(160,120,20,0.4);border-radius:10px;margin-bottom:20px;overflow:hidden">
+    <div style="background:rgba(160,120,20,0.12);padding:12px 16px">
+      <div style="font-weight:700;font-size:14px;color:var(--gold2)">A2 · Marga Optimal Berdasarkan Yong Shen ${esc(yongShen)}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:3px">Marga yang unsur karakter-nya = <strong style="color:${ysColor}">${esc(yongShen)} (${esc(ysName)})</strong> untuk keselarasan maksimal</div>
+    </div>
+    <div style="padding:14px 16px">`;
+
+  a2Margas.forEach(m => {
+    const a2El    = elementFromStrokeNum(m.strokes);
+    const a2Recs  = suggestGivenNames(m.strokes);
+    const rec     = a2Recs[0]; // show top 1 per marga for conciseness
+    html += `<div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px 14px;background:var(--surface2);border-radius:8px;border:1.5px solid ${ysColor}33">
+        <div style="font-size:40px;font-family:serif;color:${ysColor}">${esc(m.char)}</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">${esc(m.char)} (${esc(m.pinyin)})</div>
+          <div style="font-size:12px;color:var(--muted)">${m.strokes} goresan · Unsur: <span style="color:${ysColor};font-weight:700">${esc(a2El)}</span> = Yong Shen ✓</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(m.meaning)}</div>
+        </div>
+      </div>`;
+    if (rec) {
+      html += givenNameCard(m.char, m.strokes, rec, 0);
+    }
+    html += `</div>`;
+  });
+
+  html += `</div></div>`;
+
+  // Closing tip
+  html += `<div style="background:rgba(160,120,20,0.06);border:1px solid rgba(160,120,20,0.2);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--text);line-height:1.7">
+    <strong style="color:var(--gold2)">📋 Cara Memilih:</strong><br>
+    • <strong>Opsi A1</strong> cocok jika Anda ingin nama Mandarin yang mencerminkan identitas marga Latin Anda.<br>
+    • <strong>Opsi A2</strong> cocok jika Anda bebas memilih — marga dipilih murni berdasarkan keselarasan energetik Yong Shen ${esc(yongShen)}.<br>
+    • Setelah memilih nama, masukkan ke kolom <em>Nama Mandarin</em> di form dan hitung ulang untuk analisis penuh Lima Grid.
+  </div>`;
+
+  container.innerHTML = html;
+}
+
 function wu_xing_meaning(el) {
   const m = {'木':'Pertumbuhan, kreativitas','火':'Semangat, ekspresi','土':'Stabilitas, dipercaya','金':'Ketegasan, keuangan','水':'Kebijaksanaan, intuisi'};
   return m[el]||'—';
+}
+
+// ============================================================
+// SECTION CS: CHEAT SHEET ARAH DUDUK
+// ============================================================
+function renderCheatSheetArahDuduk(yongShen, fs) {
+  const sec = document.getElementById('arah-duduk-section');
+  const container = document.getElementById('sec-arah-duduk');
+  if (!sec || !container || !yongShen) return;
+
+  // Direction data by Yong Shen element
+  const ARAH = {
+    '木': {
+      good: ['E','SE'], avoid: ['W','NW'],
+      goodLabel: 'Timur (E) · Tenggara (SE)',
+      avoidLabel: 'Barat (W) · Barat Laut (NW)',
+      karir:    { dir:'Timur (E)',         reason:'木 = pertumbuhan & kreativitas' },
+      kekayaan: { dir:'Tenggara (SE)',     reason:'Zona kemakmuran kayu' },
+      relasi:   { dir:'Timur (E)',         reason:'Energi ekspansif, mudah terhubung' },
+      kesehatan:{ dir:'Tenggara (SE)',     reason:'Vitalitas hijau, udara segar' },
+      hindari:  '金 (Barat/Barat Laut) — 金克木',
+    },
+    '火': {
+      good: ['S','E'], avoid: ['N'],
+      goodLabel: 'Selatan (S) · Timur (E)',
+      avoidLabel: 'Utara (N)',
+      karir:    { dir:'Selatan (S)',       reason:'火 = ekspresi & kepemimpinan' },
+      kekayaan: { dir:'Selatan (S)',       reason:'Api menarik perhatian & peluang' },
+      relasi:   { dir:'Timur (E)',         reason:'木生火 — kehangatan tumbuh' },
+      kesehatan:{ dir:'Selatan (S)',       reason:'Sinar matahari, semangat vital' },
+      hindari:  '水 (Utara) — 水克火',
+    },
+    '土': {
+      good: ['NE','SW'], avoid: ['E','SE'],
+      goodLabel: 'Timur Laut (NE) · Barat Daya (SW)',
+      avoidLabel: 'Timur (E) · Tenggara (SE)',
+      karir:    { dir:'Timur Laut (NE)',   reason:'土 = stabilitas & kepercayaan' },
+      kekayaan: { dir:'Barat Daya (SW)',   reason:'Zona akumulasi & kestabilan' },
+      relasi:   { dir:'Timur Laut (NE)',   reason:'Membangun loyalitas & kepercayaan' },
+      kesehatan:{ dir:'Barat Daya (SW)',   reason:'Grounding, sistem pencernaan kuat' },
+      hindari:  '木 (Timur/Tenggara) — 木克土',
+    },
+    '金': {
+      good: ['W','NW'], avoid: ['S'],
+      goodLabel: 'Barat (W) · Barat Laut (NW)',
+      avoidLabel: 'Selatan (S)',
+      karir:    { dir:'Barat (W)',         reason:'金 = ketegasan, presisi & efisiensi' },
+      kekayaan: { dir:'Barat Laut (NW)',   reason:'NW = zona pemimpin & kekayaan' },
+      relasi:   { dir:'Barat (W)',         reason:'Komunikasi asertif & jujur' },
+      kesehatan:{ dir:'Barat Laut (NW)',   reason:'Paru-paru & sistem imun menguat' },
+      hindari:  '火 (Selatan) — 火克金',
+    },
+    '水': {
+      good: ['N','W'], avoid: ['NE','SW'],
+      goodLabel: 'Utara (N) · Barat (W)',
+      avoidLabel: 'Timur Laut (NE) · Barat Daya (SW)',
+      karir:    { dir:'Utara (N)',         reason:'水 = kebijaksanaan & fleksibilitas' },
+      kekayaan: { dir:'Barat (W)',         reason:'金生水 — sumber daya mengalir' },
+      relasi:   { dir:'Utara (N)',         reason:'Intuisi sosial & empati mendalam' },
+      kesehatan:{ dir:'Barat (W)',         reason:'Ginjal & sistem detoksifikasi kuat' },
+      hindari:  '土 (Timur Laut/Barat Daya) — 土克水',
+    },
+  };
+
+  const data = ARAH[yongShen];
+  if (!data) return;
+
+  const YS_COLOR = {'木':'#4caf7d','火':'#e57373','土':'#c8960d','金':'#9e9e9e','水':'#4a90d9'};
+  const YS_NAME  = {'木':'Kayu','火':'Api','土':'Tanah','金':'Logam','水':'Air'};
+  const ysColor  = YS_COLOR[yongShen] || 'var(--gold)';
+  const ysName   = YS_NAME[yongShen] || yongShen;
+
+  // Build compass SVG
+  function compassSVG(goodDirs, avoidDirs) {
+    const cx=110, cy=110, r=90, ri=22;
+    const dirs8 = [
+      {key:'N',  label:'U',  full:'Utara',       angle:-90},
+      {key:'NE', label:'TL', full:'Timur Laut',  angle:-45},
+      {key:'E',  label:'T',  full:'Timur',       angle:0},
+      {key:'SE', label:'TG', full:'Tenggara',    angle:45},
+      {key:'S',  label:'S',  full:'Selatan',     angle:90},
+      {key:'SW', label:'BD', full:'Barat Daya',  angle:135},
+      {key:'W',  label:'B',  full:'Barat',       angle:180},
+      {key:'NW', label:'BL', full:'Barat Laut',  angle:-135},
+    ];
+    let paths='';
+    dirs8.forEach(d => {
+      const isGood   = goodDirs.includes(d.key);
+      const isAvoid  = avoidDirs.includes(d.key);
+      const fill     = isGood ? '#22c55e' : isAvoid ? '#ef4444' : '#444';
+      const opacity  = isGood ? 0.80 : isAvoid ? 0.75 : 0.20;
+      const a1 = (d.angle - 22.5) * Math.PI / 180;
+      const a2 = (d.angle + 22.5) * Math.PI / 180;
+      // Outer arc
+      const ox1=cx+r*Math.cos(a1), oy1=cy+r*Math.sin(a1);
+      const ox2=cx+r*Math.cos(a2), oy2=cy+r*Math.sin(a2);
+      // Inner arc
+      const ix1=cx+ri*Math.cos(a1), iy1=cy+ri*Math.sin(a1);
+      const ix2=cx+ri*Math.cos(a2), iy2=cy+ri*Math.sin(a2);
+      paths += `<path d="M${ix1} ${iy1} L${ox1} ${oy1} A${r} ${r} 0 0 1 ${ox2} ${oy2} L${ix2} ${iy2} A${ri} ${ri} 0 0 0 ${ix1} ${iy1}Z" fill="${fill}" opacity="${opacity}" stroke="#222" stroke-width="1.2"/>`;
+      // Label
+      const lAngle = d.angle * Math.PI / 180;
+      const lR = (r+ri)/2 + 2;
+      const lx = cx + lR * Math.cos(lAngle);
+      const ly = cy + lR * Math.sin(lAngle);
+      const textFill = isGood ? '#fff' : isAvoid ? '#fff' : '#888';
+      const fw = isGood||isAvoid ? '700' : '400';
+      paths += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="10" font-weight="${fw}" fill="${textFill}" font-family="sans-serif">${d.label}</text>`;
+    });
+    // Center circle
+    paths += `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="#1a1a2e" stroke="#555" stroke-width="1.5"/>`;
+    paths += `<text x="${cx}" y="${cy-5}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="${ysColor}" font-weight="700" font-family="serif">${yongShen}</text>`;
+    paths += `<text x="${cx}" y="${cy+6}" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="#aaa" font-family="sans-serif">${ysName}</text>`;
+    // N arrow tip
+    const arrowAngle = -Math.PI/2;
+    const arrowTip_x = cx + (r+10)*Math.cos(arrowAngle);
+    const arrowTip_y = cy + (r+10)*Math.sin(arrowAngle);
+    paths += `<text x="${arrowTip_x.toFixed(1)}" y="${arrowTip_y.toFixed(1)}" text-anchor="middle" dominant-baseline="auto" font-size="9" fill="#e57373" font-family="sans-serif" font-weight="700">▲N</text>`;
+    return `<svg viewBox="0 0 220 220" width="200" height="200" style="display:block">${paths}</svg>`;
+  }
+
+  // Life-area rows
+  const cats = [
+    { key:'karir',    icon:'💼', label:'Karir / Pekerjaan' },
+    { key:'kekayaan', icon:'💰', label:'Kekayaan / Finansial' },
+    { key:'relasi',   icon:'❤️', label:'Relasi / Pasangan' },
+    { key:'kesehatan',icon:'🌿', label:'Kesehatan / Vitalitas' },
+  ];
+
+  let html = `
+  <!-- Cheat Sheet smartphone card (390px) -->
+  <div style="max-width:390px; margin:0 auto">
+    <!-- Card header -->
+    <div style="background:linear-gradient(135deg,#0d1f2d,#1a3344); border-radius:14px 14px 0 0; padding:14px 16px; text-align:center">
+      <div style="font-size:11px; letter-spacing:2px; color:#7eb5d4; text-transform:uppercase; margin-bottom:4px">坐向指南 · Cheat Sheet</div>
+      <div style="font-size:18px; font-weight:700; color:#fff">Arah Duduk & Posisi Terbaik</div>
+      <div style="margin-top:6px; display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.08); border-radius:20px; padding:4px 12px">
+        <span style="font-size:14px; font-family:serif; color:${ysColor}">${yongShen}</span>
+        <span style="font-size:12px; font-weight:700; color:${ysColor}">Yong Shen ${esc(ysName)}</span>
+      </div>
+    </div>
+
+    <!-- Compass + Legend side by side -->
+    <div style="background:#111827; padding:14px 16px; display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap">
+      <div id="compass-svg-container">
+        ${compassSVG(data.good, data.avoid)}
+      </div>
+      <div style="flex:1; min-width:120px">
+        <div style="margin-bottom:8px">
+          <div style="font-size:10px; color:#7eb5d4; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px">✅ Arah Baik</div>
+          <div style="font-size:13px; font-weight:700; color:#22c55e; line-height:1.6">${esc(data.goodLabel)}</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="font-size:10px; color:#7eb5d4; letter-spacing:1px; text-transform:uppercase; margin-bottom:5px">❌ Hindari</div>
+          <div style="font-size:13px; font-weight:700; color:#ef4444; line-height:1.6">${esc(data.avoidLabel)}</div>
+          <div style="font-size:10px; color:#888; margin-top:3px">${esc(data.hindari)}</div>
+        </div>
+        <div style="font-size:9px; color:#555; line-height:1.5">U=Utara  T=Timur<br>S=Selatan  B=Barat<br>TL=Timur Laut  TG=Tenggara<br>BD=Barat Daya  BL=Barat Laut</div>
+      </div>
+    </div>
+
+    <!-- Per-category rows -->
+    <div style="background:#0f1923; border:1px solid #1e3a4a; border-top:none">
+      ${cats.map(cat => {
+        const catData = data[cat.key];
+        return `<div style="display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px solid #1e3a4a">
+          <div style="font-size:20px; width:28px; text-align:center; flex-shrink:0">${cat.icon}</div>
+          <div style="flex:1; min-width:0">
+            <div style="font-size:10px; color:#7eb5d4; letter-spacing:0.5px; text-transform:uppercase">${cat.label}</div>
+            <div style="font-size:14px; font-weight:700; color:#22c55e; margin-top:2px">${esc(catData.dir)}</div>
+            <div style="font-size:10px; color:#888; margin-top:1px">${esc(catData.reason)}</div>
+          </div>
+          <div style="font-size:22px; color:#22c55e; font-weight:700; flex-shrink:0">→</div>
+        </div>`;
+      }).join('')}
+
+      <!-- Avoid row -->
+      <div style="display:flex; align-items:center; gap:12px; padding:11px 16px">
+        <div style="font-size:20px; width:28px; text-align:center; flex-shrink:0">🚫</div>
+        <div style="flex:1; min-width:0">
+          <div style="font-size:10px; color:#f87171; letter-spacing:0.5px; text-transform:uppercase">Hindari</div>
+          <div style="font-size:14px; font-weight:700; color:#ef4444; margin-top:2px">${esc(data.avoidLabel)}</div>
+          <div style="font-size:10px; color:#888; margin-top:1px">${esc(data.hindari)}</div>
+        </div>
+        <div style="font-size:22px; color:#ef4444; font-weight:700; flex-shrink:0">✕</div>
+      </div>
+    </div>
+
+    <!-- Footer tip -->
+    <div style="background:#0a1520; border:1px solid #1e3a4a; border-top:none; border-radius:0 0 14px 14px; padding:10px 16px; text-align:center; font-size:10px; color:#555; line-height:1.6">
+      Arah menghadap saat duduk bekerja, meeting, atau tidur kepala ke arah ini.<br>
+      Sumber: Wu Xing · Yong Shen ${esc(yongShen)} (${esc(ysName)})
+    </div>
+
+    <!-- Download button -->
+    <div class="no-print" style="margin-top:12px; text-align:center">
+      <button onclick="downloadCheatSheet()" class="btn btn-primary" style="font-size:13px; padding:10px 24px; background:linear-gradient(135deg,#1a5a8a,#0d3a5a); border:none">
+        📱 Download Cheat Sheet (PNG)
+      </button>
+      <div style="font-size:11px; color:var(--muted); margin-top:5px">Simpan ke galeri HP untuk referensi sehari-hari</div>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+  sec.style.display = 'block';
+}
+
+function downloadCheatSheet() {
+  const card = document.querySelector('#sec-arah-duduk > div');
+  if (!card) return;
+  if (typeof html2canvas === 'undefined') {
+    alert('html2canvas masih loading, coba lagi sebentar.');
+    return;
+  }
+  // Temporarily hide the download button for the capture
+  const dlBtn = card.querySelector('.no-print');
+  if (dlBtn) dlBtn.style.display = 'none';
+  html2canvas(card, {
+    scale: 2,
+    backgroundColor: '#0a1520',
+    useCORS: true,
+    logging: false,
+  }).then(canvas => {
+    if (dlBtn) dlBtn.style.display = '';
+    const link = document.createElement('a');
+    link.download = 'cheatsheet-arah-duduk.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(() => {
+    if (dlBtn) dlBtn.style.display = '';
+    alert('Gagal membuat gambar. Coba screenshot manual.');
+  });
 }
 
 // ============================================================
@@ -4656,6 +5191,10 @@ function resetAll(returnToLanding) {
   if (wpSec) wpSec.style.display = 'none';
   var nrSec = document.getElementById('name-rec-section');
   if (nrSec) nrSec.style.display = 'none';
+  var adSec = document.getElementById('arah-duduk-section');
+  if (adSec) adSec.style.display = 'none';
+  var adCont = document.getElementById('sec-arah-duduk');
+  if (adCont) adCont.innerHTML = '';
   var cts = document.getElementById('compat-triggers');
   if (cts) cts.style.display = 'none';
 
