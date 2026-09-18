@@ -1212,9 +1212,10 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
 // ============================================================
 function renderAll(d, input) {
   renderName(d.nameAnalysis, input);
-  if (d.bazi?.yongShen) {
-    renderNameRecommendation(d.nameAnalysis?.chinese || null, d.bazi.yongShen, input);
-    renderCheatSheetArahDuduk(d.bazi.yongShen, d.comprehensive?.fengshui || null);
+  const _ys = d.bazi?.wuXing?.yongShen;
+  if (_ys) {
+    renderNameRecommendation(d.nameAnalysis?.chinese || null, _ys, input);
+    renderCheatSheetArahDuduk(_ys, d.comprehensive?.fengshui || null);
   }
   if (d.bazi && !d.bazi.error) {
     render3A(d.bazi);
