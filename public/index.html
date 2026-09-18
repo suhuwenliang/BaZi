@@ -471,10 +471,39 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
         <div class="form-group">
           <label>Zona Waktu / GMT Offset</label>
           <select name="timezone" id="tz-select" required>
-            <option value="WIB">WIB (UTC+7) — Indonesia Barat</option>
-            <option value="WITA">WITA (UTC+8) — Indonesia Tengah</option>
-            <option value="WIT">WIT (UTC+9) — Indonesia Timur</option>
-            <option value="" disabled>─────────────</option>
+            <optgroup label="🇮🇩 Indonesia">
+              <option value="WIB">WIB (UTC+7) — Indonesia Barat</option>
+              <option value="WITA">WITA (UTC+8) — Indonesia Tengah</option>
+              <option value="WIT">WIT (UTC+9) — Indonesia Timur</option>
+            </optgroup>
+            <optgroup label="🌏 Asia">
+              <option value="GMT+5:30">UTC+5:30 — India (IST)</option>
+              <option value="GMT+5:45">UTC+5:45 — Nepal (NPT)</option>
+              <option value="GMT+6">UTC+6 — Bangladesh, Almaty</option>
+              <option value="GMT+6:30">UTC+6:30 — Myanmar (MMT)</option>
+              <option value="GMT+7">UTC+7 — Thailand, Vietnam, Laos</option>
+              <option value="GMT+8">UTC+8 — China, Taiwan, Singapura, Malaysia, Hong Kong, Filipina</option>
+              <option value="GMT+9">UTC+9 — Jepang (JST), Korea (KST)</option>
+              <option value="GMT+9:30">UTC+9:30 — Australia Tengah</option>
+              <option value="GMT+10">UTC+10 — Australia Timur, Papua Nugini</option>
+              <option value="GMT+11">UTC+11 — Vanuatu, Kepulauan Solomon</option>
+              <option value="GMT+12">UTC+12 — Selandia Baru, Fiji</option>
+            </optgroup>
+            <optgroup label="🌍 Eropa &amp; Afrika">
+              <option value="GMT+0">UTC+0 — Inggris (GMT), Portugal</option>
+              <option value="GMT+1">UTC+1 — Jerman, Prancis, Italia, Belanda (CET)</option>
+              <option value="GMT+2">UTC+2 — Eropa Timur, Afrika Selatan, Yunani (CEST)</option>
+              <option value="GMT+3">UTC+3 — Moskow, Turki, Arab Saudi, Kenya</option>
+              <option value="GMT+4">UTC+4 — UEA, Oman, Azerbaijan</option>
+            </optgroup>
+            <optgroup label="🌎 Amerika">
+              <option value="GMT-5">UTC-5 — New York, EST (winter)</option>
+              <option value="GMT-4">UTC-4 — New York EDT (summer), Puerto Riko</option>
+              <option value="GMT-6">UTC-6 — Chicago, CST</option>
+              <option value="GMT-7">UTC-7 — Denver, MST</option>
+              <option value="GMT-8">UTC-8 — Los Angeles, PST</option>
+              <option value="GMT-3">UTC-3 — Brasil (Brasília), Argentina</option>
+            </optgroup>
           </select>
         </div>
         <div class="form-group">
@@ -841,6 +870,12 @@ abbr { cursor: help; border-bottom: 1px dotted var(--muted); text-decoration: no
     <button id="nav-to-relasi" class="btn btn-secondary" onclick="navTo(3)" style="font-size:14px; padding:12px 28px; border:1px solid #9b64c8; color:#9b64c8; display:none">
       ❤️ Analisa Relasi
     </button>
+    <button id="nav-to-nama" class="btn btn-secondary" onclick="navToSection('name-rec-section')" style="font-size:14px; padding:12px 28px; border:1px solid #4a90d9; color:#4a90d9; display:none">
+      📝 Nama Mandarin
+    </button>
+    <button id="nav-to-cheatsheet" class="btn btn-secondary" onclick="navToSection('arah-duduk-section')" style="font-size:14px; padding:12px 28px; border:1px solid #7eb5d4; color:#7eb5d4; display:none">
+      🧭 Arah Duduk
+    </button>
   </div>
 </div>
 
@@ -966,14 +1001,11 @@ async function loadTimezones() {
   try {
     const r = await fetch('/api/timezones');
     const tzs = await r.json();
-    _tzList = tzs; // simpan untuk digunakan buildCompatForm
-    const sel = document.getElementById('tz-select');
-    tzs.forEach(tz => {
-      const opt = document.createElement('option');
-      opt.value = tz.value;
-      opt.textContent = tz.label;
-      sel.appendChild(opt);
-    });
+    // API returns { standard: [...], special: [...], indonesia: [...] }
+    const allTzs = [...(tzs.standard || []), ...(tzs.special || [])];
+    _tzList = allTzs; // simpan untuk digunakan buildCompatForm
+    // No need to populate main select — it's already hardcoded inline
+    // (just store for compatibility form usage)
   } catch(e) { console.warn('Cannot load timezones', e); }
 }
 
@@ -1160,8 +1192,12 @@ document.getElementById('calc-form').addEventListener('submit', async (e) => {
     // Show mode 1 nav buttons
     const _nq = document.getElementById('nav-to-qmdj');
     const _nr = document.getElementById('nav-to-relasi');
+    const _nn = document.getElementById('nav-to-nama');
+    const _nc = document.getElementById('nav-to-cheatsheet');
     if (_nq) _nq.style.display = '';
     if (_nr) _nr.style.display = '';
+    if (_nn) _nn.style.display = '';
+    if (_nc) _nc.style.display = '';
   } catch(err) {
     document.getElementById('error-box').textContent = '❌ ' + err.message;
     document.getElementById('error-box').classList.remove('hidden');
@@ -5207,6 +5243,10 @@ function resetAll(returnToLanding) {
   if (navQmdj) navQmdj.style.display = 'none';
   var navRelasi = document.getElementById('nav-to-relasi');
   if (navRelasi) navRelasi.style.display = 'none';
+  var navNama = document.getElementById('nav-to-nama');
+  if (navNama) navNama.style.display = 'none';
+  var navCheatsheet = document.getElementById('nav-to-cheatsheet');
+  if (navCheatsheet) navCheatsheet.style.display = 'none';
 
   var calcBtn = document.getElementById('calc-btn');
   if (calcBtn) calcBtn.innerHTML = '✨ Hitung Sekarang';
@@ -5246,6 +5286,11 @@ function prefillForm(data) {
   setField('timezone', data.timezone);
   if (data.longitude) setField('longitude', data.longitude);
   if (data.latitude)  setField('latitude',  data.latitude);
+}
+
+function navToSection(id) {
+  var el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function navTo(m) {
